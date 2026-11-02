@@ -1,0 +1,26 @@
+# Comprobaciones antes de cada commit (se instalan con: uv run pre-commit install).
+# Hooks locales con `uv run`: usan las versiones fijadas en uv.lock, las mismas que en CI.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff (lint)
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff (formato)
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+      - id: mypy
+        name: mypy (tipos)
+        entry: uv run mypy
+        language: system
+        types: [python]
+        pass_filenames: false   # mypy revisa todo el proyecto (configurado en pyproject.toml)
+      - id: privacidad
+        name: revisión de privacidad
+        entry: uv run python scripts/revisar_privacidad.py
+        language: system
+        types: [text]
