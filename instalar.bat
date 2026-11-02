@@ -48,6 +48,7 @@ exit /b 0
 
 :error
 echo.
-echo Algo ha fallado. Copia el texto de arriba y pasaselo a Claude.
+echo Algo ha fallado. Copia el texto de arriba: indica que paso ha fallado y por que.
+echo Si no sabes resolverlo, abre una incidencia (issue) en GitHub con ese texto.
 pause
 exit /b 1
