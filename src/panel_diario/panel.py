@@ -13,6 +13,7 @@ Uso (desde la raíz del proyecto, con el entorno de uv):
 
 from __future__ import annotations
 
+import ctypes
 import json
 import logging
 import os
@@ -20,8 +21,10 @@ import sys
 import threading
 import time
 import webbrowser
+from collections.abc import Callable
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from typing import Any
 
 import webview
 from PIL import Image, ImageDraw, ImageFont
@@ -47,7 +50,7 @@ TITULO_FICHA = "Panel Diario - ficha"
 log = logging.getLogger("panel")
 
 
-def configurar_log(consola: bool):
+def configurar_log(consola: bool) -> None:
     log.setLevel(logging.INFO)
     fh = RotatingFileHandler(DATOS_DIR / "panel.log", maxBytes=500_000, backupCount=1, encoding="utf-8")
     fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
@@ -146,9 +149,9 @@ def area_del_monitor(x: int, y: int) -> tuple[int, int, int, int]:
 class Estado:
     """Guarda los últimos datos buenos de cada sección y los persiste en disco."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.lock = threading.Lock()
-        self.datos = {
+        self.datos: dict[str, Any] = {
             "secciones": {},
             "errores": {},
             "fuentes_caidas": [],
@@ -164,7 +167,7 @@ class Estado:
                 log.warning("Caché ilegible, se ignora: %s", ex)
         self.actualizando = False
 
-    def guardar(self):
+    def guardar(self) -> None:
         with self.lock:
             CACHE.write_text(json.dumps(self.datos, ensure_ascii=False), encoding="utf-8")
 
@@ -176,7 +179,7 @@ class Estado:
         return d
 
 
-def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False):
+def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
     if estado.actualizando:
         return
     estado.actualizando = True
@@ -193,7 +196,7 @@ def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False):
         resultados, errores = {}, {}
         hilos = []
 
-        def correr(nombre, fn):
+        def correr(nombre: str, fn: Callable[[], Any]) -> None:
             try:
                 resultados[nombre] = fn()
             except Exception as ex:  # noqa: BLE001
@@ -243,7 +246,7 @@ def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False):
 # ---------------------------------------------------------------------------
 
 
-def _fuente(tam: int):
+def _fuente(tam: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     for nombre in ("segoeuib.ttf", "arialbd.ttf", "DejaVuSans-Bold.ttf"):
         try:
             return ImageFont.truetype(nombre, tam)
@@ -252,7 +255,7 @@ def _fuente(tam: int):
     return ImageFont.load_default(size=tam)
 
 
-def icono_temperatura(temp) -> Image.Image:
+def icono_temperatura(temp: int | None) -> Image.Image:
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     d.rounded_rectangle((0, 0, 63, 63), radius=14, fill=(28, 74, 110, 255))
@@ -271,12 +274,12 @@ def icono_temperatura(temp) -> Image.Image:
 
 
 class Api:
-    def __init__(self, estado: Estado, cfg: dict, icono_ref: dict):
+    def __init__(self, estado: Estado, cfg: dict, icono_ref: dict) -> None:
         self._estado = estado
         self._cfg = cfg
         self._icono_ref = icono_ref
-        self._ventana = None
-        self._ficha = None  # ApiFicha, para colocar el panel junto a ella
+        self._ventana: webview.Window | None = None
+        self._ficha: ApiFicha | None = None  # para colocar el panel junto a ella
         self._alto = 860
         self._pos = [0, 0]  # posición actual del panel (la llevamos nosotros)
         self._visible = False
@@ -285,13 +288,13 @@ class Api:
         self._lock = threading.Lock()
 
     # --- llamadas desde JS ---
-    def obtener(self):
+    def obtener(self) -> dict:
         d = self._estado.instantanea()
         d["pestanas"] = self._cfg.get("pestanas", [])  # nombre y orden de las pestañas de noticias
         return d
 
-    def refrescar(self):
-        def tarea():
+    def refrescar(self) -> bool:
+        def tarea() -> None:
             actualizar(self._estado, self._cfg, True)
             refrescar_icono(self._estado, self._icono_ref)
             self._repintar()
@@ -299,13 +302,13 @@ class Api:
         threading.Thread(target=tarea, daemon=True).start()
         return True
 
-    def abrir(self, url):
+    def abrir(self, url: str) -> bool:
         if isinstance(url, str) and url.startswith(("http://", "https://")):
             webbrowser.open(url)
             self.marcar_leido(url)
         return True
 
-    def marcar_leido(self, url):
+    def marcar_leido(self, url: str) -> bool:
         with self._estado.lock:
             leidos = self._estado.datos.setdefault("leidos", [])
             if url not in leidos:
@@ -313,7 +316,7 @@ class Api:
                 del leidos[:-600]
         return True
 
-    def ocultar(self):
+    def ocultar(self) -> bool:
         # Se oculta siempre, aunque creamos que ya estaba oculto (si no, la ✕ podría no responder)
         if self._ventana:
             if self._visible:
@@ -326,7 +329,7 @@ class Api:
                 log.warning("Error al ocultar el panel: %s", ex)
         return True
 
-    def ocultar_por_foco(self):
+    def ocultar_por_foco(self) -> bool:
         """El panel ha perdido el foco. Se ignora justo después de abrirlo: al abrirse
         desde la ficha, el foco puede volver un instante a la ficha y lo cerraría al momento."""
         if time.time() - self._mostrado_en < 1.0:
@@ -334,8 +337,10 @@ class Api:
             return False
         return self.ocultar()
 
-    def mover_rel(self, dx, dy):
+    def mover_rel(self, dx: float, dy: float) -> bool:
         """Arrastre: mueve el panel dx, dy desde donde está."""
+        if not self._ventana:
+            return False
         nueva = dentro_de_pantalla(self._pos[0] + int(dx), self._pos[1] + int(dy), ANCHO, self._alto)
         try:
             self._ventana.move(nueva[0], nueva[1])
@@ -345,14 +350,14 @@ class Api:
         return True
 
     # --- llamadas desde Python ---
-    def _repintar(self):
+    def _repintar(self) -> None:
         if self._visible and self._ventana:
             try:
                 self._ventana.evaluate_js("window.alMostrar && window.alMostrar()")
             except Exception:  # noqa: BLE001
                 pass
 
-    def _colocar(self):
+    def _colocar(self) -> None:
         """Sitúa el panel al lado de la ficha (o abajo a la derecha si no hay ficha)."""
         alto = self._alto
         if self._ficha and self._ficha.pos:
@@ -369,12 +374,14 @@ class Api:
         x = min(max(int(x), mx), mx + max(mw - ANCHO, 0))
         y = min(max(int(y), my), my + max(mh - alto, 0))
         self._pos = [x, y]
+        if not self._ventana:
+            return
         try:
             self._ventana.move(x, y)
         except Exception as ex:  # noqa: BLE001
             log.warning("No se pudo colocar el panel: %s", ex)
 
-    def mostrar(self):
+    def mostrar(self) -> None:
         if not self._ventana:
             log.warning("mostrar(): el panel aún no existe")
             return
@@ -388,7 +395,7 @@ class Api:
             log.warning("Error al mostrar el panel: %s", ex)
         self._repintar()
 
-    def alternar(self):
+    def alternar(self) -> None:
         with self._lock:
             log.info("Abrir/cerrar panel (visible=%s)", self._visible)
             if self._visible:
@@ -406,15 +413,15 @@ class Api:
 
 
 class ApiFicha:
-    def __init__(self, estado: Estado, panel: Api, pos: list[int]):
+    def __init__(self, estado: Estado, panel: Api, pos: list[int]) -> None:
         self._estado = estado
         self._panel = panel
-        self._ventana = None
+        self._ventana: webview.Window | None = None
         self.pos = pos
-        self.anclaje = None  # (hwnd ficha, hwnd escritorio) si está anclada al escritorio
-        self._guardar_tm = None
+        self.anclaje: tuple[int, int] | None = None  # (hwnd ficha, hwnd escritorio) si está anclada al escritorio
+        self._guardar_tm: threading.Timer | None = None
 
-    def mini(self):
+    def mini(self) -> dict:
         t = self._estado.datos["secciones"].get("tiempo") or {}
         hoy = (t.get("dias") or [{}])[0]
         avisos = self._estado.datos["secciones"].get("avisos") or []
@@ -431,7 +438,7 @@ class ApiFicha:
             "aviso": avisos[0]["nivel"] if avisos else None,
         }
 
-    def clic(self):
+    def clic(self) -> bool:
         log.info("Clic en la ficha")
         try:
             self._panel.alternar()
@@ -439,13 +446,13 @@ class ApiFicha:
             log.exception("Error al abrir el panel desde la ficha: %s", ex)
         return True
 
-    def mover_rel(self, dx, dy):
+    def mover_rel(self, dx: float, dy: float) -> bool:
         """Arrastre: mueve la ficha dx, dy desde donde está y guarda la posición."""
         nueva = dentro_de_pantalla(self.pos[0] + int(dx), self.pos[1] + int(dy), ANCHO_FICHA, ALTO_FICHA)
         try:
             if self.anclaje:  # hija del escritorio: la movemos con Win32 directamente
                 mover_hija(self.anclaje[0], self.anclaje[1], nueva)
-            else:
+            elif self._ventana:
                 self._ventana.move(nueva[0], nueva[1])
             self.pos = nueva  # solo si el movimiento ha funcionado
         except Exception as ex:  # noqa: BLE001
@@ -458,7 +465,7 @@ class ApiFicha:
         self._guardar_tm.start()
         return True
 
-    def _guardar_pos(self):
+    def _guardar_pos(self) -> None:
         try:
             POSICION.write_text(json.dumps({"x": self.pos[0], "y": self.pos[1]}), encoding="utf-8")
         except Exception as ex:  # noqa: BLE001
@@ -482,7 +489,7 @@ def posicion_inicial_ficha() -> list[int]:
 _U32 = None
 
 
-def _user32():
+def _user32() -> ctypes.WinDLL:
     """Copia PROPIA de la librería user32 de Windows.
 
     Importante: no usar ctypes.windll.user32 para declarar tipos, porque es un objeto
@@ -526,7 +533,7 @@ def _user32():
     return _U32
 
 
-def redondear_esquinas(hwnd, radio_css: int, alto_css: int):
+def redondear_esquinas(hwnd: int | None, radio_css: int, alto_css: int) -> None:
     """Recorta la ventana con esquinas redondeadas (las ventanas de Windows son rectangulares).
 
     La región se mide en píxeles reales, que con escalado (125 %, 150 %...) no coinciden
@@ -562,7 +569,7 @@ def dentro_de_pantalla(x: int, y: int, ancho: int, alto: int) -> list[int]:
 _YA_SIN_BARRA: set[str] = set()
 
 
-def ocultar_de_barra_tareas(titulo: str, reaparecer: bool):
+def ocultar_de_barra_tareas(titulo: str, reaparecer: bool) -> None:
     """Quita la ventana de la barra de tareas y de Alt+Tab (es un widget, no una app).
 
     Solo se hace una vez por ventana. `reaparecer` = la ventana debe quedar visible
@@ -586,7 +593,7 @@ def ocultar_de_barra_tareas(titulo: str, reaparecer: bool):
         log.info("No se pudo ocultar %s de la barra de tareas: %s", titulo, ex)
 
 
-def _ventana_de_iconos_del_escritorio():
+def _ventana_de_iconos_del_escritorio() -> int | None:
     """Devuelve la ventana de Windows que contiene los iconos del escritorio.
 
     Los iconos viven en una ventana "SHELLDLL_DefView" cuyo padre es "Progman" o un
@@ -601,7 +608,7 @@ def _ventana_de_iconos_del_escritorio():
     encontrada = []
     WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
 
-    def buscar(hwnd, _):
+    def buscar(hwnd: int, _: int) -> bool:
         if user32.FindWindowExW(hwnd, None, "SHELLDLL_DefView", None):
             encontrada.append(hwnd)
             return False  # parar la búsqueda
@@ -611,7 +618,7 @@ def _ventana_de_iconos_del_escritorio():
     return encontrada[0] if encontrada else user32.FindWindowW("Progman", None)
 
 
-def mover_hija(hwnd, padre, pos: list[int]):
+def mover_hija(hwnd: int, padre: int, pos: list[int]) -> None:
     """Coloca una ventana hija del escritorio en `pos` (coordenadas de pantalla)."""
     import ctypes
     from ctypes import wintypes
@@ -625,7 +632,7 @@ def mover_hija(hwnd, padre, pos: list[int]):
         raise OSError(f"SetWindowPos falló (error {ctypes.get_last_error()})")
 
 
-def anclar_al_escritorio(hwnd, pos: list[int]):
+def anclar_al_escritorio(hwnd: int, pos: list[int]) -> tuple[int, int] | None:
     """Convierte la ficha en parte del escritorio (a la altura de los iconos).
     Devuelve (hwnd ficha, hwnd escritorio) o None si no se ha podido."""
     if os.name != "nt":
@@ -653,7 +660,7 @@ def anclar_al_escritorio(hwnd, pos: list[int]):
 # ---------------------------------------------------------------------------
 
 
-def bucle_actualizacion(estado, cfg, api, icono_ref, ficha):
+def bucle_actualizacion(estado: Estado, cfg: dict, api: Api, icono_ref: dict, ficha: ApiFicha | None) -> None:
     minutos = max(10, int(cfg.get("actualizar_minutos", 30)))
     while True:
         actualizar(estado, cfg)
@@ -664,7 +671,7 @@ def bucle_actualizacion(estado, cfg, api, icono_ref, ficha):
         time.sleep(minutos * 60)
 
 
-def refrescar_ficha(ficha):
+def refrescar_ficha(ficha: ApiFicha | None) -> None:
     if ficha and ficha._ventana:
         try:
             ficha._ventana.evaluate_js("window.pintar && window.pintar()")
@@ -672,7 +679,7 @@ def refrescar_ficha(ficha):
             pass
 
 
-def refrescar_icono(estado, icono_ref):
+def refrescar_icono(estado: Estado, icono_ref: dict) -> None:
     icono = icono_ref.get("icono")
     if not icono:
         return
@@ -684,12 +691,12 @@ def refrescar_icono(estado, icono_ref):
         icono.icon = icono_temperatura(None)
 
 
-def iniciar_bandeja(api, estado, cfg, icono_ref):
+def iniciar_bandeja(api: Api, estado: Estado, cfg: dict, icono_ref: dict) -> None:
     """El icono se crea y se ejecuta en su propio hilo: en Windows, la ventana de
     mensajes del icono pertenece al hilo que la crea y debe seguir vivo."""
     import pystray
 
-    def hilo():
+    def hilo() -> None:
         menu = pystray.Menu(
             pystray.MenuItem("Obre el panell", lambda: api.alternar(), default=True),
             pystray.MenuItem("Actualitza ara", lambda: api.refrescar()),
@@ -715,14 +722,14 @@ def ya_en_marcha() -> bool:
     return kernel32.GetLastError() == 183  # ERROR_ALREADY_EXISTS
 
 
-def salir(icono):
+def salir(icono: Any) -> None:
     try:
         icono.stop()
     finally:
         os._exit(0)
 
 
-def registrar_atajo(cfg, api):
+def registrar_atajo(cfg: dict, api: Api) -> None:
     atajo = cfg.get("atajo_teclado")
     if not atajo:
         return
@@ -735,7 +742,7 @@ def registrar_atajo(cfg, api):
         log.warning("No se pudo registrar el atajo %s: %s", atajo, ex)
 
 
-def main():
+def main() -> None:
     demo = "--demo" in sys.argv
     configurar_log("--consola" in sys.argv or demo)
     log.info("Arrancando Panel Diario %s (pywebview %s)", VERSION, getattr(webview, "__version__", "?"))
@@ -779,21 +786,23 @@ def main():
         background_color="#0f1419",
         easy_drag=False,
     )
+    if ventana is None:
+        raise RuntimeError("pywebview no ha podido crear la ventana del panel")
     api._ventana = ventana
 
-    def al_cerrar():
+    def al_cerrar() -> bool:
         api.ocultar()
         return False  # nunca se cierra: se oculta (para salir, usa el menú del icono junto al reloj)
 
     ventana.events.closing += al_cerrar
 
     # Ficha del escritorio
-    ficha = None
+    ficha: ApiFicha | None = None
     if cfg_ficha.get("activa", True):
         # "escritorio" = a la altura de los iconos (detrás de las ventanas); "encima" = siempre visible
         modo = cfg_ficha.get("modo", "escritorio")
-        ficha = ApiFicha(estado, api, posicion_inicial_ficha())
-        api._ficha = ficha
+        nueva_ficha = ApiFicha(estado, api, posicion_inicial_ficha())
+        ficha = api._ficha = nueva_ficha
         vf = webview.create_window(
             TITULO_FICHA,
             url=str(BASE / "ui" / "ficha.html"),
@@ -811,21 +820,23 @@ def main():
             background_color="#171e26",
             easy_drag=False,
         )
-        ficha._ventana = vf
+        if vf is None:
+            raise RuntimeError("pywebview no ha podido crear la ventana de la ficha")
+        nueva_ficha._ventana = vf
         vf.events.closing += lambda: False  # la ficha no se cierra con Alt+F4
 
-        def al_mostrar_ficha():
+        def al_mostrar_ficha() -> None:
             ocultar_de_barra_tareas(TITULO_FICHA, reaparecer=True)
             # Buscamos la ventana por su título AHORA: una vez anclada al escritorio deja de ser
             # una ventana "de primer nivel" y FindWindowW ya no la encuentra (fallo de la v1.7).
             hwnd = _user32().FindWindowW(None, TITULO_FICHA) if os.name == "nt" else None
             redondear_esquinas(hwnd, radio_css=ALTO_FICHA // 2, alto_css=ALTO_FICHA)  # extremos redondos
             if modo == "escritorio" and hwnd:
-                ficha.anclaje = anclar_al_escritorio(hwnd, ficha.pos)
+                nueva_ficha.anclaje = anclar_al_escritorio(hwnd, nueva_ficha.pos)
 
         vf.events.shown += al_mostrar_ficha
 
-    def arranque():
+    def arranque() -> None:
         iniciar_bandeja(api, estado, cfg, icono_ref)
         registrar_atajo(cfg, api)
         if demo:

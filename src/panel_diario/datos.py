@@ -15,7 +15,9 @@ import re
 import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import feedparser
@@ -38,7 +40,13 @@ def ahora_local() -> datetime:
     return datetime.now(TZ)
 
 
-def _get(url, *, headers=None, params=None, timeout=TIMEOUT):
+def _get(
+    url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    params: dict[str, Any] | None = None,
+    timeout: float = TIMEOUT,
+) -> requests.Response:
     h = {"User-Agent": UA}
     if headers:
         h.update(headers)
@@ -85,10 +93,11 @@ NOCHE = {0: "🌙", 1: "🌙"}
 DIAS = ["dl", "dt", "dc", "dj", "dv", "ds", "dg"]
 
 
-def _wmo(code, es_dia=True):
-    icono, texto = WMO.get(int(code or 0), ("🌡️", "—"))
-    if not es_dia and int(code or 0) in NOCHE:
-        icono = NOCHE[int(code)]
+def _wmo(code: int | None, es_dia: bool = True) -> tuple[str, str]:
+    codigo = int(code or 0)
+    icono, texto = WMO.get(codigo, ("🌡️", "—"))
+    if not es_dia and codigo in NOCHE:
+        icono = NOCHE[codigo]
     return icono, texto
 
 
@@ -167,7 +176,7 @@ def obtener_tiempo(cfg: dict) -> dict:
 SEVERIDAD = {"moderate": ("amarillo", 1), "severe": ("naranja", 2), "extreme": ("rojo", 3)}
 
 
-def _fecha_aviso(valor):
+def _fecha_aviso(valor: object) -> datetime | None:
     """Fecha CAP (ISO 8601 con zona) -> datetime con zona, o None."""
     if not valor:
         return None
@@ -365,7 +374,7 @@ def agrupar(items: list) -> list:
                 medios.append(it["medio"])
         ts = max((i["ts"] or 0) for i in g["items"]) or None
         horas = (ahora - ts) / 3600 if ts else 12
-        puntos = len(medios) * 2 + sum(1 for i in g["items"] if i["portada"])
+        puntos: float = len(medios) * 2 + sum(1 for i in g["items"] if i["portada"])
         puntos *= 1.0 if horas < 12 else (0.7 if horas < 24 else 0.4)
         salida.append(
             {
@@ -383,7 +392,7 @@ def agrupar(items: list) -> list:
 def _representante(grupo: dict, prioridad: list) -> dict:
     """Elige el titular a mostrar: el del medio más neutro según el orden de prioridad."""
 
-    def rango(it):
+    def rango(it: dict) -> int:
         m = _norm(it["medio"])
         for i, p in enumerate(prioridad):
             if _norm(p) in m:
@@ -412,7 +421,7 @@ def filtrar_paraules(items: list, requereix: list | None, excloses: list | None)
     - excloses: si en conté alguna, es descarta (p. ex. tot el que és infantil a Cultura).
     """
 
-    def conte(text, paraules):
+    def conte(text: str, paraules: list[str]) -> bool:
         return any(re.search(rf"\b{re.escape(_norm(p))}", text) for p in paraules)
 
     sortida = []
@@ -479,7 +488,7 @@ def traduir_noticies(salida: dict, cfg: dict) -> None:
     }
     errors = []
 
-    def una(txt):
+    def una(txt: str) -> None:
         try:
             traduir(txt, desti, conservar)
         except Exception as ex:  # noqa: BLE001
@@ -519,7 +528,8 @@ def obtener_noticias(cfg: dict) -> tuple[dict, list]:
     prioridad = cfg.get("prioridad_medios", [])
 
     tareas = [(cat, f) for cat, lista in fuentes.items() for f in lista if f.get("activa", True)]
-    resultados, errores = {}, []
+    resultados: dict[str, list[dict]] = {}
+    errores: list[dict] = []
     with ThreadPoolExecutor(max_workers=10) as ex:
         futuros = {ex.submit(_leer_feed, f, cat, horas_max): (cat, f) for cat, f in tareas}
         for fut, (cat, f) in futuros.items():
@@ -585,6 +595,8 @@ def filtrar_con_ia(cfg: dict, noticias: dict) -> dict:
     r.raise_for_status()
     texto = "".join(b.get("text", "") for b in r.json().get("content", []))
     m = re.search(r"\{.*\}", texto, re.S)
+    if not m:
+        raise ValueError("la IA no ha devuelto JSON")
     datos = json.loads(m.group(0))
 
     nuevo = {}
@@ -633,7 +645,7 @@ def obtener_futbol(cfg: dict) -> dict:
     r = _get(f"https://api.football-data.org/v4/teams/{equipo_id}/matches", headers={"X-Auth-Token": clave})
     partidos = r.json().get("matches", [])
 
-    def fmt(p):
+    def fmt(p: dict) -> dict:
         dt = _hora_local(p["utcDate"])
         if p["status"] == "SCHEDULED":  # hora provisional (00:00 UTC): el día bueno es el UTC
             dt = datetime.fromisoformat(p["utcDate"].replace("Z", "+00:00"))
@@ -683,7 +695,7 @@ def resumir_lugar(lugar: str) -> tuple[str, str]:
     return lugar, ""
 
 
-def _etiqueta_dia(d, hoy) -> str:
+def _etiqueta_dia(d: date, hoy: date) -> str:
     if d == hoy:
         return "Avui"
     if d == hoy + timedelta(days=1):
@@ -806,7 +818,7 @@ NIVELES_POR_DEFECTO = [
 ]
 
 
-def obtener_drawdown(cfg: dict, cache_path) -> dict:
+def obtener_drawdown(cfg: dict, cache_path: Path) -> dict:
     dd = cfg.get("drawdown") or {}
     ticker = (dd.get("ticker") or "").strip()
     if not ticker:

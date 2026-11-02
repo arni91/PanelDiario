@@ -5,12 +5,15 @@ Los feeds RSS se sustituyen por XML inventado (mock): no se usa internet.
 
 import time
 import types
+from collections.abc import Sequence
 from email.utils import formatdate
+
+import pytest
 
 from panel_diario import datos
 
 
-def rss(titulares):
+def rss(titulares: Sequence[tuple[str, float]]) -> bytes:
     """Feed RSS mínimo. titulares = [(título, horas desde que se publicó)]."""
     ahora = time.time()
     items = "".join(
@@ -20,11 +23,11 @@ def rss(titulares):
     return f"<rss><channel>{items}</channel></rss>".encode()
 
 
-def preparar(monkeypatch, feeds):
+def preparar(monkeypatch: pytest.MonkeyPatch, feeds: dict[str, bytes]) -> None:
     monkeypatch.setattr(datos, "_get", lambda url, **k: types.SimpleNamespace(content=feeds[url]))
 
 
-def test_cultura_mira_un_mes_y_las_noticias_36_horas(monkeypatch):
+def test_cultura_mira_un_mes_y_las_noticias_36_horas(monkeypatch: pytest.MonkeyPatch) -> None:
     titulares = [("Concierto techno en la sala", 10 * 24), ("Exposición nueva en el museo", 2)]
     preparar(monkeypatch, {"cult": rss(titulares), "mundo": rss(titulares)})
     cfg = {
@@ -41,7 +44,7 @@ def test_cultura_mira_un_mes_y_las_noticias_36_horas(monkeypatch):
     assert all(n["tema"] == "Espais" for n in noticias["cultura"])
 
 
-def test_limite_de_titulares_por_pestana(monkeypatch):
+def test_limite_de_titulares_por_pestana(monkeypatch: pytest.MonkeyPatch) -> None:
     # Titulares sin palabras en común: si comparten 2 o más, el panel los agrupa como la misma noticia
     titulares = [
         (t, 1)
@@ -71,7 +74,7 @@ def test_limite_de_titulares_por_pestana(monkeypatch):
     assert len(noticias["cultura"]) == 10
 
 
-def test_filtre_exclou_infantil_i_exigeix_paraules():
+def test_filtre_exclou_infantil_i_exigeix_paraules() -> None:
     items = [
         {"titulo": "Taller de titelles per a nens al barri", "resumen": ""},
         {"titulo": "Festa major al parc", "resumen": ""},
@@ -88,13 +91,13 @@ def test_filtre_exclou_infantil_i_exigeix_paraules():
     assert [i["titulo"] for i in datos.filtrar_paraules(items, ["girona"], None)] == ["Concierto en Girona"]
 
 
-def test_filtre_respecta_inici_de_paraula():
+def test_filtre_respecta_inici_de_paraula() -> None:
     # "nens" no ha d'eliminar "Llenç" ni "antenes"; sí "nenes"? no: només paraules que comencen per "nens"
     items = [{"titulo": "Exposició de llençols i antenes", "resumen": ""}]
     assert datos.filtrar_paraules(items, None, ["nens"]) == items
 
 
-def test_maxim_de_noticies_per_font():
+def test_maxim_de_noticies_per_font() -> None:
     noticies = [{"titulo": f"t{i}", "tema": "", "medio": "Revista A"} for i in range(6)] + [
         {"titulo": "x", "tema": "Museus i expos", "medio": "Diari B"}
     ]
@@ -103,7 +106,7 @@ def test_maxim_de_noticies_per_font():
     assert datos.limitar_per_font(noticies, None) == noticies
 
 
-def test_neteja_resums_de_wordpress():
+def test_neteja_resums_de_wordpress() -> None:
     assert datos.netejar_resum("Una expo al museu sobre la nit. [&#8230;]") == "Una expo al museu sobre la nit."
     assert datos.netejar_resum("Festa al barri [...]") == "Festa al barri"
     text = "Concert a la sala. L'entrada Concert va aparèixer primer a Revista A."

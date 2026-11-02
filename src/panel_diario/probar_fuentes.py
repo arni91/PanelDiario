@@ -12,12 +12,12 @@ from panel_diario import datos
 from panel_diario.panel import cargar_config
 
 
-def linea(ok, nombre, detalle):
+def linea(ok: bool, nombre: str, detalle: str) -> None:
     marca = "OK   " if ok else "FALLA"
     print(f"  [{marca}] {nombre:<38} {detalle}")
 
 
-def main():
+def main() -> int:
     cfg = cargar_config()
     fallos = 0
 

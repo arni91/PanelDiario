@@ -4,6 +4,7 @@ football-data.org se sustituye por una respuesta inventada (mock): no se usa int
 """
 
 import types
+from typing import Any
 
 import pytest
 
@@ -12,7 +13,7 @@ from panel_diario import datos
 CFG = {"futbol": {"nombre": "Equip d'exemple", "football_data_api_key": "clave-falsa", "team_id": 1}}
 
 
-def partido(fecha, estado, local_id, visitante_id, goles=None):
+def partido(fecha: str, estado: str, local_id: int, visitante_id: int, goles: tuple[int, int] | None = None) -> dict:
     return {
         "utcDate": fecha,
         "status": estado,
@@ -23,10 +24,10 @@ def partido(fecha, estado, local_id, visitante_id, goles=None):
     }
 
 
-def con_respuesta(monkeypatch, partidos):
-    pedidos = []
+def con_respuesta(monkeypatch: pytest.MonkeyPatch, partidos: list[dict]) -> list[tuple[str, Any]]:
+    pedidos: list[tuple[str, Any]] = []
 
-    def get_falso(url, **kw):
+    def get_falso(url: str, **kw: Any) -> types.SimpleNamespace:
         pedidos.append((url, kw.get("headers")))
         return types.SimpleNamespace(json=lambda: {"matches": partidos})
 
@@ -34,7 +35,7 @@ def con_respuesta(monkeypatch, partidos):
     return pedidos
 
 
-def test_proximos_y_ultimo_desde_el_punto_de_vista_del_equipo(monkeypatch):
+def test_proximos_y_ultimo_desde_el_punto_de_vista_del_equipo(monkeypatch: pytest.MonkeyPatch) -> None:
     pedidos = con_respuesta(
         monkeypatch,
         [
@@ -52,13 +53,13 @@ def test_proximos_y_ultimo_desde_el_punto_de_vista_del_equipo(monkeypatch):
     assert r["ultimo"]["competicion"] == "Lliga"
 
 
-def test_sin_clave_no_llama_a_la_api(monkeypatch):
+def test_sin_clave_no_llama_a_la_api(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(datos, "_get", lambda *a, **k: pytest.fail("no debe llamar a la API"))
     cfg = {"futbol": {"nombre": "Equip", "football_data_api_key": " ", "team_id": 1}}
     assert datos.obtener_futbol(cfg) == {"sin_clave": True, "nombre": "Equip"}
 
 
-def test_sin_equipo_no_llama_a_la_api(monkeypatch):
+def test_sin_equipo_no_llama_a_la_api(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(datos, "_get", lambda *a, **k: pytest.fail("no debe llamar a la API"))
     cfg = {"futbol": {"football_data_api_key": "clave-falsa"}}
     assert datos.obtener_futbol(cfg) == {"sin_equipo": True, "nombre": "Futbol"}
