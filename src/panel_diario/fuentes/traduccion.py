@@ -22,6 +22,7 @@ _TRADUCCIONS: dict[tuple[str, str], str] = {}  # (idioma destino, texto) -> text
 
 
 def traduir(text: str, desti: str = "ca", conservar: tuple[str, ...] = ()) -> str:
+    """Traduce `text` a `desti`, salvo si el traductor detecta un idioma de `conservar`. Usa la memoria."""
     if not text or not text.strip():
         return text
     clave = (desti, text)

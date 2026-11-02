@@ -75,6 +75,7 @@ NIVELES_POR_DEFECTO = [
 
 
 def obtener_drawdown(cfg: dict, cache_path: Path) -> dict:
+    """Caída actual desde el máximo y niveles alcanzados. Usa la caché para no bajar el histórico cada vez."""
     dd = cfg.get("drawdown") or {}
     ticker = (dd.get("ticker") or "").strip()
     if not ticker:

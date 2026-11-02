@@ -24,6 +24,7 @@ class Estado:
     """Guarda los últimos datos buenos de cada sección y los persiste en disco."""
 
     def __init__(self) -> None:
+        """Arranca con los datos de la caché, si la hay: así el panel muestra algo antes de actualizar."""
         self.lock = threading.Lock()
         self.datos: dict[str, Any] = {
             "secciones": {},
@@ -46,6 +47,7 @@ class Estado:
             CACHE.write_text(json.dumps(self.datos, ensure_ascii=False), encoding="utf-8")
 
     def instantanea(self) -> dict:
+        """Copia de los datos para enviar a JavaScript (sin compartir el dict entre hilos)."""
         with self.lock:
             d = json.loads(json.dumps(self.datos))
         d["actualizando"] = self.actualizando
@@ -54,6 +56,7 @@ class Estado:
 
 
 def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
+    """Pide todas las fuentes en paralelo y guarda lo que llega; lo que falla conserva su dato anterior."""
     if estado.actualizando:
         return
     estado.actualizando = True

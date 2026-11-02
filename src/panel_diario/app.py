@@ -64,6 +64,7 @@ log = logging.getLogger("panel")
 
 
 def configurar_log(consola: bool) -> None:
+    """Log en %APPDATA%\\PanelDiario\\panel.log (rota a los 500 KB) y, si se pide, también en consola."""
     log.setLevel(logging.INFO)
     fh = RotatingFileHandler(DATOS_DIR / "panel.log", maxBytes=500_000, backupCount=1, encoding="utf-8")
     fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
@@ -78,7 +79,10 @@ def configurar_log(consola: bool) -> None:
 
 
 class Api:
+    """Puente con el JavaScript del panel desplegado (ui/index.html): datos, abrir enlaces, mostrar y ocultar."""
+
     def __init__(self, estado: Estado, cfg: dict, icono_ref: dict) -> None:
+        """La ventana y la píldora se asignan después, en main(), cuando ya existen."""
         self._estado = estado
         self._cfg = cfg
         self._icono_ref = icono_ref
@@ -186,6 +190,7 @@ class Api:
             log.warning("No se pudo colocar el panel: %s", ex)
 
     def mostrar(self) -> None:
+        """Coloca el panel junto a la píldora, lo enseña y repinta con los datos actuales."""
         if not self._ventana:
             log.warning("mostrar(): el panel aún no existe")
             return
@@ -217,7 +222,10 @@ class Api:
 
 
 class ApiFicha:
+    """Puente con el JavaScript de la píldora (ui/ficha.html): datos mínimos, clic y arrastre."""
+
     def __init__(self, estado: Estado, panel: Api, pos: list[int]) -> None:
+        """`pos` es la posición inicial en pantalla (la guardada o la de por defecto)."""
         self._estado = estado
         self._panel = panel
         self._ventana: webview.Window | None = None
@@ -226,6 +234,7 @@ class ApiFicha:
         self._guardar_tm: threading.Timer | None = None
 
     def mini(self) -> dict:
+        """Lo poco que pinta la píldora: temperatura, icono, máx/mín, lluvia y si hay aviso."""
         t = self._estado.datos["secciones"].get("tiempo") or {}
         hoy = (t.get("dias") or [{}])[0]
         lista_avisos = self._estado.datos["secciones"].get("avisos") or []
@@ -277,6 +286,7 @@ class ApiFicha:
 
 
 def posicion_inicial_ficha() -> list[int]:
+    """Posición guardada de la píldora si sigue dentro de algún monitor; si no, arriba a la derecha."""
     sw, sh = tamano_pantalla()
     vx, vy, vw, vh = escritorio_virtual()
     try:
@@ -328,6 +338,7 @@ def registrar_atajo(cfg: dict, api: Api) -> None:
 
 
 def main() -> None:
+    """Arranca el panel: config, estado, las tres ventanas, la bandeja, el atajo y el bucle de actualización."""
     demo = "--demo" in sys.argv
     configurar_log("--consola" in sys.argv or demo)
     log.info("Arrancando Panel Diario %s (pywebview %s)", VERSION, getattr(webview, "__version__", "?"))
@@ -448,6 +459,7 @@ def main() -> None:
         vf.events.closing += lambda: False  # la ficha no se cierra con Alt+F4
 
         def al_mostrar_ficha() -> None:
+            """Al aparecer la píldora: fuera de la barra de tareas, esquinas redondas y anclada al escritorio."""
             ocultar_de_barra_tareas(TITULO_FICHA, reaparecer=True)
             # Buscamos la ventana por su título AHORA: una vez anclada al escritorio deja de ser
             # una ventana "de primer nivel" y FindWindowW ya no la encuentra (fallo de la v1.7).

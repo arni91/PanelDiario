@@ -31,6 +31,7 @@ class ConfigError(Exception):
 
 
 def cargar_config(ruta: Path = CONFIG) -> dict:
+    """Lee y valida config.json (o la plantilla). Lanza ConfigError con el motivo en catalán."""
     if not ruta.exists():
         raise ConfigError("No trobo config.json. Executa instalar.bat: el crea a partir de config.example.json.")
     try:

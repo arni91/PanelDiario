@@ -43,6 +43,7 @@ NOCHE = {0: "🌙", 1: "🌙"}
 
 
 def _wmo(code: int | None, es_dia: bool = True) -> tuple[str, str]:
+    """Icono y texto en catalán de un código de tiempo WMO (de noche, luna en vez de sol)."""
     codigo = int(code or 0)
     icono, texto = WMO.get(codigo, ("🌡️", "—"))
     if not es_dia and codigo in NOCHE:
@@ -51,6 +52,7 @@ def _wmo(code: int | None, es_dia: bool = True) -> tuple[str, str]:
 
 
 def obtener_tiempo(cfg: dict) -> dict:
+    """Tiempo actual, las próximas 12 horas y 6 días de la ubicación de config.json."""
     u = cfg["ubicacion"]
     params = {
         "latitude": u["lat"],

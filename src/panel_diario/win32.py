@@ -59,6 +59,8 @@ def area_del_monitor(x: int, y: int) -> tuple[int, int, int, int]:
             from ctypes import wintypes
 
             class MONITORINFO(ctypes.Structure):
+                """Estructura de Win32 que devuelve GetMonitorInfoW (rcWork = área sin barra de tareas)."""
+
                 _fields_ = [
                     ("cbSize", wintypes.DWORD),
                     ("rcMonitor", wintypes.RECT),

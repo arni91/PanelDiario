@@ -30,6 +30,7 @@ def _etiqueta_dia(d: date, hoy: date) -> str:
 
 
 def obtener_agenda(cfg: dict) -> dict:
+    """Eventos de hoy a N días de todos los calendarios iCal, ordenados por hora."""
     ag = cfg.get("agenda") or {}
     urls = [u.strip() for u in ag.get("ical_urls", []) if u and u.strip()]
     if not urls:

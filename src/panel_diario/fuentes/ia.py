@@ -12,6 +12,7 @@ import requests
 
 
 def filtrar_con_ia(cfg: dict, noticias: dict) -> dict:
+    """Pide a Claude las noticias más relevantes de cada pestaña y un resumen; sin clave, no hace nada."""
     ia = cfg.get("claude") or {}
     clave = (ia.get("api_key") or "").strip()
     if not clave:

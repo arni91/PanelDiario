@@ -27,6 +27,7 @@ def _fecha_aviso(valor: object) -> datetime | None:
 
 
 def _fmt_aviso(dt: datetime) -> str:
+    """Fecha corta para el aviso: «avui 21:00», «demà 08:00» o el día de la semana."""
     local = dt.astimezone(comun.TZ)
     hoy = comun.ahora_local().date()
     if local.date() == hoy:
@@ -39,6 +40,7 @@ def _fmt_aviso(dt: datetime) -> str:
 
 
 def obtener_avisos(cfg: dict) -> list:
+    """Avisos vigentes (o que empiezan en menos de 36 h) de las zonas configuradas."""
     a = cfg.get("avisos_meteo") or {}
     if not a.get("activo", True):
         return []

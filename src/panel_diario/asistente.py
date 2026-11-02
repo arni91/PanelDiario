@@ -374,6 +374,7 @@ class ApiAsistente:
 
     def guardar(self, respuestas: dict) -> dict:
         def tarea() -> bool:
+            """Construye la config nueva, la entrega a app.py (que la guarda y aplica) y la recuerda."""
             nueva = construir_config(self._cfg, respuestas)
             self._al_guardar(nueva)
             self._cfg = nueva

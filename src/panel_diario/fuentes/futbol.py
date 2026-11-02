@@ -22,6 +22,7 @@ COMPETICIONS = {
 
 
 def obtener_futbol(cfg: dict) -> dict:
+    """Próximos 3 partidos y último resultado, desde el punto de vista del equipo configurado."""
     f = cfg.get("futbol") or {}
     clave = (f.get("football_data_api_key") or "").strip()
     nombre = f.get("nombre") or "Futbol"
@@ -34,6 +35,7 @@ def obtener_futbol(cfg: dict) -> dict:
     partidos = r.json().get("matches", [])
 
     def fmt(p: dict) -> dict:
+        """Un partido en el formato que pinta la interfaz (rival, fecha, hora, goles)."""
         dt = _hora_local(p["utcDate"])
         if p["status"] == "SCHEDULED":  # hora provisional (00:00 UTC): el día bueno es el UTC
             dt = datetime.fromisoformat(p["utcDate"].replace("Z", "+00:00"))

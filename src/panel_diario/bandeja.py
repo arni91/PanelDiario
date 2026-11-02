@@ -23,6 +23,7 @@ def _fuente(tam: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
 
 
 def icono_temperatura(temp: int | None) -> Image.Image:
+    """Icono de 64x64 con la temperatura (o «--» si aún no hay datos)."""
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     d.rounded_rectangle((0, 0, 63, 63), radius=14, fill=(28, 74, 110, 255))
@@ -36,6 +37,7 @@ def icono_temperatura(temp: int | None) -> Image.Image:
 
 
 def refrescar_icono(estado: Estado, icono_ref: dict) -> None:
+    """Pone en el icono y en su texto emergente la temperatura y el tiempo actuales."""
     icono = icono_ref.get("icono")
     if not icono:
         return
@@ -61,6 +63,7 @@ def iniciar_bandeja(
     import pystray
 
     def hilo() -> None:
+        """Crea el menú y el icono y se queda atendiendo sus clics (bloquea este hilo)."""
         menu = pystray.Menu(
             pystray.MenuItem("Obre el panell", lambda: abrir_panel(), default=True),
             pystray.MenuItem("Actualitza ara", lambda: actualizar_ahora()),

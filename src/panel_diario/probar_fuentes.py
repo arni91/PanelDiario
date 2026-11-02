@@ -18,6 +18,7 @@ def linea(ok: bool, nombre: str, detalle: str) -> None:
 
 
 def main() -> int:
+    """Prueba cada RSS y cada API con la config real y resume cuántas fallan (código 1 si alguna)."""
     cfg = cargar_config()
     fallos = 0
 
