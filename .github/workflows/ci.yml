@@ -1,0 +1,27 @@
+# Lint, tipos, tests y revisión de privacidad en cada push y pull request.
+# En Windows porque panel.py usa la API de Windows (ctypes.WinDLL, user32).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  comprobar:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Instalar dependencias (versiones de uv.lock)
+        run: uv sync --locked
+      - name: Lint (ruff)
+        run: uv run ruff check
+      - name: Formato (ruff)
+        run: uv run ruff format --check
+      - name: Tipos (mypy)
+        run: uv run mypy
+      - name: Tests (pytest)
+        run: uv run pytest
+      # Sin .privado/ (no está en git) solo busca formas de claves, no los términos personales
+      - name: Revisión de privacidad
+        run: uv run python scripts/revisar_privacidad.py

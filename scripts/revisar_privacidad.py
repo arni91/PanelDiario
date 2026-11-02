@@ -72,6 +72,8 @@ def revisar_texto(
 
 
 def main(argv: list[str]) -> int:
+    # La consola de Windows no usa UTF-8 por defecto: sin esto, los acentos salen rotos o fallan
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
     terminos = leer_terminos(TERMINOS)
     if not terminos:
         print(f"Aviso: no hay términos en {TERMINOS.relative_to(RAIZ)}; solo se buscan formas de claves.")
