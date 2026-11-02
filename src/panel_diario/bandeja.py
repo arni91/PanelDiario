@@ -52,6 +52,7 @@ def iniciar_bandeja(
     icono_ref: dict,
     abrir_panel: Callable[[], Any],
     actualizar_ahora: Callable[[], Any],
+    abrir_asistente: Callable[[], Any],
 ) -> None:
     """Crea el icono y su menú. Recibe las acciones como funciones para no depender de app.py.
 
@@ -63,6 +64,7 @@ def iniciar_bandeja(
         menu = pystray.Menu(
             pystray.MenuItem("Obre el panell", lambda: abrir_panel(), default=True),
             pystray.MenuItem("Actualitza ara", lambda: actualizar_ahora()),
+            pystray.MenuItem("Configura…", lambda: abrir_asistente()),
             pystray.MenuItem("Obre config.json", lambda: os.startfile(CONFIG)),
             pystray.MenuItem("Surt", lambda icono: salir(icono)),
         )

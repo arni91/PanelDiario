@@ -17,6 +17,8 @@ PAQUETE = Path(__file__).resolve().parent  # carpeta del paquete: ui/ y demo.jso
 # config.json vive en la raíz del proyecto (src/panel_diario -> src -> raíz), donde lo edita cada uno.
 # Funciona porque uv instala el proyecto en modo editable: el código se ejecuta desde esta carpeta.
 CONFIG = PAQUETE.parents[1] / "config.json"
+# Plantilla pública: la base cuando aún no hay config.json (primera vez)
+EJEMPLO = PAQUETE.parents[1] / "config.example.json"
 # Datos que genera el panel al funcionar (caché, posición de la píldora, log)
 DATOS_DIR = Path(os.environ.get("APPDATA", Path.home())) / "PanelDiario"
 DATOS_DIR.mkdir(parents=True, exist_ok=True)
@@ -58,3 +60,10 @@ def aplicar_zona_horaria(cfg: dict) -> None:
         raise ConfigError(
             f"config.json: la zona horària «{nombre}» no existeix (ubicacion → zona_horaria). Exemple: Europe/Madrid."
         ) from ex
+
+
+def guardar_config(cfg: dict, ruta: Path = CONFIG) -> None:
+    """Escribe config.json (lo usa el asistente). Antes copia el anterior a config.json.bak."""
+    if ruta.exists():
+        ruta.with_name(ruta.name + ".bak").write_text(ruta.read_text(encoding="utf-8"), encoding="utf-8")
+    ruta.write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

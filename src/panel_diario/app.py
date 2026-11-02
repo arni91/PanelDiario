@@ -1,14 +1,15 @@
 """
 Panel Diario — arranque y ventanas.
 
-Crea las dos ventanas de pywebview (la píldora del escritorio y el panel desplegado), el puente
-con su JavaScript (clases Api y ApiFicha), el icono de la bandeja y el bucle que actualiza los
-datos cada N minutos.
+Crea las tres ventanas de pywebview (la píldora del escritorio, el panel desplegado y el asistente
+de configuración), el puente con su JavaScript (Api, ApiFicha; ApiAsistente está en asistente.py),
+el icono de la bandeja y el bucle que actualiza los datos cada N minutos.
 
 Uso (desde la raíz del proyecto, con el entorno de uv):
     uv run pythonw -m panel_diario          (normal, sin consola)
     uv run python -m panel_diario --demo    (datos de prueba, sin internet)
     uv run python -m panel_diario --consola (muestra el log en consola)
+    uv run python -m panel_diario --asistente (abre el asistente de configuración al arrancar)
 """
 
 from __future__ import annotations
@@ -24,8 +25,19 @@ from logging.handlers import RotatingFileHandler
 import webview
 
 from panel_diario import VERSION
+from panel_diario.asistente import ApiAsistente
 from panel_diario.bandeja import iniciar_bandeja, refrescar_icono
-from panel_diario.config import DATOS_DIR, PAQUETE, POSICION, ConfigError, aplicar_zona_horaria, cargar_config
+from panel_diario.config import (
+    CONFIG,
+    DATOS_DIR,
+    EJEMPLO,
+    PAQUETE,
+    POSICION,
+    ConfigError,
+    aplicar_zona_horaria,
+    cargar_config,
+    guardar_config,
+)
 from panel_diario.estado import Estado, actualizar
 from panel_diario.win32 import (
     anclar_al_escritorio,
@@ -46,6 +58,7 @@ ANCHO_FICHA = 176  # ficha en forma de píldora (icono + temperatura + máx/mín
 ALTO_FICHA = 34
 TITULO_PANEL = "Panel Diario"
 TITULO_FICHA = "Panel Diario - ficha"
+TITULO_ASISTENTE = "Panel Diario · Configuració"
 
 log = logging.getLogger("panel")
 
@@ -321,8 +334,10 @@ def main() -> None:
     if not demo and ya_en_marcha():
         log.info("El panel ya está en marcha; se cierra esta segunda copia.")
         return
+    # La primera vez (sin config.json) se arranca con la plantilla y se abre el asistente
+    primera_vez = not CONFIG.exists()
     try:
-        cfg = cargar_config()
+        cfg = cargar_config(EJEMPLO if primera_vez else CONFIG)
         aplicar_zona_horaria(cfg)
     except ConfigError as ex:
         log.error("%s", ex)
@@ -369,6 +384,40 @@ def main() -> None:
 
     ventana.events.closing += al_cerrar
 
+    # Asistente de configuración (oculto salvo la primera vez o con --asistente)
+    def al_guardar(nueva: dict) -> None:
+        """El asistente ha terminado: se guarda config.json y se aplica sin reiniciar."""
+        if demo:
+            log.info("Modo demo: la configuración del asistente no se guarda")
+            return
+        aplicar_zona_horaria(nueva)  # antes de guardar: si la zona no existe, no se escribe nada
+        guardar_config(nueva)
+        cfg.clear()
+        cfg.update(nueva)  # es el mismo dict que usan el panel y el bucle: ven la config nueva
+        api.refrescar()
+
+    # En demo, el asistente parte de la plantilla pública: así sus capturas nunca enseñan claves personales
+    api_asistente = ApiAsistente(cargar_config(EJEMPLO) if demo else cfg, al_guardar)
+    ventana_asistente = webview.create_window(
+        TITULO_ASISTENTE,
+        url=str(PAQUETE / "ui" / "asistente.html"),
+        js_api=api_asistente,
+        width=640,
+        height=760,
+        min_size=(520, 560),
+        hidden=not (primera_vez or "--asistente" in sys.argv),
+        background_color="#0f1419",
+    )
+    if ventana_asistente is None:
+        raise RuntimeError("pywebview no ha podido crear la ventana del asistente")
+    api_asistente._ventana = ventana_asistente
+
+    def al_cerrar_asistente() -> bool:
+        ventana_asistente.hide()
+        return False  # se oculta para poder reabrirlo desde la bandeja
+
+    ventana_asistente.events.closing += al_cerrar_asistente
+
     # Ficha del escritorio
     ficha: ApiFicha | None = None
     if cfg_ficha.get("activa", True):
@@ -410,7 +459,13 @@ def main() -> None:
         vf.events.shown += al_mostrar_ficha
 
     def arranque() -> None:
-        iniciar_bandeja(estado, icono_ref, abrir_panel=api.alternar, actualizar_ahora=api.refrescar)
+        iniciar_bandeja(
+            estado,
+            icono_ref,
+            abrir_panel=api.alternar,
+            actualizar_ahora=api.refrescar,
+            abrir_asistente=ventana_asistente.show,
+        )
         registrar_atajo(cfg, api)
         if demo:
             api.mostrar()

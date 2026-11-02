@@ -1,5 +1,6 @@
 # Configuración y datos personales (ver CLAUDE.md, sección Privacidad)
 config.json
+config.json.bak
 .privado/
 .env
 

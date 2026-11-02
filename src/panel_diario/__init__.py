@@ -4,4 +4,4 @@ El arranque está en panel.py; los datos de cada fuente, en datos.py.
 """
 
 # Versión visible abajo del panel: súbela en cada cambio visible (pyproject.toml la lee de aquí)
-VERSION = "2.9"
+VERSION = "3.0"

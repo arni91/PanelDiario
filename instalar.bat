@@ -1,6 +1,6 @@
 @echo off
-rem Instala o actualiza el Panel Diario: entorno con uv, config.json la primera vez,
-rem accesos directos (Inicio y Escritorio) y arranque. Si ya estaba abierto, lo reinicia.
+rem Instala o actualiza el Panel Diario: entorno con uv, accesos directos (Inicio y Escritorio)
+rem y arranque. Si ya estaba abierto, lo reinicia. La primera vez se abre el asistente de configuracion.
 setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
@@ -25,17 +25,8 @@ rem --no-dev: sin las herramientas de desarrollo. --inexact: si ya estan (quien 
 uv sync --locked --no-dev --inexact --quiet
 if errorlevel 1 goto :error
 
-rem --- Primera vez: crear config.json a partir de la plantilla y abrirlo para rellenarlo ---
-rem config.json es personal y no va a git; config.example.json es la plantilla publica.
-if exist "config.json" goto :config_ok
-copy /y "config.example.json" "config.json" >nul
-if errorlevel 1 goto :error
-echo.
-echo Se ha creado config.json. Se abre en el Bloc de notas: pon tu ciudad y coordenadas,
-echo y las claves que quieras usar (las instrucciones estan en README.md).
-echo Lo que dejes vacio simplemente no se muestra. Guarda y cierra el Bloc de notas para seguir.
-notepad "config.json"
-:config_ok
+rem --- La primera vez no hay config.json: el panel abre solo el asistente de configuracion,
+rem que pregunta ciudad, agenda, equipo, ETF y noticias y escribe config.json (no va a git).
 
 rem --- Cerrar una version anterior del panel si esta abierta (panel.py = versiones antiguas) ---
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and ($_.CommandLine -like '*panel_diario*' -or $_.CommandLine -like '*panel.py*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }" >nul 2>&1
@@ -49,7 +40,7 @@ echo.
 echo Listo. Arrancando el panel:
 echo  - Pildora con el tiempo arriba a la derecha del escritorio: clic para desplegar.
 echo  - Arrastrala para moverla donde quieras.
-echo  - Tambien: icono junto al reloj, o Ctrl+Alt+N.
+echo  - Tambien: icono junto al reloj, o Ctrl+Alt+N. Para cambiar la configuracion: icono - Configura...
 start "" "%PD%.venv\Scripts\pythonw.exe" -m panel_diario
 echo.
 pause

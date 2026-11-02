@@ -18,7 +18,7 @@
    "viento": 12,
    "humedad": 70,
    "icono": "⛅",
-   "texto": "Parcialmente nublado",
+   "texto": "Parcialment ennuvolat",
    "lluvia_12h": 60,
    "salida_sol": "08:12",
    "puesta_sol": "18:41",
@@ -98,49 +98,49 @@
    ],
    "dias": [
     {
-     "dia": "Hoy",
+     "dia": "Avui",
      "icono": "🌦️",
-     "texto": "Ejemplo",
+     "texto": "Pluja feble",
      "max": 21,
      "min": 13,
      "lluvia": 60
     },
     {
-     "dia": "sáb",
+     "dia": "ds",
      "icono": "⛅",
-     "texto": "Ejemplo",
+     "texto": "Parcialment ennuvolat",
      "max": 20,
      "min": 12,
      "lluvia": 10
     },
     {
-     "dia": "dom",
+     "dia": "dg",
      "icono": "☀️",
-     "texto": "Ejemplo",
+     "texto": "Serè",
      "max": 22,
      "min": 12,
      "lluvia": 0
     },
     {
-     "dia": "lun",
+     "dia": "dl",
      "icono": "☀️",
-     "texto": "Ejemplo",
+     "texto": "Serè",
      "max": 23,
      "min": 13,
      "lluvia": 0
     },
     {
-     "dia": "mar",
+     "dia": "dt",
      "icono": "☁️",
-     "texto": "Ejemplo",
+     "texto": "Ennuvolat",
      "max": 19,
      "min": 12,
      "lluvia": 20
     },
     {
-     "dia": "mié",
+     "dia": "dc",
      "icono": "🌧️",
-     "texto": "Ejemplo",
+     "texto": "Pluja",
      "max": 17,
      "min": 11,
      "lluvia": 80
