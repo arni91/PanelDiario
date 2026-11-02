@@ -1,0 +1,402 @@
+{
+ "actualizado": "10:32",
+ "ia_activa": false,
+ "leidos": [],
+ "errores": {},
+ "fuentes_caidas": [
+  {
+   "fuente": "Ejemplo",
+   "categoria": "cultura",
+   "error": "demo"
+  }
+ ],
+ "secciones": {
+  "tiempo": {
+   "lugar": "Girona",
+   "temp": 18,
+   "sensacion": 17,
+   "viento": 12,
+   "humedad": 70,
+   "icono": "⛅",
+   "texto": "Parcialmente nublado",
+   "lluvia_12h": 60,
+   "salida_sol": "08:12",
+   "puesta_sol": "18:41",
+   "horas": [
+    {
+     "hora": "10h",
+     "temp": 18,
+     "lluvia": 0,
+     "icono": "⛅"
+    },
+    {
+     "hora": "11h",
+     "temp": 19,
+     "lluvia": 0,
+     "icono": "⛅"
+    },
+    {
+     "hora": "12h",
+     "temp": 20,
+     "lluvia": 10,
+     "icono": "☁️"
+    },
+    {
+     "hora": "13h",
+     "temp": 20,
+     "lluvia": 20,
+     "icono": "🌦️"
+    },
+    {
+     "hora": "14h",
+     "temp": 21,
+     "lluvia": 40,
+     "icono": "🌧️"
+    },
+    {
+     "hora": "15h",
+     "temp": 20,
+     "lluvia": 60,
+     "icono": "🌧️"
+    },
+    {
+     "hora": "16h",
+     "temp": 19,
+     "lluvia": 30,
+     "icono": "🌦️"
+    },
+    {
+     "hora": "17h",
+     "temp": 18,
+     "lluvia": 10,
+     "icono": "☁️"
+    },
+    {
+     "hora": "18h",
+     "temp": 17,
+     "lluvia": 0,
+     "icono": "🌙"
+    },
+    {
+     "hora": "19h",
+     "temp": 16,
+     "lluvia": 0,
+     "icono": "🌙"
+    },
+    {
+     "hora": "20h",
+     "temp": 16,
+     "lluvia": 0,
+     "icono": "🌙"
+    },
+    {
+     "hora": "21h",
+     "temp": 15,
+     "lluvia": 0,
+     "icono": "🌙"
+    }
+   ],
+   "dias": [
+    {
+     "dia": "Hoy",
+     "icono": "🌦️",
+     "texto": "Ejemplo",
+     "max": 21,
+     "min": 13,
+     "lluvia": 60
+    },
+    {
+     "dia": "sáb",
+     "icono": "⛅",
+     "texto": "Ejemplo",
+     "max": 20,
+     "min": 12,
+     "lluvia": 10
+    },
+    {
+     "dia": "dom",
+     "icono": "☀️",
+     "texto": "Ejemplo",
+     "max": 22,
+     "min": 12,
+     "lluvia": 0
+    },
+    {
+     "dia": "lun",
+     "icono": "☀️",
+     "texto": "Ejemplo",
+     "max": 23,
+     "min": 13,
+     "lluvia": 0
+    },
+    {
+     "dia": "mar",
+     "icono": "☁️",
+     "texto": "Ejemplo",
+     "max": 19,
+     "min": 12,
+     "lluvia": 20
+    },
+    {
+     "dia": "mié",
+     "icono": "🌧️",
+     "texto": "Ejemplo",
+     "max": 17,
+     "min": 11,
+     "lluvia": 80
+    }
+   ]
+  },
+  "avisos": [
+   {
+    "nivel": "amarillo",
+    "orden": 1,
+    "evento": "Pluges (exemple)",
+    "zona": "Litoral de Girona",
+    "cuando": "fins avui 21:00"
+   }
+  ],
+  "noticias": {
+   "mundo": [
+    {
+     "titulo": "[Demo] Cimera internacional sobre el clima amb acords de mínims",
+     "enlace": "https://example.com/93594222",
+     "medio": "Mitjà A",
+     "ts": 1792732288.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà B",
+      "Mitjà C"
+     ],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Eleccions en un país europeu d'exemple",
+     "enlace": "https://example.com/68193921",
+     "medio": "Mitjà B",
+     "ts": 1792721488.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [],
+     "enlaces": []
+    }
+   ],
+   "catalunya": [
+    {
+     "titulo": "[Demo] El Parlament aprova una llei d'exemple",
+     "enlace": "https://example.com/19826129",
+     "medio": "Mitjà A",
+     "ts": 1792735888.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà C"
+     ],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Nova línia de tren regional en estudi",
+     "enlace": "https://example.com/45020326",
+     "medio": "Mitjà C",
+     "ts": 1792714288.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [],
+     "enlaces": []
+    }
+   ],
+   "tecnologia": [
+    {
+     "titulo": "[Demo] Un robot d'exemple aprèn tasques domèstiques",
+     "enlace": "https://example.com/27819856",
+     "medio": "Mitjà D",
+     "ts": 1792728688.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Nou model d'IA obert per a programadors",
+     "enlace": "https://example.com/99827918",
+     "medio": "Mitjà B",
+     "ts": 1792707088.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà D"
+     ],
+     "enlaces": []
+    }
+   ],
+   "cultura": [
+    {
+     "titulo": "[Demo] Festival de música a l'aire lliure aquest cap de setmana",
+     "enlace": "https://example.com/57615904",
+     "medio": "Mitjà E",
+     "ts": 1792667488.3972666,
+     "resumen": "Tres dies de concerts gratuïts al parc. Dissabte i diumenge a partir de les 18 h.",
+     "tema": "Música",
+     "otros_medios": [],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Exposició de fotografia contemporània al museu de la ciutat",
+     "enlace": "https://example.com/36676453",
+     "medio": "Mitjà E",
+     "ts": 1792559488.3972666,
+     "resumen": "Fins al mes que ve, de dimarts a diumenge.",
+     "tema": "Exposicions",
+     "otros_medios": [],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Cicle de cinema a la fresca",
+     "enlace": "https://example.com/44361325",
+     "medio": "Mitjà F",
+     "ts": 1792019488.3972666,
+     "resumen": "",
+     "tema": "Cinema",
+     "otros_medios": [],
+     "enlaces": []
+    }
+   ]
+  },
+  "agenda": {
+   "eventos": [
+    {
+     "titulo": "[Demo] Reunió de projecte",
+     "lugar": "Oficina",
+     "enlace": "",
+     "dia": "Avui",
+     "es_hoy": true,
+     "hora": "10:00",
+     "hora_fin": "11:00",
+     "todo_el_dia": false
+    },
+    {
+     "titulo": "[Demo] Gimnàs",
+     "lugar": "",
+     "enlace": "",
+     "dia": "Avui",
+     "es_hoy": true,
+     "hora": "19:30",
+     "hora_fin": "20:30",
+     "todo_el_dia": false
+    },
+    {
+     "titulo": "[Demo] Aniversari",
+     "lugar": "",
+     "enlace": "",
+     "dia": "Demà",
+     "es_hoy": false,
+     "hora": "",
+     "hora_fin": "",
+     "todo_el_dia": true
+    },
+    {
+     "titulo": "[Demo] Videotrucada",
+     "lugar": "🔗 meet.example.com",
+     "enlace": "https://meet.example.com/demo",
+     "dia": "dl 9/11",
+     "es_hoy": false,
+     "hora": "09:15",
+     "hora_fin": "",
+     "todo_el_dia": false
+    }
+   ]
+  },
+  "drawdown": {
+   "nombre": "ETF global d'exemple",
+   "ticker": "EXEMPLE.DE",
+   "moneda": "EUR",
+   "precio": 108.4,
+   "hora": "23/10 17:35",
+   "maximo": 142.6,
+   "fecha_maximo": "14/02/2026",
+   "primer_dato": "24/07/2019",
+   "caida": -23.98,
+   "nivel": 2,
+   "niveles": [
+    {
+     "umbral": -10,
+     "toda_la_reserva": false,
+     "alcanzado": true,
+     "extra_pct": 50
+    },
+    {
+     "umbral": -20,
+     "toda_la_reserva": false,
+     "alcanzado": true,
+     "extra_pct": 100
+    },
+    {
+     "umbral": -30,
+     "toda_la_reserva": false,
+     "alcanzado": false,
+     "extra_pct": 200
+    },
+    {
+     "umbral": -40,
+     "toda_la_reserva": true,
+     "alcanzado": false,
+     "extra_pct": null
+    }
+   ],
+   "desactualizado": false,
+   "error": null
+  },
+  "futbol": {
+   "nombre": "Equip d'exemple",
+   "proximos": [
+    {
+     "rival": "Rival A",
+     "local": true,
+     "competicion": "Lliga",
+     "fecha": "ds 7/11",
+     "hora": "21:00"
+    },
+    {
+     "rival": "Rival B",
+     "local": false,
+     "competicion": "Lliga de Campions",
+     "fecha": "dc 11/11",
+     "hora": "21:00"
+    },
+    {
+     "rival": "Rival C",
+     "local": true,
+     "competicion": "Lliga",
+     "fecha": "dg 15/11",
+     "hora": "hora per confirmar"
+    }
+   ],
+   "ultimo": {
+    "rival": "Rival D",
+    "local": false,
+    "goles_rival": 1,
+    "goles_equipo": 2
+   }
+  }
+ },
+ "pestanas": [
+  {
+   "id": "mundo",
+   "nombre": "Món"
+  },
+  {
+   "id": "catalunya",
+   "nombre": "Catalunya"
+  },
+  {
+   "id": "tecnologia",
+   "nombre": "Tecnologia"
+  },
+  {
+   "id": "cultura",
+   "nombre": "Cultura",
+   "filtro_periodo": true
+  }
+ ]
+}

@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel Diario</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #171e26;
+    --panel-2: #1e2731;
+    --line: #26313d;
+    --text: #e8edf2;
+    --muted: #8a99a8;
+    --accent: #5fb3e8;
+    --up: #3ccf8e;
+    --down: #ff6b6b;
+    --amarillo: #f2c94c;
+    --naranja: #f2994a;
+    --rojo: #eb5757;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f3f5f8; --panel: #ffffff; --panel-2: #eef2f6; --line: #dde3ea;
+      --text: #15202b; --muted: #5d6b79; --accent: #1f6fae; --up: #12935b; --down: #d63c3c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 13px/1.4 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    display: flex; flex-direction: column; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 10px;
+    user-select: none;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  .muted { color: var(--muted); }
+
+  /* Cabecera */
+  header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px 8px;
+  }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; flex: 1; cursor: move; padding: 4px 0; }
+  header .act { cursor: move; }
+  header h1::first-letter { text-transform: uppercase; }
+  header .act { font-size: 11px; color: var(--muted); }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+    color: var(--muted); font-size: 15px;
+  }
+  .icon-btn:hover { background: var(--panel-2); color: var(--text); }
+  .girando { animation: gira 1s linear infinite; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  /* Solo desplazamiento vertical: nada puede ensanchar el panel (overflow-x: hidden) */
+  main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 0 12px 10px; display: flex; flex-direction: column; gap: 10px; }
+  .card { min-width: 0; overflow-wrap: anywhere; }
+  main > * { flex-shrink: 0; }
+  main::-webkit-scrollbar { width: 8px; }
+  main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; }
+
+  /* Avisos */
+  .aviso {
+    display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px;
+    font-size: 12px; font-weight: 500; color: #1a1a1a;
+  }
+  .aviso.amarillo { background: var(--amarillo); }
+  .aviso.naranja { background: var(--naranja); }
+  .aviso.rojo { background: var(--rojo); color: #fff; }
+
+  /* Tiempo */
+  .tiempo-top { display: flex; align-items: center; gap: 12px; }
+  .tiempo-top .ico { font-size: 44px; line-height: 1; }
+  .tiempo-top .temp { font-size: 40px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
+  .tiempo-top .desc { flex: 1; }
+  .tiempo-top .desc b { font-size: 14px; font-weight: 600; display: block; }
+  .tiempo-top .desc span { font-size: 12px; color: var(--muted); }
+  .horas { display: flex; gap: 2px; margin-top: 12px; overflow-x: auto; padding-bottom: 2px; }
+  .horas::-webkit-scrollbar { height: 0; }
+  .hora { flex: 0 0 31px; text-align: center; font-size: 11px; }
+  .hora .i { font-size: 15px; margin: 2px 0; }
+  .hora .t { font-weight: 600; }
+  .barra { height: 22px; display: flex; align-items: flex-end; justify-content: center; margin-top: 3px; }
+  .barra div { width: 6px; border-radius: 3px; background: var(--accent); opacity: .85; }
+  .hora .p { color: var(--accent); font-size: 10px; min-height: 13px; }
+  .dias { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px;
+          border-top: 1px solid var(--line); padding-top: 10px; }
+  .dia { text-align: center; font-size: 11px; }
+  .dia .n { color: var(--muted); text-transform: capitalize; }
+  .dia .i { font-size: 18px; margin: 2px 0; }
+  .dia .mx { font-weight: 600; }
+  .dia .mn { color: var(--muted); }
+  .dia .p { color: var(--accent); font-size: 10px; }
+
+  /* Lo tuyo */
+  .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card h3 { margin: 0 0 8px; font-size: 11px; font-weight: 600; letter-spacing: .06em;
+             text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .punto-equipo { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .partido-prox { font-size: 13px; }
+  .partido-prox b { font-size: 14px; display: block; }
+  .partido-prox .c { color: var(--muted); font-size: 11px; }
+  .partido-sec { font-size: 11px; color: var(--muted); margin-top: 6px; border-top: 1px solid var(--line); padding-top: 6px; }
+  .partido-sec div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Agenda */
+  .agenda-cab { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .agenda-cab h3 { margin: 0; flex: 1; }
+  .mini-btn { font-size: 11px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line);
+              color: var(--muted); background: var(--panel-2); }
+  .mini-btn:hover { color: var(--text); }
+  .mini-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .ev { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 8px; padding: 5px 0; align-items: baseline; }
+  .ev > div { min-width: 0; }   /* sin esto, un texto largo sin espacios ensancha la columna */
+  .ev + .ev { border-top: 1px solid var(--line); }
+  .ev .h { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+  /* Título: hasta 2 líneas y, si no cabe, "…" */
+  .ev .t { font-size: 13px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .ev .l { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ev .l a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .ev .l a:hover { text-decoration: underline; }
+  .dia-cab { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+             letter-spacing: .05em; margin: 8px 0 2px; }
+  .dia-cab:first-child { margin-top: 0; }
+  .res { font-weight: 600; }
+  .res.v { color: var(--up); } .res.d { color: var(--down); }
+
+  .up { color: var(--up); } .down { color: var(--down); }
+
+  /* Caídas del ETF (drawdown). Los colores por nivel están en COLORES_NIVEL (JS) */
+  .dd-cab { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+  .dd-cab h3 { margin: 0; flex: 1; }
+  .dd-cab .pr { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .dd-top { display: flex; align-items: center; gap: 10px; }
+  .dd-caida { font-size: 30px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+  .dd-info { font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .dd-barra { position: relative; height: 8px; border-radius: 4px; margin: 14px 0 18px; opacity: .9; }
+  .dd-barra .marca { position: absolute; top: -4px; width: 4px; height: 16px; border-radius: 2px;
+                     background: var(--text); box-shadow: 0 0 0 2px var(--panel); transform: translateX(-2px); }
+  .dd-barra .tick { position: absolute; top: 11px; font-size: 10px; color: var(--muted); transform: translateX(-50%); }
+  .dd-niveles { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+  .dd-nivel { border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; text-align: center; font-size: 12px; }
+  .dd-nivel .u { display: block; font-size: 11px; color: var(--muted); }
+  .dd-nivel .p { display: block; font-size: 15px; font-weight: 700; margin: 1px 0; }
+  .dd-nivel .e { display: block; font-size: 11px; color: var(--muted); }
+  .dd-nivel.ok { border-color: currentColor; background: var(--panel-2); }
+  .dd-accion { margin-top: 10px; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600;
+               background: var(--panel-2); }
+  .dd-aviso { margin-top: 6px; font-size: 11px; color: #f2994a; }
+
+  /* Pestañas */
+  .tabs { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 0; }
+  .tabs::-webkit-scrollbar { height: 0; }
+  .tab {
+    flex: 0 0 auto; padding: 6px 11px; border-radius: 999px; font-size: 12px; font-weight: 500;
+    color: var(--muted); background: var(--panel); border: 1px solid var(--line);
+  }
+  .tab:hover { color: var(--text); }
+  .tab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .lista { display: flex; flex-direction: column; }
+  .noti { padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; border-radius: 6px; }
+  .noti:last-child { border-bottom: 0; }
+  .noti:hover { background: var(--panel-2); }
+  .noti .tit { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+  .noti .res-ia { font-size: 12px; color: var(--muted); margin-top: 3px;
+                 overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .noti .meta { font-size: 11px; color: var(--muted); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .chip { background: var(--panel-2); border-radius: 999px; padding: 1px 7px; font-size: 10.5px; }
+  .chip.tema { color: var(--accent); }
+  /* El medio de cada titular siempre a la vista: de dónde sale la información */
+  .noti .medio { font-weight: 600; color: var(--text); }
+  #noticias h3 { margin: 0 0 8px; }
+  .periodo { display: flex; gap: 6px; margin: 8px 0 2px; }
+  .periodo:empty { display: none; }
+  .noti.leida .tit { color: var(--muted); font-weight: 500; }
+
+
+  .vacio { padding: 18px 6px; text-align: center; color: var(--muted); font-size: 12px; }
+  .nota { font-size: 11px; color: var(--muted); }
+  .nota a { color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+  footer { padding: 6px 14px 9px; font-size: 11px; color: var(--muted); display: flex; gap: 8px;
+           border-top: 1px solid var(--line); }
+  footer .aviso-f { color: var(--naranja); cursor: help; }
+</style>
+</head>
+<body>
+  <header>
+    <h1 id="fecha" class="arrastre" title="Arrossega per moure">—</h1>
+    <span class="act arrastre" id="actualizado"></span>
+    <button class="icon-btn" id="btn-ref" title="Actualitza ara">⟳</button>
+    <button class="icon-btn" id="btn-cerrar" title="Tanca (Esc)">✕</button>
+  </header>
+
+  <main>
+    <div id="avisos"></div>
+    <section class="card" id="tiempo"><div class="vacio">Carregant el temps…</div></section>
+    <section class="card" id="agenda"></section>
+
+    <section class="card" id="drawdown"></section>
+    <section class="card" id="futbol"></section>
+
+    <section class="card" id="noticias">
+      <h3>📰 Notícies</h3>
+      <nav class="tabs" id="tabs"></nav>
+      <div class="periodo" id="periodo"></div>
+      <div class="lista" id="lista"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span id="pie" style="display:flex;gap:8px;flex:1">Panel Diario</span>
+  </footer>
+
+<script>
+// Pestañas de noticias: vienen de config.json ("pestanas"), cada una con id, nombre y,
+// si mira más atrás en el tiempo, "filtro_periodo" (botones de esta semana / este mes)
+const pestanas = () => (D && D.pestanas) || [];
+let periodo = 7;
+let pestana = null;   // id de la pestaña abierta; null = la primera
+let D = null;
+let mostradoEn = 0;
+
+// --- Puente con Python (o datos de demostración en un navegador normal) ---
+function api() {
+  if (window.pywebview && window.pywebview.api) return window.pywebview.api;
+  return {
+    obtener: async () => window.__DEMO__ || {},
+    refrescar: async () => true,
+    abrir: async (u) => { window.open(u, "_blank"); return true; },
+    marcar_leido: async () => true,
+    ocultar: async () => true,
+  };
+}
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function hace(ts) {
+  if (!ts) return "";
+  const m = Math.round((Date.now() / 1000 - ts) / 60);
+  if (m < 1) return "ara";
+  if (m < 60) return `fa ${m} min`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `fa ${h} h` : `fa ${Math.round(h / 24)} d`;
+}
+
+function pct(v) {
+  if (v === null || v === undefined) return "—";
+  const s = (v > 0 ? "+" : "") + v.toFixed(2).replace(".", ",") + "%";
+  return `<span class="${v > 0 ? "up" : v < 0 ? "down" : ""}">${s}</span>`;
+}
+
+// --- Render ---
+function pintarFecha() {
+  const f = new Date().toLocaleDateString("ca-ES", { weekday: "long", day: "numeric", month: "long" });
+  document.getElementById("fecha").textContent = f;
+}
+
+function pintarAvisos(avisos) {
+  const el = document.getElementById("avisos");
+  if (!avisos || !avisos.length) { el.innerHTML = ""; return; }
+  el.innerHTML = avisos.map(a =>
+    `<div class="aviso ${a.nivel}">⚠️ Avís ${({ amarillo: "groc", naranja: "taronja", rojo: "vermell" })[a.nivel] || a.nivel}: ${esc(a.evento)} · ${esc(a.zona)}${a.cuando ? " · " + esc(a.cuando) : ""}</div>`
+  ).join("");
+  el.style.display = "flex"; el.style.flexDirection = "column"; el.style.gap = "6px";
+}
+
+function pintarTiempo(t) {
+  const el = document.getElementById("tiempo");
+  if (!t) { el.innerHTML = `<div class="vacio">Encara no hi ha dades del temps.</div>`; return; }
+  const maxLl = Math.max(...t.horas.map(h => h.lluvia), 1);
+  el.innerHTML = `
+    <div class="tiempo-top">
+      <div class="ico">${t.icono}</div>
+      <div class="temp">${t.temp}°</div>
+      <div class="desc">
+        <b>${esc(t.texto)}</b>
+        <span>Sensació ${t.sensacion}° · Vent ${t.viento} km/h</span><br>
+        <span>${esc(t.lugar)} · ☀ ${t.salida_sol}–${t.puesta_sol}</span>
+      </div>
+    </div>
+    <div class="horas">
+      ${t.horas.map(h => `
+        <div class="hora">
+          <div class="muted">${h.hora}</div>
+          <div class="i">${h.icono}</div>
+          <div class="t">${h.temp}°</div>
+          <div class="barra"><div style="height:${Math.max(2, Math.round(h.lluvia / 100 * 22))}px; opacity:${h.lluvia ? .85 : .2}"></div></div>
+          <div class="p">${h.lluvia ? h.lluvia + "%" : ""}</div>
+        </div>`).join("")}
+    </div>
+    <div class="dias">
+      ${t.dias.map(d => `
+        <div class="dia" title="${esc(d.texto)}">
+          <div class="n">${esc(d.dia)}</div>
+          <div class="i">${d.icono}</div>
+          <div><span class="mx">${d.max}°</span> <span class="mn">${d.min}°</span></div>
+          <div class="p">${d.lluvia ? "💧" + d.lluvia + "%" : "&nbsp;"}</div>
+        </div>`).join("")}
+    </div>`;
+}
+
+// --- Secciones sin configurar (falta su clave o dato en config.json): se ocultan y el pie dice qué falta ---
+function sinConfigurar(s) {
+  const falta = [];
+  if (s.agenda && s.agenda.sin_url) falta.push("agenda (adreça iCal)");
+  if (s.futbol && s.futbol.sin_clave) falta.push("futbol (clau de football-data)");
+  else if (s.futbol && s.futbol.sin_equipo) falta.push("futbol (team_id)");
+  if (s.drawdown && s.drawdown.sin_configurar) falta.push("caigudes (ticker de l'ETF)");
+  return falta;
+}
+
+function ocultarSi(el, ocultar) {
+  el.style.display = ocultar ? "none" : "";
+  return ocultar;
+}
+
+// --- Agenda (Google Calendar). verSemana = mostrar los próximos días además de hoy ---
+let verSemana = false;
+function pintarAgenda(a, error) {
+  const el = document.getElementById("agenda");
+  const cab = (botones) => `<div class="agenda-cab"><h3>📅 Agenda</h3>${botones}
+    <button class="mini-btn" data-url="https://calendar.google.com/calendar/r">Obre Calendar ↗</button></div>`;
+  if (ocultarSi(el, !!(a && a.sin_url))) return;
+  if (!a) {
+    el.innerHTML = cab("") + `<div class="nota">${error ? "Google Calendar no respon ara." : "Encara no hi ha dades."}</div>`;
+    return;
+  }
+  const botones = `<button class="mini-btn ${verSemana ? "" : "on"}" data-agenda="hoy">Avui</button>
+                   <button class="mini-btn ${verSemana ? "on" : ""}" data-agenda="semana">Setmana</button>`;
+  const lista = (a.eventos || []).filter(e => verSemana || e.es_hoy);
+  if (!lista.length) {
+    el.innerHTML = cab(botones) + `<div class="nota">${verSemana ? "Res els propers dies." : "Avui no tens res al calendari."}</div>`;
+    return;
+  }
+  let html = "", diaActual = null;
+  for (const e of lista) {
+    if (verSemana && e.dia !== diaActual) { diaActual = e.dia; html += `<div class="dia-cab">${esc(e.dia)}</div>`; }
+    html += `<div class="ev">
+      <div class="h">${e.todo_el_dia ? "Tot el dia" : esc(e.hora)}</div>
+      <div><div class="t" title="${esc(e.titulo)}">${esc(e.titulo)}</div>
+        ${e.lugar || e.hora_fin ? `<div class="l">${e.hora_fin ? "fins a les " + esc(e.hora_fin) : ""}${e.lugar && e.hora_fin ? " · " : ""}${
+          e.enlace ? `<a data-url="${esc(e.enlace)}" title="${esc(e.enlace)}">${esc(e.lugar)}</a>` : esc(e.lugar)}</div>` : ""}
+      </div></div>`;
+  }
+  el.innerHTML = cab(botones) + html;
+}
+
+function pintarFutbol(b) {
+  const el = document.getElementById("futbol");
+  const titulo = `<h3><span class="punto-equipo"></span>${esc((b && b.nombre) || "Futbol")}</h3>`;
+  if (ocultarSi(el, !!(b && (b.sin_clave || b.sin_equipo)))) return;
+  if (!b) { el.innerHTML = titulo + `<div class="nota">Sense dades.</div>`; return; }
+  const p = b.proximos || [];
+  let html = titulo;
+  if (p.length) {
+    const x = p[0];
+    html += `<div class="partido-prox">
+      <b>${x.local ? "vs" : "@"} ${esc(x.rival)}</b>
+      <div>${esc(x.fecha)} · ${esc(x.hora)}</div>
+      <div class="c">${esc(x.competicion)}</div></div>`;
+  } else {
+    html += `<div class="nota">No hi ha propers partits publicats.</div>`;
+  }
+  const sec = [];
+  p.slice(1).forEach(x => sec.push(`<div>${esc(x.fecha)} · ${x.local ? "vs" : "@"} ${esc(x.rival)}</div>`));
+  if (b.ultimo && b.ultimo.goles_equipo !== null && b.ultimo.goles_equipo !== undefined) {
+    const u = b.ultimo;
+    const cls = u.goles_equipo > u.goles_rival ? "v" : u.goles_equipo < u.goles_rival ? "d" : "";
+    sec.push(`<div>Últim: <span class="res ${cls}">${u.goles_equipo}-${u.goles_rival}</span> ${u.local ? "vs" : "@"} ${esc(u.rival)}</div>`);
+  }
+  if (sec.length) html += `<div class="partido-sec">${sec.join("")}</div>`;
+  el.innerHTML = html;
+}
+
+// --- Caídas del ETF desde su máximo y compras extra (en % sobre la aportación habitual) ---
+const coma = (n, dec = 2) => Number(n).toFixed(dec).replace(".", ",");
+
+// Colores por nivel (0 = sin caída relevante). Si hay más niveles, se repite el último.
+const COLORES_NIVEL = ["var(--up)", "#f2c94c", "#f2994a", "#eb5757", "#c81e3c"];
+const colorNivel = (i) => COLORES_NIVEL[Math.min(i, COLORES_NIVEL.length - 1)];
+
+function pintarDrawdown(d, error) {
+  const el = document.getElementById("drawdown");
+  if (ocultarSi(el, !!(d && d.sin_configurar))) return;
+  if (!d) {
+    el.innerHTML = `<h3>📉 Caigudes d'un ETF</h3><div class="nota">${error ? "Yahoo Finance no respon i encara no hi ha cap dada desada." : "Encara no hi ha dades."}</div>`;
+    return;
+  }
+  const n = d.nivel;
+  const niveles = d.niveles || [];
+  // Barra de 0 % a -50 %: la marca indica dónde estamos (más a la derecha = más caída).
+  // Los tramos de color salen de los niveles configurados, así que se adaptan si los cambias.
+  const pos = (c) => Math.min(Math.max(-c / 50 * 100, 0), 100);
+  const cortes = niveles.map(l => pos(l.umbral));
+  const tramos = [0, ...cortes].map((desde, i) =>
+    `${colorNivel(i)} ${desde}% ${i < cortes.length ? cortes[i] : 100}%`).join(", ");
+  const ticks = niveles.map(l => `<span class="tick" style="left:${pos(l.umbral)}%">${l.umbral}%</span>`).join("");
+  // Una casilla por nivel: "si cae X %" → "+Y %" sobre la aportación (o "toda la reserva" en el último)
+  const casillas = niveles.map((l, i) => `
+    <div class="dd-nivel ${l.alcanzado ? "ok" : ""}" style="${l.alcanzado ? "color:" + colorNivel(i + 1) : ""}">
+      <span class="u">${l.alcanzado ? "✓ " : "si cau "}${l.umbral} %</span>
+      <span class="p">${l.toda_la_reserva ? "Tot" : "+" + l.extra_pct + " %"}</span>
+      <span class="e">${l.toda_la_reserva ? "tota la reserva" : "d'aportació"}</span>
+    </div>`).join("");
+  const actual = niveles[n - 1];
+  let accion;
+  if (n === 0) accion = "Tot normal: aquest mes fes la teva aportació habitual. Sense extra.";
+  else if (actual.toda_la_reserva) accion = `Caiguda de ${actual.umbral} % o més: hi poses tota la reserva.`;
+  else accion = `Caiguda de ${actual.umbral} % o més: aquest mes aporta un ${actual.extra_pct} % més de l'habitual.`;
+  el.innerHTML = `
+    <div class="dd-cab"><h3>📉 ${esc(d.nombre)}</h3>
+      <span class="pr">${coma(d.precio)} ${esc(d.moneda)} · ${esc(d.hora)}</span></div>
+    <div class="dd-top">
+      <div class="dd-caida" style="color:${colorNivel(n)}">${coma(d.caida, 1)} %</div>
+      <div class="dd-info">des del màxim històric<br>
+        Màxim: <b>${coma(d.maximo)} ${esc(d.moneda)}</b> (${esc(d.fecha_maximo)})</div>
+    </div>
+    <div class="dd-barra" style="background:linear-gradient(90deg, ${tramos})">
+      <span class="marca" style="left:${pos(d.caida)}%"></span>${ticks}</div>
+    <div class="dd-niveles">${casillas}</div>
+    <div class="dd-accion" style="color:${colorNivel(n)}">${accion}</div>
+    ${d.desactualizado ? `<div class="dd-aviso" title="${esc(d.error || "")}">⚠ Dada desactualitzada (última: ${esc(d.hora)})</div>` : ""}
+    <div class="nota" style="margin-top:6px">Històric de ${esc(d.ticker)} des del ${esc(d.primer_dato)}</div>`;
+}
+
+function pestanaActual() {
+  const lista = pestanas();
+  return lista.find(p => p.id === pestana) || lista[0] || null;
+}
+
+function pintarTabs() {
+  const actual = pestanaActual();
+  document.getElementById("tabs").innerHTML = pestanas().map(p =>
+    `<button class="tab ${p === actual ? "on" : ""}" data-tab="${esc(p.id)}">${esc(p.nombre)}</button>`).join("");
+}
+
+function pintarLista() {
+  const el = document.getElementById("lista");
+  const s = (D && D.secciones) || {};
+  const actual = pestanaActual();
+  let lista = (actual && (s.noticias || {})[actual.id]) || [];
+  // Las pestañas con "filtro_periodo" miran un mes atrás: se pueden filtrar por semana o mes
+  const conPeriodo = !!(actual && actual.filtro_periodo);
+  document.getElementById("periodo").innerHTML = conPeriodo
+    ? `<button class="mini-btn ${periodo === 7 ? "on" : ""}" data-periodo="7">Aquesta setmana</button>
+       <button class="mini-btn ${periodo === 30 ? "on" : ""}" data-periodo="30">Aquest mes</button>`
+    : "";
+  if (conPeriodo) {
+    // Filtra por fecha de publicación de la noticia (no es la fecha del evento)
+    const limite = Date.now() / 1000 - periodo * 86400;
+    lista = lista.filter(n => !n.ts || n.ts >= limite);
+  }
+  const leidos = new Set((D && D.leidos) || []);
+  if (!lista.length) {
+    el.innerHTML = `<div class="vacio">${conPeriodo ? "Res de nou en aquest període." : "Encara no hi ha titulars en aquesta secció."}</div>`;
+    return;
+  }
+  el.innerHTML = lista.map(n => {
+    const otros = n.otros_medios || [];
+    // En las pestañas con periodo se muestra también el resumen de la fuente (dónde, cuándo, de qué va)
+    const resumen = n.resumen_ia || (conPeriodo ? n.resumen : "") || "";
+    return `<div class="noti ${leidos.has(n.enlace) ? "leida" : ""}" data-url="${esc(n.enlace)}"
+              title="${esc(otros.length ? "També a: " + otros.join(", ") : n.medio)}">
+      <div class="tit">${esc(n.titulo)}</div>
+      ${resumen ? `<div class="res-ia">${esc(resumen)}</div>` : ""}
+      <div class="meta">
+        <span class="medio">${esc(n.medio)}</span><span>·</span><span>${hace(n.ts)}</span>
+        ${n.tema ? `<span class="chip tema">${esc(n.tema)}</span>` : ""}
+        ${otros.length ? `<span class="chip">també a ${esc(otros.slice(0, 2).join(", "))}${otros.length > 2 ? ` i ${otros.length - 2} més` : ""}</span>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function pintarPie() {
+  const pie = document.getElementById("pie");
+  const caidas = (D && D.fuentes_caidas) || [];
+  const err = (D && D.errores) || {};
+  const partes = [];
+  if (D && D.ia_activa) partes.push("Selecció amb IA");
+  const falta = sinConfigurar((D && D.secciones) || {});
+  if (falta.length) partes.push(`<span title="Sense configurar: ${esc(falta.join(", "))}.\nOmple-ho a config.json (instruccions al README).">⚙ ${falta.length} ${falta.length === 1 ? "secció" : "seccions"} per configurar</span>`);
+  if (caidas.length) {
+    const lista = caidas.map(c => `${c.fuente} (${c.categoria}): ${c.error}`).join("\n");
+    partes.push(`<span class="aviso-f" title="${esc(lista)}">⚠ ${caidas.length} ${caidas.length === 1 ? "font no respon" : "fonts no responen"}</span>`);
+  }
+  const nombres = { tiempo: "temps", avisos: "avisos", futbol: "futbol", drawdown: "caigudes", noticias: "notícies", ia: "IA", agenda: "agenda" };
+  const fallos = Object.keys(err).map(k => nombres[k] || k);
+  if (fallos.length) partes.push(`<span class="aviso-f" title="${esc(Object.entries(err).map(([k, v]) => k + ": " + v).join("\n"))}">⚠ sense actualitzar: ${esc(fallos.join(", "))}</span>`);
+  pie.innerHTML = (partes.length ? partes.join(" · ") : "Tot en ordre")
+    + `<span style="margin-left:auto">v${esc((D && D.version) || "?")}</span>`;
+}
+
+async function cargar() {
+  D = await api().obtener();
+  const s = (D && D.secciones) || {};
+  pintarFecha();
+  document.getElementById("actualizado").textContent = D && D.actualizado ? "Act. " + D.actualizado : "";
+  document.getElementById("btn-ref").classList.toggle("girando", !!(D && D.actualizando));
+  pintarAvisos(s.avisos);
+  pintarTiempo(s.tiempo);
+  pintarAgenda(s.agenda, D && D.errores && D.errores.agenda);
+  pintarFutbol(s.futbol);
+  pintarDrawdown(s.drawdown, D && D.errores && D.errores.drawdown);
+  pintarTabs();
+  pintarLista();
+  pintarPie();
+  clearTimeout(temporizador);
+  if (D && D.actualizando) temporizador = setTimeout(cargar, 2500);
+}
+let temporizador = null;
+
+// --- Eventos ---
+document.addEventListener("click", async (ev) => {
+  const botonPeriodo = ev.target.closest("[data-periodo]");
+  if (botonPeriodo) { periodo = Number(botonPeriodo.dataset.periodo); pintarLista(); return; }
+  const botonAgenda = ev.target.closest("[data-agenda]");
+  if (botonAgenda) {
+    verSemana = botonAgenda.dataset.agenda === "semana";
+    pintarAgenda(D && D.secciones && D.secciones.agenda);
+    return;
+  }
+  const tab = ev.target.closest("[data-tab]");
+  if (tab) { pestana = tab.dataset.tab; pintarTabs(); pintarLista(); document.getElementById("lista").scrollIntoView({ block: "nearest" }); return; }
+  const link = ev.target.closest("[data-url]");
+  if (link && link.dataset.url) {
+    await api().abrir(link.dataset.url);
+    link.classList.add("leida");
+    if (D) { D.leidos = D.leidos || []; D.leidos.push(link.dataset.url); }
+  }
+});
+document.getElementById("btn-ref").addEventListener("click", async () => {
+  document.getElementById("btn-ref").classList.add("girando");
+  await api().refrescar();
+  setTimeout(cargar, 1500);
+});
+document.getElementById("btn-cerrar").addEventListener("click", () => api().ocultar());
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") api().ocultar(); });
+// Se oculta al hacer clic fuera (Python ignora la pérdida de foco justo después de abrirlo)
+window.addEventListener("blur", () => {
+  if (arrastrando) return;
+  const a = api();
+  if (a.ocultar_por_foco) a.ocultar_por_foco(); else if (Date.now() - mostradoEn > 600) a.ocultar();
+});
+
+// --- Arrastre propio: mantiene el punto agarrado bajo el cursor (se autocorrige con cualquier escalado) ---
+let arrastrando = false;
+function hacerArrastrable(el) {
+  let agarre = null, ocupado = false, ultimo = null;
+  el.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    agarre = { x: e.clientX, y: e.clientY }; arrastrando = true;
+    el.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  el.addEventListener("pointermove", (e) => { if (agarre) { ultimo = e; empujar(); } });
+  const fin = () => { agarre = null; ultimo = null; arrastrando = false; };
+  el.addEventListener("pointerup", fin);
+  el.addEventListener("pointercancel", fin);
+  async function empujar() {
+    if (ocupado || !agarre || !ultimo) return;
+    const dx = Math.round(ultimo.clientX - agarre.x), dy = Math.round(ultimo.clientY - agarre.y);
+    ultimo = null;
+    if (!dx && !dy) return;
+    const a = api();
+    if (!a.mover_rel) return;
+    ocupado = true;
+    try { await a.mover_rel(dx, dy); } catch (_) {}
+    ocupado = false;
+  }
+}
+document.querySelectorAll(".arrastre").forEach(hacerArrastrable);
+
+window.alMostrar = () => { mostradoEn = Date.now(); cargar(); };
+
+let iniciado = false;
+function iniciar() {
+  if (iniciado) return;
+  iniciado = true;
+  mostradoEn = Date.now();
+  cargar();
+  setInterval(() => { if (document.hasFocus()) cargar(); }, 60000);
+}
+// Arranca cuando el puente con Python está listo (sus métodos pueden llegar después que window.pywebview)
+window.addEventListener("pywebviewready", iniciar);
+if (window.pywebview && window.pywebview.api && window.pywebview.api.obtener) iniciar();
+// En un navegador normal (sin Python) arranca con los datos de demostración
+setTimeout(() => { if (!window.pywebview) iniciar(); }, 800);
+</script>
+</body>
+</html>

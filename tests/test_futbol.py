@@ -1,0 +1,61 @@
+"""Tests de los partidos del equipo configurado (datos.obtener_futbol).
+
+football-data.org se sustituye por una respuesta inventada (mock): no se usa internet.
+"""
+
+import sys
+import types
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import datos  # noqa: E402
+
+CFG = {"futbol": {"nombre": "Equip d'exemple", "football_data_api_key": "clave-falsa", "team_id": 1}}
+
+
+def partido(fecha, estado, local_id, visitante_id, goles=None):
+    return {"utcDate": fecha, "status": estado,
+            "homeTeam": {"id": local_id, "shortName": f"Equip {local_id}"},
+            "awayTeam": {"id": visitante_id, "shortName": f"Equip {visitante_id}"},
+            "competition": {"name": "Primera Division"},
+            "score": {"fullTime": {"home": goles[0], "away": goles[1]} if goles else {}}}
+
+
+def con_respuesta(monkeypatch, partidos):
+    pedidos = []
+
+    def get_falso(url, **kw):
+        pedidos.append((url, kw.get("headers")))
+        return types.SimpleNamespace(json=lambda: {"matches": partidos})
+
+    monkeypatch.setattr(datos, "_get", get_falso)
+    return pedidos
+
+
+def test_proximos_y_ultimo_desde_el_punto_de_vista_del_equipo(monkeypatch):
+    pedidos = con_respuesta(monkeypatch, [
+        partido("2026-10-20T19:00:00Z", "FINISHED", 2, 1, goles=(0, 3)),   # fuera: gana 3-0
+        partido("2026-11-10T19:00:00Z", "TIMED", 1, 3),
+        partido("2026-11-03T19:00:00Z", "TIMED", 4, 1),
+    ])
+    r = datos.obtener_futbol(CFG)
+    assert pedidos[0][0].endswith("/teams/1/matches")
+    assert pedidos[0][1] == {"X-Auth-Token": "clave-falsa"}
+    assert r["nombre"] == "Equip d'exemple"
+    assert [p["rival"] for p in r["proximos"]] == ["Equip 4", "Equip 3"]   # ordenados por fecha
+    assert r["ultimo"]["goles_equipo"] == 3 and r["ultimo"]["goles_rival"] == 0
+    assert r["ultimo"]["competicion"] == "Lliga"
+
+
+def test_sin_clave_no_llama_a_la_api(monkeypatch):
+    monkeypatch.setattr(datos, "_get", lambda *a, **k: pytest.fail("no debe llamar a la API"))
+    cfg = {"futbol": {"nombre": "Equip", "football_data_api_key": " ", "team_id": 1}}
+    assert datos.obtener_futbol(cfg) == {"sin_clave": True, "nombre": "Equip"}
+
+
+def test_sin_equipo_no_llama_a_la_api(monkeypatch):
+    monkeypatch.setattr(datos, "_get", lambda *a, **k: pytest.fail("no debe llamar a la API"))
+    cfg = {"futbol": {"football_data_api_key": "clave-falsa"}}
+    assert datos.obtener_futbol(cfg) == {"sin_equipo": True, "nombre": "Futbol"}

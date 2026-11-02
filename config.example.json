@@ -1,0 +1,83 @@
+{
+  "ubicacion": {
+    "nombre": "Girona",
+    "lat": 41.9794,
+    "lon": 2.8214
+  },
+  "ficha_escritorio": {
+    "activa": true,
+    "modo": "escritorio"
+  },
+  "actualizar_minutos": 30,
+  "atajo_teclado": "ctrl+alt+n",
+  "titulares_por_pestana": 8,
+  "noticias_horas_max": 36,
+  "avisos_meteo": {
+    "activo": true,
+    "feed": "https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-spain",
+    "zonas": ["Girona"],
+    "zonas_excluir": []
+  },
+  "drawdown": {
+    "nombre": "",
+    "ticker": "",
+    "niveles": [
+      {"caida": -10, "extra_pct": 50},
+      {"caida": -20, "extra_pct": 100},
+      {"caida": -30, "extra_pct": 200},
+      {"caida": -40, "toda_la_reserva": true}
+    ],
+    "actualizar_minutos": 30,
+    "recalcular_dias": 7
+  },
+  "agenda": {
+    "ical_urls": [],
+    "dias": 7
+  },
+  "futbol": {
+    "nombre": "",
+    "football_data_api_key": "",
+    "team_id": null
+  },
+  "claude": {
+    "api_key": "",
+    "modelo": "claude-haiku-5-5",
+    "cada_horas": 3
+  },
+  "pestanas": [
+    {"id": "mundo", "nombre": "Món"},
+    {"id": "catalunya", "nombre": "Catalunya"},
+    {"id": "tecnologia", "nombre": "Tecnologia"},
+    {"id": "cultura", "nombre": "Cultura", "filtro_periodo": true}
+  ],
+  "fuentes": {
+    "mundo": [
+      {"nombre": "Europa Press", "url": "https://www.europapress.es/rss/rss.aspx?ch=69"},
+      {"nombre": "BBC Mundo", "url": "https://feeds.bbci.co.uk/mundo/rss.xml"},
+      {"nombre": "DW", "url": "https://rss.dw.com/rdf/rss-sp-all"},
+      {"nombre": "France 24", "url": "https://www.france24.com/es/rss"}
+    ],
+    "catalunya": [
+      {"nombre": "Ara", "url": "https://www.ara.cat/rss/", "idioma": "ca"},
+      {"nombre": "Google Noticias", "url": "https://news.google.com/rss/search?q=Generalitat%20OR%20Parlament%20OR%20Govern%20when%3A1", "agregador": true}
+    ],
+    "tecnologia": [
+      {"nombre": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index"},
+      {"nombre": "MIT Technology Review", "url": "https://www.technologyreview.com/feed/"},
+      {"nombre": "Xataka", "url": "https://www.xataka.com/feedburner.xml"}
+    ],
+    "cultura": [
+      {"nombre": "Google Noticias", "url": "https://news.google.com/rss/search?q=Girona%20%28concert%20OR%20exposici%C3%B3%20OR%20festival%29&hl=ca&gl=ES&ceid=ES:ca", "tema": "Girona", "agregador": true, "horas_max": 720}
+    ]
+  },
+  "titulares_por_categoria": {"mundo": 12, "tecnologia": 12, "cultura": 20},
+  "max_per_font": {"mundo": 3, "tecnologia": 3, "cultura": 4},
+  "medios_excluidos": [],
+  "prioridad_medios": ["Europa Press", "EFE", "RTVE", "BBC", "DW", "France 24", "Ara", "MIT Technology Review", "Ars Technica", "Xataka"],
+  "paraules_excloses": {},
+  "traduccio": {
+    "activa": true,
+    "idioma": "es",
+    "conservar": ["ca", "es"]
+  }
+}

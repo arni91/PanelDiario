@@ -1,0 +1,31 @@
+"""Tests de la revisión de privacidad (scripts/revisar_privacidad.py): términos, formas de claves y lista."""
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+import revisar_privacidad as rp  # noqa: E402
+
+
+def test_encuentra_terminos_sin_distinguir_mayusculas():
+    texto = "linea limpia\nVivo en CIUDADFALSA desde hace años"
+    assert rp.revisar_texto(texto, ["ciudadfalsa"]) == [(2, "término privado «ciudadfalsa»")]
+
+
+def test_encuentra_formas_de_claves_sin_lista():
+    # Los ejemplos se montan por partes para que este fichero no dé positivo en la revisión real
+    clave = "0123456789abcdef" * 2
+    url = "https://x/calendar/ical/a%40b/" + "priv" + "ate-zz/basic.ics"
+    texto = f'clave = "{clave}"\nurl = "{url}"'
+    assert rp.revisar_texto(texto, []) == [(1, "clave hexadecimal larga"), (2, "dirección iCal secreta")]
+
+
+def test_texto_limpio():
+    assert rp.revisar_texto("Ciudad de ejemplo: Girona", ["ciudadfalsa"]) == []
+
+
+def test_lista_ignora_comentarios_y_lineas_vacias(tmp_path):
+    ruta = tmp_path / "terminos.txt"
+    ruta.write_text("# comentario\n\nuno\n  dos  \n", encoding="utf-8")
+    assert rp.leer_terminos(ruta) == ["uno", "dos"]
+    assert rp.leer_terminos(tmp_path / "no_existe.txt") == []

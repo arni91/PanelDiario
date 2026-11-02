@@ -1,0 +1,17 @@
+# Configuración y datos personales (ver CLAUDE.md, sección Privacidad)
+config.json
+.privado/
+.env
+
+# Entorno y cachés de Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Registros
+*.log
+
+# Accesos directos de Windows: guardan rutas absolutas con el usuario
+*.lnk

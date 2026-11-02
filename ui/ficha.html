@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<title>Panel Diario - ficha</title>
+<!--
+  Ficha del escritorio en forma de píldora (176x34): icono, temperatura, máx/mín y probabilidad de lluvia.
+  Clic = abrir/cerrar el panel. Mantener pulsado y mover = arrastrar la ficha.
+  Los extremos redondos los recorta Windows (redondear_esquinas en panel.py).
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  /* Fondo negro: los píxeles del borde que recorta Windows quedan negros, igual que el contorno */
+  html, body { height: 100%; overflow: hidden; background: #000; }
+  body {
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    color: #fff; user-select: none; cursor: pointer;
+  }
+  .ficha {
+    height: 100%; border-radius: 17px; position: relative;
+    display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px;
+    /* Oscuro con un ligero degradado, contorno negro y, por dentro, un filo claro muy fino */
+    background: linear-gradient(180deg, #2a3443, #1a212c);
+    box-shadow: inset 0 0 0 1.5px #000, inset 0 0 0 2.5px rgba(255,255,255,.14),
+                inset 0 2.5px 0 rgba(255,255,255,.10);
+    transition: filter .15s ease;
+  }
+  .ficha:hover { filter: brightness(1.18); }
+  .ficha.pulsada { filter: brightness(.92); }
+  .ficha.arrastrando { cursor: grabbing; }
+  .ico { font-size: 16px; line-height: 1; }
+  .temp { font-size: 16px; font-weight: 600; letter-spacing: -.3px; line-height: 1; }
+  .rango { font-size: 11px; opacity: .72; white-space: nowrap; line-height: 1; }
+  /* Probabilidad de lluvia: discreta normalmente, azul y en negrita si es probable (>= 40 %) */
+  .lluvia { font-size: 11px; opacity: .72; white-space: nowrap; line-height: 1; }
+  .lluvia.alta { color: #8cc8ff; opacity: 1; font-weight: 600; }
+  /* Punto de aviso meteorológico */
+  .aviso { position: absolute; top: 5px; right: 9px; width: 6px; height: 6px; border-radius: 50%; display: none; }
+  .aviso.amarillo { display: block; background: #ffd84d; }
+  .aviso.naranja  { display: block; background: #ff9a3c; }
+  .aviso.rojo     { display: block; background: #ff4d4d; }
+</style>
+</head>
+<body>
+  <div class="ficha" id="ficha" title="Clic: obre · Arrossega: mou">
+    <span class="aviso" id="aviso"></span>
+    <span class="ico" id="ico">⛅</span>
+    <span class="temp" id="temp">--°</span>
+    <span class="rango" id="rango"></span>
+    <span class="lluvia" id="lluvia"></span>
+  </div>
+<script>
+const api = () => (window.pywebview && window.pywebview.api) || null;
+const ficha = document.getElementById("ficha");
+
+async function pintar() {
+  const a = api();
+  if (!a || !a.mini) return;
+  try {
+    const m = await a.mini();
+    if (m.temp === null || m.temp === undefined) return;
+    document.getElementById("temp").textContent = m.temp + "°";
+    document.getElementById("ico").textContent = m.icono || "🌡️";
+    // Máxima y mínima del día + probabilidad de lluvia (la más alta de las próximas 12 h)
+    document.getElementById("rango").textContent = m.max != null ? `↑${m.max} ↓${m.min}` : "";
+    const lluvia = document.getElementById("lluvia");
+    lluvia.textContent = m.lluvia != null ? `💧${m.lluvia}%` : "";
+    lluvia.className = "lluvia" + (m.lluvia >= 40 ? " alta" : "");   // en azul si es probable
+    document.getElementById("aviso").className = "aviso " + (m.aviso || "");
+    ficha.title = `${m.lugar || ""}: ${m.texto || ""}\nClic: obre · Arrossega: mou`;
+  } catch (e) { /* se reintenta en el siguiente ciclo */ }
+}
+window.pintar = pintar;
+
+// --- Clic o arrastre en toda la ficha ---
+// Si el ratón se mueve más de 4 px con el botón pulsado es un arrastre; si no, es un clic.
+// El arrastre mantiene el punto agarrado bajo el cursor (se autocorrige con cualquier escalado).
+let agarre = null, movido = false, ocupado = false, ultimo = null;
+ficha.addEventListener("pointerdown", (e) => {
+  if (e.button !== 0) return;
+  agarre = { x: e.clientX, y: e.clientY }; movido = false;
+  ficha.setPointerCapture(e.pointerId);
+  ficha.classList.add("pulsada");
+});
+ficha.addEventListener("pointermove", (e) => {
+  if (!agarre) return;
+  if (!movido && Math.hypot(e.clientX - agarre.x, e.clientY - agarre.y) < 4) return;
+  movido = true;
+  ficha.classList.remove("pulsada"); ficha.classList.add("arrastrando");
+  ultimo = e; empujar();
+});
+ficha.addEventListener("pointerup", () => {
+  const eraClic = agarre && !movido;
+  agarre = null; ultimo = null;
+  ficha.classList.remove("pulsada", "arrastrando");
+  const a = api();
+  if (eraClic && a) a.clic();
+});
+ficha.addEventListener("pointercancel", () => { agarre = null; ficha.classList.remove("pulsada", "arrastrando"); });
+
+async function empujar() {
+  if (ocupado || !agarre || !ultimo) return;
+  const dx = Math.round(ultimo.clientX - agarre.x), dy = Math.round(ultimo.clientY - agarre.y);
+  ultimo = null;
+  if (!dx && !dy) return;
+  const a = api();
+  if (!a || !a.mover_rel) return;
+  ocupado = true;
+  try { await a.mover_rel(dx, dy); } catch (_) {}
+  ocupado = false;
+}
+
+let iniciado = false;
+function iniciar() {
+  if (iniciado) return;
+  iniciado = true;
+  pintar();
+  setInterval(pintar, 60000);
+}
+window.addEventListener("pywebviewready", iniciar);
+if (api() && api().mini) iniciar();
+</script>
+</body>
+</html>
