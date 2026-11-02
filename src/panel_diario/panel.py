@@ -29,7 +29,7 @@ from typing import Any
 import webview
 from PIL import Image, ImageDraw, ImageFont
 
-from panel_diario import datos
+from panel_diario.fuentes import agenda, avisos, comun, drawdown, futbol, ia, noticias, tiempo
 
 BASE = Path(__file__).resolve().parent  # carpeta del paquete: ui/ y demo.json
 # config.json vive en la raíz del proyecto (src/panel_diario -> src -> raíz), donde lo edita cada uno.
@@ -186,12 +186,12 @@ def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
     log.info("Actualizando…")
     try:
         tareas = {
-            "tiempo": lambda: datos.obtener_tiempo(cfg),
-            "avisos": lambda: datos.obtener_avisos(cfg),
-            "noticias": lambda: datos.obtener_noticias(cfg),
-            "futbol": lambda: datos.obtener_futbol(cfg),
-            "drawdown": lambda: datos.obtener_drawdown(cfg, DATOS_DIR / "drawdown.json"),
-            "agenda": lambda: datos.obtener_agenda(cfg),
+            "tiempo": lambda: tiempo.obtener_tiempo(cfg),
+            "avisos": lambda: avisos.obtener_avisos(cfg),
+            "noticias": lambda: noticias.obtener_noticias(cfg),
+            "futbol": lambda: futbol.obtener_futbol(cfg),
+            "drawdown": lambda: drawdown.obtener_drawdown(cfg, DATOS_DIR / "drawdown.json"),
+            "agenda": lambda: agenda.obtener_agenda(cfg),
         }
         resultados, errores = {}, {}
         hilos = []
@@ -212,14 +212,14 @@ def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
 
         caidas = []
         if "noticias" in resultados:
-            noticias, caidas = resultados["noticias"]
+            titulares, caidas = resultados["noticias"]
             # Filtro con IA, como mucho cada N horas (y conservando el último resultado)
-            ia = cfg.get("claude") or {}
-            if (ia.get("api_key") or "").strip():
-                toca = forzar_ia or time.time() - estado.datos.get("ia_ts", 0) > ia.get("cada_horas", 3) * 3600
+            cfg_ia = cfg.get("claude") or {}
+            if (cfg_ia.get("api_key") or "").strip():
+                toca = forzar_ia or time.time() - estado.datos.get("ia_ts", 0) > cfg_ia.get("cada_horas", 3) * 3600
                 if toca:
                     try:
-                        noticias = datos.filtrar_con_ia(cfg, noticias)
+                        titulares = ia.filtrar_con_ia(cfg, titulares)
                         estado.datos["ia_ts"] = time.time()
                         estado.datos["ia_activa"] = True
                     except Exception as ex:  # noqa: BLE001
@@ -227,14 +227,14 @@ def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
                         log.warning("Filtro IA falla: %s", ex)
                 elif estado.datos.get("ia_activa"):
                     # Entre llamadas a la IA se mantiene su selección anterior
-                    noticias = estado.datos["secciones"].get("noticias", noticias)
-            resultados["noticias"] = noticias
+                    titulares = estado.datos["secciones"].get("noticias", titulares)
+            resultados["noticias"] = titulares
 
         with estado.lock:
             estado.datos["secciones"].update(resultados)  # lo que falla conserva el dato anterior
             estado.datos["errores"] = errores
             estado.datos["fuentes_caidas"] = caidas
-            estado.datos["actualizado"] = datos.ahora_local().strftime("%H:%M")
+            estado.datos["actualizado"] = comun.ahora_local().strftime("%H:%M")
         estado.guardar()
         log.info("Actualizado. Errores: %s. Fuentes caídas: %d", list(errores), len(caidas))
     finally:
@@ -424,7 +424,7 @@ class ApiFicha:
     def mini(self) -> dict:
         t = self._estado.datos["secciones"].get("tiempo") or {}
         hoy = (t.get("dias") or [{}])[0]
-        avisos = self._estado.datos["secciones"].get("avisos") or []
+        lista_avisos = self._estado.datos["secciones"].get("avisos") or []
         return {
             "temp": t.get("temp"),
             "icono": t.get("icono"),
@@ -435,7 +435,7 @@ class ApiFicha:
             "min": hoy.get("min"),
             "lluvia": t.get("lluvia_12h"),
             "lugar": t.get("lugar"),
-            "aviso": avisos[0]["nivel"] if avisos else None,
+            "aviso": lista_avisos[0]["nivel"] if lista_avisos else None,
         }
 
     def clic(self) -> bool:

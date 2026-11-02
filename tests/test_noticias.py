@@ -10,7 +10,7 @@ from email.utils import formatdate
 
 import pytest
 
-from panel_diario import datos
+from panel_diario.fuentes import comun, noticias
 
 
 def rss(titulares: Sequence[tuple[str, float]]) -> bytes:
@@ -24,7 +24,7 @@ def rss(titulares: Sequence[tuple[str, float]]) -> bytes:
 
 
 def preparar(monkeypatch: pytest.MonkeyPatch, feeds: dict[str, bytes]) -> None:
-    monkeypatch.setattr(datos, "_get", lambda url, **k: types.SimpleNamespace(content=feeds[url]))
+    monkeypatch.setattr(comun, "get", lambda url, **k: types.SimpleNamespace(content=feeds[url]))
 
 
 def test_cultura_mira_un_mes_y_las_noticias_36_horas(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -37,11 +37,11 @@ def test_cultura_mira_un_mes_y_las_noticias_36_horas(monkeypatch: pytest.MonkeyP
             "mundo": [{"nombre": "M", "url": "mundo"}],
         },
     }
-    noticias, errores = datos.obtener_noticias(cfg)
+    salida, errores = noticias.obtener_noticias(cfg)
     assert errores == []
-    assert len(noticias["cultura"]) == 2  # la de hace 10 días entra en Cultura
-    assert len(noticias["mundo"]) == 1  # pero no en Mundo (más de 36 h)
-    assert all(n["tema"] == "Espais" for n in noticias["cultura"])
+    assert len(salida["cultura"]) == 2  # la de hace 10 días entra en Cultura
+    assert len(salida["mundo"]) == 1  # pero no en Mundo (más de 36 h)
+    assert all(n["tema"] == "Espais" for n in salida["cultura"])
 
 
 def test_limite_de_titulares_por_pestana(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -69,9 +69,9 @@ def test_limite_de_titulares_por_pestana(monkeypatch: pytest.MonkeyPatch) -> Non
         "titulares_por_categoria": {"cultura": 10},
         "fuentes": {"mundo": [{"nombre": "M", "url": "a"}], "cultura": [{"nombre": "C", "url": "b"}]},
     }
-    noticias, _ = datos.obtener_noticias(cfg)
-    assert len(noticias["mundo"]) == 5
-    assert len(noticias["cultura"]) == 10
+    salida, _ = noticias.obtener_noticias(cfg)
+    assert len(salida["mundo"]) == 5
+    assert len(salida["cultura"]) == 10
 
 
 def test_filtre_exclou_infantil_i_exigeix_paraules() -> None:
@@ -82,33 +82,33 @@ def test_filtre_exclou_infantil_i_exigeix_paraules() -> None:
         {"titulo": "Concierto en Girona", "resumen": ""},
     ]
     # Exclou el que és infantil (sense accents ni majúscules)
-    assert [i["titulo"] for i in datos.filtrar_paraules(items, None, ["nens", "titelles"])] == [
+    assert [i["titulo"] for i in noticias.filtrar_paraules(items, None, ["nens", "titelles"])] == [
         "Festa major al parc",
         "Concierto en Madrid",
         "Concierto en Girona",
     ]
     # Exigeix que parli de Girona
-    assert [i["titulo"] for i in datos.filtrar_paraules(items, ["girona"], None)] == ["Concierto en Girona"]
+    assert [i["titulo"] for i in noticias.filtrar_paraules(items, ["girona"], None)] == ["Concierto en Girona"]
 
 
 def test_filtre_respecta_inici_de_paraula() -> None:
     # "nens" no ha d'eliminar "Llenç" ni "antenes"; sí "nenes"? no: només paraules que comencen per "nens"
     items = [{"titulo": "Exposició de llençols i antenes", "resumen": ""}]
-    assert datos.filtrar_paraules(items, None, ["nens"]) == items
+    assert noticias.filtrar_paraules(items, None, ["nens"]) == items
 
 
 def test_maxim_de_noticies_per_font() -> None:
     noticies = [{"titulo": f"t{i}", "tema": "", "medio": "Revista A"} for i in range(6)] + [
         {"titulo": "x", "tema": "Museus i expos", "medio": "Diari B"}
     ]
-    sortida = datos.limitar_per_font(noticies, 4)
+    sortida = noticias.limitar_per_font(noticies, 4)
     assert [n["titulo"] for n in sortida] == ["t0", "t1", "t2", "t3", "x"]
-    assert datos.limitar_per_font(noticies, None) == noticies
+    assert noticias.limitar_per_font(noticies, None) == noticies
 
 
 def test_neteja_resums_de_wordpress() -> None:
-    assert datos.netejar_resum("Una expo al museu sobre la nit. [&#8230;]") == "Una expo al museu sobre la nit."
-    assert datos.netejar_resum("Festa al barri [...]") == "Festa al barri"
+    assert noticias.netejar_resum("Una expo al museu sobre la nit. [&#8230;]") == "Una expo al museu sobre la nit."
+    assert noticias.netejar_resum("Festa al barri [...]") == "Festa al barri"
     text = "Concert a la sala. L'entrada Concert va aparèixer primer a Revista A."
-    assert datos.netejar_resum(text) == "Concert a la sala."
-    assert datos.netejar_resum("Text normal") == "Text normal"
+    assert noticias.netejar_resum(text) == "Concert a la sala."
+    assert noticias.netejar_resum("Text normal") == "Text normal"

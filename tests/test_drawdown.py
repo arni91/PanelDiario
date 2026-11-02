@@ -11,7 +11,7 @@ from typing import Any, NoReturn
 
 import pytest
 
-from panel_diario import datos
+from panel_diario.fuentes import drawdown
 
 CFG: dict[str, Any] = {
     "drawdown": {
@@ -46,20 +46,20 @@ def respuesta_yahoo(cierres: list[float | None], precio_actual: float) -> dict:
 
 
 def test_caida_en_maximo_es_cero() -> None:
-    assert datos.calcular_caida(100, 100) == 0
+    assert drawdown.calcular_caida(100, 100) == 0
 
 
 def test_caida_porcentual() -> None:
-    assert datos.calcular_caida(75, 100) == pytest.approx(-25)
+    assert drawdown.calcular_caida(75, 100) == pytest.approx(-25)
 
 
 @pytest.mark.parametrize("caida, nivel", [(-5, 0), (-19.99, 0), (-20, 1), (-29.9, 1), (-30, 2), (-40, 3), (-60, 3)])
 def test_nivel_alcanzado(caida: float, nivel: int) -> None:
-    assert datos.nivel_alcanzado(caida, [-20, -30, -40]) == nivel
+    assert drawdown.nivel_alcanzado(caida, [-20, -30, -40]) == nivel
 
 
 def test_maximo_ignora_cierres_vacios() -> None:
-    maximo, fecha_max, primero = datos.maximo_de_cierres(respuesta_yahoo([80, None, 120, 110], 100))
+    maximo, fecha_max, primero = drawdown.maximo_de_cierres(respuesta_yahoo([80, None, 120, 110], 100))
     assert maximo == 120
     assert fecha_max == "26/07/2019"
     assert primero == "24/07/2019"
@@ -75,8 +75,8 @@ def test_primera_vez_descarga_historico_y_calcula_niveles(tmp_path: Path, monkey
         pedidos.append(rango)
         return respuesta_yahoo([100, 150, 120], 105)
 
-    monkeypatch.setattr(datos, "_yahoo_chart", yahoo_falso)
-    d = datos.obtener_drawdown(CFG, tmp_path / "dd.json")
+    monkeypatch.setattr(drawdown, "_yahoo_chart", yahoo_falso)
+    d = drawdown.obtener_drawdown(CFG, tmp_path / "dd.json")
     assert pedidos == ["max"]  # sin caché: histórico completo
     assert d["maximo"] == 150 and d["caida"] == -30.0 and d["nivel"] == 3
     assert [n["extra_pct"] for n in d["niveles"]] == [50, 100, 200, None]
@@ -88,16 +88,16 @@ def test_niveles_se_ordenan_aunque_esten_desordenados_en_config(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     cfg = {"drawdown": {**CFG["drawdown"], "niveles": list(reversed(CFG["drawdown"]["niveles"]))}}
-    monkeypatch.setattr(datos, "_yahoo_chart", lambda t, r: respuesta_yahoo([100], 85))
-    d = datos.obtener_drawdown(cfg, tmp_path / "dd.json")
+    monkeypatch.setattr(drawdown, "_yahoo_chart", lambda t, r: respuesta_yahoo([100], 85))
+    d = drawdown.obtener_drawdown(cfg, tmp_path / "dd.json")
     assert [n["umbral"] for n in d["niveles"]] == [-10, -20, -30, -40]
     assert d["nivel"] == 1  # -15 %: solo el nivel de -10 %
 
 
 def test_con_cache_solo_pide_precio_y_actualiza_maximo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     cache = tmp_path / "dd.json"
-    monkeypatch.setattr(datos, "_yahoo_chart", lambda t, r: respuesta_yahoo([100, 150], 120))
-    datos.obtener_drawdown(CFG, cache)
+    monkeypatch.setattr(drawdown, "_yahoo_chart", lambda t, r: respuesta_yahoo([100, 150], 120))
+    drawdown.obtener_drawdown(CFG, cache)
     # Forzamos que el precio esté "viejo" pero el histórico reciente
     c = json.loads(cache.read_text())
     c["precio_ts_consulta"] = 0
@@ -108,16 +108,16 @@ def test_con_cache_solo_pide_precio_y_actualiza_maximo(tmp_path: Path, monkeypat
         pedidos.append(rango)
         return respuesta_yahoo([149, 160], 160)
 
-    monkeypatch.setattr(datos, "_yahoo_chart", yahoo_falso)
-    d = datos.obtener_drawdown(CFG, cache)
+    monkeypatch.setattr(drawdown, "_yahoo_chart", yahoo_falso)
+    d = drawdown.obtener_drawdown(CFG, cache)
     assert pedidos == ["5d"]  # no vuelve a bajar todo el histórico
     assert d["maximo"] == 160 and d["caida"] == 0  # el precio nuevo supera el máximo
 
 
 def test_si_yahoo_falla_usa_ultimo_dato_y_avisa(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     cache = tmp_path / "dd.json"
-    monkeypatch.setattr(datos, "_yahoo_chart", lambda t, r: respuesta_yahoo([100, 200], 150))
-    datos.obtener_drawdown(CFG, cache)
+    monkeypatch.setattr(drawdown, "_yahoo_chart", lambda t, r: respuesta_yahoo([100, 200], 150))
+    drawdown.obtener_drawdown(CFG, cache)
     c = json.loads(cache.read_text())
     c["precio_ts_consulta"] = 0
     cache.write_text(json.dumps(c))
@@ -125,21 +125,21 @@ def test_si_yahoo_falla_usa_ultimo_dato_y_avisa(tmp_path: Path, monkeypatch: pyt
     def falla(ticker: str, rango: str) -> NoReturn:
         raise RuntimeError("sin conexión")
 
-    monkeypatch.setattr(datos, "_yahoo_chart", falla)
-    d = datos.obtener_drawdown(CFG, cache)
+    monkeypatch.setattr(drawdown, "_yahoo_chart", falla)
+    d = drawdown.obtener_drawdown(CFG, cache)
     assert d["desactualizado"] is True
     assert d["precio"] == 150 and d["caida"] == -25.0
 
 
 def test_sin_ticker_la_seccion_queda_sin_configurar(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(datos, "_yahoo_chart", lambda t, r: pytest.fail("no debe llamar a Yahoo"))
-    assert datos.obtener_drawdown({"drawdown": {"ticker": ""}}, tmp_path / "dd.json") == {"sin_configurar": True}
+    monkeypatch.setattr(drawdown, "_yahoo_chart", lambda t, r: pytest.fail("no debe llamar a Yahoo"))
+    assert drawdown.obtener_drawdown({"drawdown": {"ticker": ""}}, tmp_path / "dd.json") == {"sin_configurar": True}
 
 
 def test_si_yahoo_falla_sin_cache_lanza_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def falla(ticker: str, rango: str) -> NoReturn:
         raise RuntimeError("sin conexión")
 
-    monkeypatch.setattr(datos, "_yahoo_chart", falla)
+    monkeypatch.setattr(drawdown, "_yahoo_chart", falla)
     with pytest.raises(RuntimeError):
-        datos.obtener_drawdown(CFG, tmp_path / "dd.json")
+        drawdown.obtener_drawdown(CFG, tmp_path / "dd.json")
