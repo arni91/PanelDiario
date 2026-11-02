@@ -7,17 +7,21 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - Datos: Open-Meteo, MeteoAlarm, iCal, Yahoo Finance (no oficial), football-data.org, RSS y Google Noticias. Traducción con el traductor de Google (no oficial).
 
 # Estructura
-- datos.py: una función por fuente. Si falla, lanza excepción y panel.py conserva el último dato bueno.
-- panel.py: ventanas, bandeja, atajo, arrastre multimonitor, anclaje al escritorio (Win32 con ctypes), bucle de actualización y caché.
-- config.json: TODA la configuración personal. NO va a git. Plantilla pública: config.example.json.
+- src/panel_diario/datos.py: una función por fuente. Si falla, lanza excepción y panel.py conserva el último dato bueno. Si a una sección le falta su clave, devuelve {"sin_clave"/"sin_url"/"sin_configurar": True} y la interfaz la oculta.
+- src/panel_diario/panel.py: ventanas, bandeja, atajo, arrastre multimonitor, anclaje al escritorio (Win32 con ctypes), bucle de actualización y caché. Arranque: python -m panel_diario.
+- src/panel_diario/ui/: ficha.html (píldora) e index.html (panel). demo.json: datos para --demo, con sus propias pestañas.
+- config.json (raíz): TODA la configuración personal. NO va a git. Plantilla pública: config.example.json.
+- scripts/revisar_privacidad.py: revisión de privacidad (pre-commit y CI).
 - Datos en ejecución: %APPDATA%\PanelDiario (caché, posición, log).
 
-# Comandos
-- Instalar o reiniciar tras un cambio: instalar.bat (cierra la versión abierta y arranca la nueva).
-- Ejecutar con log en consola: python panel.py --consola
-- Interfaz con datos de prueba: python panel.py --demo
-- Tests: python -m pytest tests (red simulada, sin internet)
-- Comprobar fuentes reales: python probar_fuentes.py
+# Comandos (Git Bash o terminal, en la raíz)
+- Instalar o reiniciar tras un cambio: instalar.bat (en Git Bash: cmd //c instalar.bat). Cierra la versión abierta y arranca la nueva.
+- Ejecutar con log en consola: uv run python -m panel_diario --consola
+- Interfaz con datos de prueba: uv run python -m panel_diario --demo
+- Tests: uv run pytest (red simulada, sin internet)
+- Lint, formato y tipos: uv run ruff check · uv run ruff format · uv run mypy
+- Revisión de privacidad: uv run python scripts/revisar_privacidad.py (también la lanza pre-commit)
+- Comprobar fuentes reales: uv run python -m panel_diario.probar_fuentes
 
 # Reglas del proyecto
 - Una fuente caída nunca rompe el panel: se muestra el último dato bueno y un aviso en el pie.
@@ -46,37 +50,21 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - pywebview impone 200x100 px de mínimo: pasar siempre min_size en create_window.
 - Con la píldora anclada al escritorio (SetParent), FindWindowW ya no la encuentra: obtener el hwnd ANTES de anclarla.
 - Al abrir el panel desde la píldora, el foco vuelve un instante a ella: por eso se ignora la pérdida de foco durante 1 s.
+- uv en este equipo: los hardlinks desde la caché fallan ("operación de nube"); por eso link-mode = "copy" en pyproject.toml.
+- mypy: el Control de aplicaciones de Windows bloquea sus DLL compiladas; se instala en Python puro (no-binary-package).
+- instalar.bat usa `uv sync --no-dev --inexact`: sin --inexact borraría las herramientas de desarrollo del .venv.
+- La revisión de privacidad no busca hexadecimal en uv.lock (huellas públicas de PyPI); sus propios ejemplos se escriben por partes.
+- Los .bat necesitan CRLF (.gitattributes): con LF, cmd.exe puede fallar en los goto.
+- astral-sh/setup-uv no publica etiquetas cortas (v10): fijar la versión completa en ci.yml.
 
 # Plan de trabajo (borrar esta sección al terminarlo)
 Hacerlo por fases y esperar mi OK entre fases. Cada paso: un commit (Conventional Commits) con los tests en verde y la revisión de privacidad hecha.
 
-Fase 0 — Comprobaciones: HECHA. Pendiente: configurar en el repositorio, justo tras git init, user.name "arni91" y el email noreply (sale de `gh api user`: <id>+<login>@users.noreply.github.com).
-
-Fase 1 — Limpiar lo personal (todavía SIN git)
-1. Mover skill_probar/SKILL.md a .claude/skills/probar/SKILL.md.
-2. .gitignore: config.json, .privado/, .env, .venv, __pycache__, *.log, .pytest_cache, .ruff_cache, .mypy_cache.
-3. Sacar a config.json lo que hoy está fijado en el código: lista de pestañas con su nombre, nombre del equipo y valores por defecto del drawdown (los de datos.py son personales: cambiarlos por ejemplos). Formato nuevo, el mismo que escribirá el asistente de la Fase 4: la sección "barca" pasa a "futbol" y los niveles del drawdown se expresan en % extra sobre la aportación habitual, sin euros (p. ej. -10 % → +50 %, -20 % → +100 %, -30 % → +200 %, -40 % → toda la reserva).
-4. Crear config.example.json genérico, con las claves vacías. Si falta config.json, el panel falla pronto con un mensaje claro e instalar.bat lo crea copiando la plantilla.
-5. Hacer genéricos demo.json, los tests y la documentación. Ciudad de ejemplo que no sea la mía (ninguna de .privado/terminos.txt).
-6. Credenciales para quien descargue el widget: si falta una clave, se oculta solo esa sección y el pie dice qué falta (el panel solo falla si config.json está mal escrito). instalar.bat abre config.json en el Bloc de notas la primera vez. Instrucciones por credencial en la documentación (iCal secreto, football-data y team_id, coordenadas) y qué funciona sin claves.
-7. Hacer la revisión de privacidad de todos los ficheros. Enseñarme el resultado: tiene que salir limpio.
-
-Fase 2 — Repositorio
-1. git init (rama main), revisión de privacidad y primer commit "chore: estado inicial del Panel Diario".
-2. Preguntarme la licencia (recomendada: MIT) y añadirla.
-3. gh repo create panel-diario --public --source . --push
-
-Fase 3 — Estándar
-1. pyproject.toml con uv y dependencias fijadas (uv.lock), entorno en .venv. pytest, ruff, mypy y pre-commit como dependencias de desarrollo. Adaptar instalar.bat a uv.
-2. Estructura src/panel_diario/ y tests/ (sin sys.path.insert).
-3. ruff sin errores. Type hints y mypy sin errores (módulo a módulo).
-4. pre-commit con ruff, mypy y un script que haga la revisión de privacidad (que lea .privado/terminos.txt y bloquee el commit si encuentra algo), para que se compruebe solo en cada commit.
-5. GitHub Actions: lint, tipos y tests en cada push, en windows-latest (panel.py usa la API de Windows).
-6. Actualizar README.md (ya existe; LEEME.md ya está borrado) con la instalación con uv. Capturas solo con --demo. Actualizar este CLAUDE.md.
+Fases 0 a 3 — HECHAS: limpieza de lo personal, repositorio público github.com/arni91/panel-diario (MIT, commits como arni91 con el email noreply), uv + src/, ruff, mypy, pre-commit y CI.
 
 Fase 4 — Asistente de primera configuración
 Tercera ventana de pywebview (HTML) que pregunta y escribe config.json. Se abre sola si falta config.json y desde la bandeja ("Configura…"). Cada paso se puede saltar; si se salta, esa sección se oculta en el panel.
-1. Tiempo: buscar la ciudad (geocodificación de Open-Meteo, sin clave) y elegir entre coincidencias; los avisos de MeteoAlarm salen del país.
+1. Tiempo: buscar la ciudad (geocodificación de Open-Meteo, sin clave) y elegir entre coincidencias; los avisos de MeteoAlarm salen del país. La zona horaria también debe salir de ahí: hoy está fijada a Europe/Madrid en datos.py (TZ y la llamada a Open-Meteo).
 2. Fútbol: clave de football-data → competición → equipo de una lista (nadie escribe un team_id).
 3. Inversión (opcional): ETF de una lista de habituales o ticker propio; niveles en % sobre la aportación, editables. Sin importes.
 4. Noticias: ámbitos (Món, Estat, comunidad) + temas (cultura, tecnologia, IA/robòtica, ciència, esports…) → una pestaña por elección con búsquedas de Google Noticias; "afegeix els teus mitjans" por RSS, verificando que responden antes de guardarlos. En el código solo un catálogo de medios generales; los gustos de cada uno van a su config.json.

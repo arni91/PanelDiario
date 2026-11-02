@@ -20,10 +20,10 @@ Las secciones que no configures (por ejemplo, el fútbol sin clave) simplemente 
 
 ## Instalación
 
-Requisitos: Windows 10 u 11 y Python 3.11–3.13 (si no lo tienes, `instalar.bat` te dice cómo instalarlo con una línea).
+Requisitos: Windows 10 u 11 y [uv](https://docs.astral.sh/uv/), el gestor de Python del proyecto. Si no lo tienes, abre una terminal y escribe `winget install astral-sh.uv`. No hace falta instalar Python: uv descarga la versión correcta.
 
-1. Descarga el proyecto (botón **Code → Download ZIP** en GitHub, o `git clone`).
-2. Doble clic en **instalar.bat**.
+1. Descarga el proyecto (botón **Code → Download ZIP** en GitHub, o `git clone`) en una carpeta fuera de OneDrive (por ejemplo `C:\dev\PanelDiario`): el entorno de Python (`.venv`) tiene miles de ficheros.
+2. Doble clic en **instalar.bat**. Instala las dependencias con las versiones exactas de `uv.lock`.
 3. La primera vez crea `config.json` a partir de `config.example.json` y lo abre en el Bloc de notas: rellénalo (ver abajo), guarda y cierra.
 4. El panel arranca y, a partir de ahora, se abre solo al encender el PC.
 
@@ -84,12 +84,29 @@ El plan gratuito incluye las ligas principales y la Champions, pero no las copas
 
 ## Ejecutar y probar
 
-Con el entorno que crea `instalar.bat` (`%LOCALAPPDATA%\PanelDiario\venv`):
+Desde la carpeta del proyecto:
 
-- Con el log en la consola: `python panel.py --consola`
-- Con datos de demostración, sin internet ni configuración: `python panel.py --demo`
-- Tests (sin internet, la red se simula): `python -m pytest tests`
-- Comprobar las fuentes reales: `python probar_fuentes.py`
+- Con el log en la consola: `uv run python -m panel_diario --consola`
+- Con datos de demostración, sin internet ni configuración: `uv run python -m panel_diario --demo`
+- Tests (sin internet, la red se simula): `uv run pytest`
+- Comprobar las fuentes reales: `uv run python -m panel_diario.probar_fuentes` (o doble clic en `probar_fuentes.bat`)
+
+## Desarrollo
+
+- `uv sync` instala también las herramientas de desarrollo (pytest, ruff, mypy, pre-commit).
+- `uv run pre-commit install` activa las comprobaciones antes de cada commit: lint y formato (ruff), tipos (mypy) y la revisión de privacidad.
+- A mano: `uv run ruff check`, `uv run ruff format`, `uv run mypy`, `uv run python scripts/revisar_privacidad.py`.
+- **Revisión de privacidad**: `scripts/revisar_privacidad.py` bloquea el commit si un fichero versionado contiene algo con forma de clave o token, o alguno de tus términos privados. Pon esos términos (tu ciudad, tu nombre, tus claves…) en `.privado/terminos.txt`, uno por línea; la carpeta `.privado/` no se sube a git.
+- GitHub Actions ejecuta lint, tipos, tests y la revisión de privacidad en cada push, en Windows.
+
+Estructura:
+
+```
+src/panel_diario/    código: panel.py (ventanas, bandeja, Win32), datos.py (una función por fuente), ui/ (HTML)
+tests/               tests con pytest (la red se simula)
+scripts/             revisión de privacidad
+config.example.json  plantilla pública de config.json
+```
 
 ## Si algo falla
 
