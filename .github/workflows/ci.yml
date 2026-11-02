@@ -10,8 +10,8 @@ jobs:
   comprobar:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
       - name: Instalar dependencias (versiones de uv.lock)
         run: uv sync --locked
       - name: Lint (ruff)
