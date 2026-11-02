@@ -1,8 +1,5 @@
 """Tests de la agenda (datos.py): los enlaces largos como "lugar" se acortan."""
 
-import sys
-from pathlib import Path
-
 from panel_diario import datos
 
 

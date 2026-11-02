@@ -1,9 +1,8 @@
 """Tests de la revisión de privacidad (scripts/revisar_privacidad.py): términos, formas de claves y lista."""
 
-import sys
 from pathlib import Path
 
-import revisar_privacidad as rp   # scripts/ está en el pythonpath de pytest (pyproject.toml)
+import revisar_privacidad as rp  # scripts/ está en el pythonpath de pytest (pyproject.toml)
 
 
 def test_encuentra_terminos_sin_distinguir_mayusculas():

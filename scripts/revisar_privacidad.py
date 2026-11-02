@@ -37,8 +37,13 @@ def leer_terminos(ruta: Path) -> list[str]:
 
 def ficheros_versionados() -> list[Path]:
     """Ficheros que git versiona o versionaría (incluye los nuevos sin añadir, no los ignorados)."""
-    salida = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"],
-                            cwd=RAIZ, capture_output=True, text=True, check=True).stdout
+    salida = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+        cwd=RAIZ,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
     return [RAIZ / f for f in salida.splitlines() if (RAIZ / f).is_file()]
 
 
@@ -50,8 +55,9 @@ def patrones_para(ruta: Path) -> dict[str, re.Pattern[str]]:
     return PATRONES
 
 
-def revisar_texto(texto: str, terminos: list[str],
-                  patrones: dict[str, re.Pattern[str]] = PATRONES) -> list[tuple[int, str]]:
+def revisar_texto(
+    texto: str, terminos: list[str], patrones: dict[str, re.Pattern[str]] = PATRONES
+) -> list[tuple[int, str]]:
     """Devuelve (número de línea, motivo) de cada hallazgo. El motivo nunca incluye el secreto."""
     hallazgos = []
     for n, linea in enumerate(texto.splitlines(), start=1):
@@ -77,7 +83,7 @@ def main(argv: list[str]) -> int:
         try:
             texto = ruta.read_text(encoding="utf-8")
         except (UnicodeDecodeError, FileNotFoundError):
-            continue   # binarios (imágenes...) y ficheros borrados: no hay texto que revisar
+            continue  # binarios (imágenes...) y ficheros borrados: no hay texto que revisar
         for n, motivo in revisar_texto(texto, terminos, patrones_para(ruta)):
             print(f"{ruta.relative_to(RAIZ)}:{n}: {motivo}")
             total += 1

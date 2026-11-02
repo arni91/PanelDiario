@@ -32,15 +32,32 @@ def main():
     print("\nOTROS DATOS")
     pruebas = [
         ("Tiempo (Open-Meteo)", lambda: datos.obtener_tiempo(cfg), lambda r: f"{r['temp']}° {r['texto']}"),
-        ("Avisos (MeteoAlarm/AEMET)", lambda: datos.obtener_avisos(cfg), lambda r: f"{len(r)} avisos activos en tus zonas"),
-        ("Caídas del ETF (Yahoo Finance)",
-         lambda: datos.obtener_drawdown(cfg, Path(tempfile.mkdtemp()) / "prueba.json"),  # sin caché: descarga todo
-         lambda r: "sin ticker en config.json" if r.get("sin_configurar") else
-                   f"{r['precio']} {r['moneda']} · máximo {r['maximo']} ({r['fecha_maximo']}) · caída {r['caida']} % · "
-                   f"histórico desde {r['primer_dato']}"),
-        ("Fútbol (football-data.org)", lambda: datos.obtener_futbol(cfg),
-         lambda r: "falta la clave en config.json" if r.get("sin_clave") else
-                   "falta team_id en config.json" if r.get("sin_equipo") else f"{len(r['proximos'])} próximos partidos"),
+        (
+            "Avisos (MeteoAlarm/AEMET)",
+            lambda: datos.obtener_avisos(cfg),
+            lambda r: f"{len(r)} avisos activos en tus zonas",
+        ),
+        (
+            "Caídas del ETF (Yahoo Finance)",
+            lambda: datos.obtener_drawdown(cfg, Path(tempfile.mkdtemp()) / "prueba.json"),  # sin caché: descarga todo
+            lambda r: (
+                "sin ticker en config.json"
+                if r.get("sin_configurar")
+                else f"{r['precio']} {r['moneda']} · máximo {r['maximo']} ({r['fecha_maximo']}) · "
+                f"caída {r['caida']} % · histórico desde {r['primer_dato']}"
+            ),
+        ),
+        (
+            "Fútbol (football-data.org)",
+            lambda: datos.obtener_futbol(cfg),
+            lambda r: (
+                "falta la clave en config.json"
+                if r.get("sin_clave")
+                else "falta team_id en config.json"
+                if r.get("sin_equipo")
+                else f"{len(r['proximos'])} próximos partidos"
+            ),
+        ),
     ]
     for nombre, fn, resumen in pruebas:
         try:

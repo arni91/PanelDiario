@@ -4,9 +4,7 @@ Regla: las noticias en catalán o castellano se quedan como están; las de otros
 (inglés, francés...) se traducen al castellano.
 """
 
-import sys
 import types
-from pathlib import Path
 
 import pytest
 
@@ -41,7 +39,7 @@ def traductor_fals(monkeypatch):
 def test_traduce_y_guarda_en_memoria(traductor_fals):
     assert datos.traduir("AI agents are coming", "es") == "Llegan los agentes de IA"
     assert datos.traduir("AI agents are coming", "es") == "Llegan los agentes de IA"
-    assert traductor_fals == ["AI agents are coming"]   # la segunda vez no lo vuelve a pedir
+    assert traductor_fals == ["AI agents are coming"]  # la segunda vez no lo vuelve a pedir
 
 
 def test_conserva_el_original_si_el_idioma_detectado_se_conserva(traductor_fals):
@@ -49,16 +47,20 @@ def test_conserva_el_original_si_el_idioma_detectado_se_conserva(traductor_fals)
 
 
 def test_ingles_y_frances_al_castellano_catalan_y_castellano_igual(traductor_fals):
-    salida = {"mundo": [{"titulo": "Séisme au Tibet", "idioma": "", "resumen": ""},
-                        {"titulo": "Terremoto en el Tíbet", "idioma": "", "resumen": ""},
-                        {"titulo": "ERROR", "idioma": "", "resumen": ""}],
-              "cultura": [{"titulo": "Festa major al parc", "idioma": "", "resumen": ""}],
-              "tecnologia": [{"titulo": "AI agents are coming", "idioma": "", "resumen": ""}]}
+    salida = {
+        "mundo": [
+            {"titulo": "Séisme au Tibet", "idioma": "", "resumen": ""},
+            {"titulo": "Terremoto en el Tíbet", "idioma": "", "resumen": ""},
+            {"titulo": "ERROR", "idioma": "", "resumen": ""},
+        ],
+        "cultura": [{"titulo": "Festa major al parc", "idioma": "", "resumen": ""}],
+        "tecnologia": [{"titulo": "AI agents are coming", "idioma": "", "resumen": ""}],
+    }
     datos.traduir_noticies(salida, {})
-    assert salida["mundo"][0]["titulo"] == "Terremoto en el Tíbet"         # francés -> castellano
-    assert salida["mundo"][1]["titulo"] == "Terremoto en el Tíbet"         # castellano: igual
-    assert salida["mundo"][2]["titulo"] == "ERROR"                         # error: se queda el original
-    assert salida["cultura"][0]["titulo"] == "Festa major al parc"         # catalán: igual
+    assert salida["mundo"][0]["titulo"] == "Terremoto en el Tíbet"  # francés -> castellano
+    assert salida["mundo"][1]["titulo"] == "Terremoto en el Tíbet"  # castellano: igual
+    assert salida["mundo"][2]["titulo"] == "ERROR"  # error: se queda el original
+    assert salida["cultura"][0]["titulo"] == "Festa major al parc"  # catalán: igual
     assert salida["tecnologia"][0]["titulo"] == "Llegan los agentes de IA"  # inglés -> castellano
 
 

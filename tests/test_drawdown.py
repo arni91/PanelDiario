@@ -5,29 +5,43 @@ Yahoo se sustituye por respuestas falsas (mock): los tests no usan internet.
 """
 
 import json
-import sys
 from datetime import datetime
-from pathlib import Path
 
 import pytest
 
 from panel_diario import datos
 
-CFG = {"drawdown": {"ticker": "EJEMPLO.DE", "actualizar_minutos": 30, "recalcular_dias": 7,
-                    "niveles": [{"caida": -10, "extra_pct": 50}, {"caida": -20, "extra_pct": 100},
-                                {"caida": -30, "extra_pct": 200}, {"caida": -40, "toda_la_reserva": True}]}}
+CFG = {
+    "drawdown": {
+        "ticker": "EJEMPLO.DE",
+        "actualizar_minutos": 30,
+        "recalcular_dias": 7,
+        "niveles": [
+            {"caida": -10, "extra_pct": 50},
+            {"caida": -20, "extra_pct": 100},
+            {"caida": -30, "extra_pct": 200},
+            {"caida": -40, "toda_la_reserva": True},
+        ],
+    }
+}
 
 
 def respuesta_yahoo(cierres, precio_actual):
     """Imita lo que devuelve Yahoo: un cierre por día y el precio actual en 'meta'."""
     t0 = int(datetime(2019, 7, 24, 12).timestamp())
-    return {"meta": {"regularMarketPrice": precio_actual, "regularMarketTime": t0 + 86400 * len(cierres),
-                     "currency": "EUR"},
-            "timestamp": [t0 + 86400 * i for i in range(len(cierres))],
-            "indicators": {"quote": [{"close": cierres}]}}
+    return {
+        "meta": {
+            "regularMarketPrice": precio_actual,
+            "regularMarketTime": t0 + 86400 * len(cierres),
+            "currency": "EUR",
+        },
+        "timestamp": [t0 + 86400 * i for i in range(len(cierres))],
+        "indicators": {"quote": [{"close": cierres}]},
+    }
 
 
 # --- Cálculo puro ---
+
 
 def test_caida_en_maximo_es_cero():
     assert datos.calcular_caida(100, 100) == 0
@@ -51,11 +65,12 @@ def test_maximo_ignora_cierres_vacios():
 
 # --- Flujo completo con caché (Yahoo simulado) ---
 
+
 def test_primera_vez_descarga_historico_y_calcula_niveles(tmp_path, monkeypatch):
     pedidos = []
     monkeypatch.setattr(datos, "_yahoo_chart", lambda t, r: pedidos.append(r) or respuesta_yahoo([100, 150, 120], 105))
     d = datos.obtener_drawdown(CFG, tmp_path / "dd.json")
-    assert pedidos == ["max"]                       # sin caché: histórico completo
+    assert pedidos == ["max"]  # sin caché: histórico completo
     assert d["maximo"] == 150 and d["caida"] == -30.0 and d["nivel"] == 3
     assert [n["extra_pct"] for n in d["niveles"]] == [50, 100, 200, None]
     assert [n["toda_la_reserva"] for n in d["niveles"]] == [False, False, False, True]
@@ -67,7 +82,7 @@ def test_niveles_se_ordenan_aunque_esten_desordenados_en_config(tmp_path, monkey
     monkeypatch.setattr(datos, "_yahoo_chart", lambda t, r: respuesta_yahoo([100], 85))
     d = datos.obtener_drawdown(cfg, tmp_path / "dd.json")
     assert [n["umbral"] for n in d["niveles"]] == [-10, -20, -30, -40]
-    assert d["nivel"] == 1   # -15 %: solo el nivel de -10 %
+    assert d["nivel"] == 1  # -15 %: solo el nivel de -10 %
 
 
 def test_con_cache_solo_pide_precio_y_actualiza_maximo(tmp_path, monkeypatch):
@@ -81,8 +96,8 @@ def test_con_cache_solo_pide_precio_y_actualiza_maximo(tmp_path, monkeypatch):
     pedidos = []
     monkeypatch.setattr(datos, "_yahoo_chart", lambda t, r: pedidos.append(r) or respuesta_yahoo([149, 160], 160))
     d = datos.obtener_drawdown(CFG, cache)
-    assert pedidos == ["5d"]                        # no vuelve a bajar todo el histórico
-    assert d["maximo"] == 160 and d["caida"] == 0   # el precio nuevo supera el máximo
+    assert pedidos == ["5d"]  # no vuelve a bajar todo el histórico
+    assert d["maximo"] == 160 and d["caida"] == 0  # el precio nuevo supera el máximo
 
 
 def test_si_yahoo_falla_usa_ultimo_dato_y_avisa(tmp_path, monkeypatch):
