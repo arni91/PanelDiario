@@ -1,0 +1,4 @@
+# Normaliza los saltos de línea en el repositorio (LF) y deja los .bat con CRLF al descargarlos:
+# cmd.exe puede fallar con los goto y las etiquetas de un .bat que solo tiene LF.
+* text=auto
+*.bat text eol=crlf
