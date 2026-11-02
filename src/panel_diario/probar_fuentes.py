@@ -8,8 +8,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from panel_diario.config import cargar_config
 from panel_diario.fuentes import avisos, drawdown, futbol, noticias, tiempo
-from panel_diario.panel import cargar_config
 
 
 def linea(ok: bool, nombre: str, detalle: str) -> None:

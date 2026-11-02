@@ -1,5 +1,5 @@
-"""Punto de entrada: `python -m panel_diario` arranca el panel (ver panel.py para las opciones)."""
+"""Punto de entrada: `python -m panel_diario` arranca el panel (opciones en app.py)."""
 
-from panel_diario.panel import main
+from panel_diario.app import main
 
 main()
