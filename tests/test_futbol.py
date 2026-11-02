@@ -9,8 +9,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import datos  # noqa: E402
+from panel_diario import datos
 
 CFG = {"futbol": {"nombre": "Equip d'exemple", "football_data_api_key": "clave-falsa", "team_id": 1}}
 

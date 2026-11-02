@@ -3,8 +3,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import datos  # noqa: E402
+from panel_diario import datos
 
 
 def test_enlace_largo_se_acorta_al_dominio():

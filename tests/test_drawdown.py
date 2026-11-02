@@ -11,8 +11,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import datos  # noqa: E402
+from panel_diario import datos
 
 CFG = {"drawdown": {"ticker": "EJEMPLO.DE", "actualizar_minutos": 30, "recalcular_dias": 7,
                     "niveles": [{"caida": -10, "extra_pct": 50}, {"caida": -20, "extra_pct": 100},

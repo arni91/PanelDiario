@@ -1,17 +1,15 @@
 """
 Comprueba una a una todas las fuentes de config.json y dice cuáles responden.
 
-Uso:  python probar_fuentes.py
+Uso:  uv run python -m panel_diario.probar_fuentes
 """
 
-import json
 import sys
 import tempfile
 from pathlib import Path
 
-import datos
-
-BASE = Path(__file__).resolve().parent
+from panel_diario import datos
+from panel_diario.panel import cargar_config
 
 
 def linea(ok, nombre, detalle):
@@ -20,7 +18,7 @@ def linea(ok, nombre, detalle):
 
 
 def main():
-    cfg = json.loads((BASE / "config.json").read_text(encoding="utf-8"))
+    cfg = cargar_config()
     fallos = 0
 
     print("\nNOTICIAS (RSS)")

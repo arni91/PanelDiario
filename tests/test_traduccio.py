@@ -10,8 +10,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import datos  # noqa: E402
+from panel_diario import datos
 
 # texto original -> (idioma que detecta el traductor, traducción al castellano)
 DICCIONARI = {

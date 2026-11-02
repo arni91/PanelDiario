@@ -1,0 +1,71 @@
+# Proyecto y dependencias. Las versiones exactas quedan fijadas en uv.lock (uv sync las instala).
+[project]
+name = "panel-diario"
+dynamic = ["version"]
+description = "Widget de escritorio para Windows: tiempo, avisos, agenda, fútbol, caídas de un ETF y noticias por pestañas"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "pywebview>=6.2",
+    "pystray>=0.19.5",
+    "pillow>=13.0",
+    "requests>=2.34",
+    "feedparser>=6.0.14",
+    "keyboard>=0.13.5",
+    "tzdata>=2026.5",
+    "icalendar>=7.3",
+    "recurring-ical-events>=3.8",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+    "pre-commit",
+    "types-requests",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# La versión sale de VERSION en panel.py (la que se ve abajo del panel): un solo sitio que subir
+[tool.hatch.version]
+path = "src/panel_diario/panel.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/panel_diario"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["scripts"]   # para los tests de scripts/revisar_privacidad.py
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/W estilo, F errores, I orden de imports, B fallos típicos, UP sintaxis moderna, BLE excepciones genéricas
+select = ["E", "W", "F", "I", "B", "UP", "BLE"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src", "tests", "scripts"]
+mypy_path = "scripts"
+disallow_untyped_defs = true   # type hints obligatorios en todas las funciones
+warn_unused_ignores = true
+
+# Librerías sin anotaciones de tipos
+[[tool.mypy.overrides]]
+module = ["webview.*", "pystray.*", "keyboard.*", "feedparser.*", "recurring_ical_events.*"]
+ignore_missing_imports = true
+
+[tool.uv]
+# Copiar en vez de crear hardlinks desde la caché: en algunos Windows (carpetas con OneDrive)
+# los hardlinks fallan con "operación de nube" y el entorno queda a medias.
+link-mode = "copy"
+# mypy desde el código fuente (Python puro): sus DLL compiladas las bloquea el Control de
+# aplicaciones de Windows (Smart App Control) en algunos equipos.
+no-binary-package = ["mypy"]

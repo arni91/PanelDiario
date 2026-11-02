@@ -5,10 +5,10 @@ Una ficha pequeña en el escritorio muestra la temperatura; al hacer clic se
 despliega el panel completo. También hay un icono junto al reloj (menú: actualizar,
 configuración, salir).
 
-Uso:
-    pythonw panel.py          (normal, sin consola)
-    python panel.py --demo    (datos de prueba, sin internet)
-    python panel.py --consola (muestra el log en consola)
+Uso (desde la raíz del proyecto, con el entorno de uv):
+    uv run pythonw -m panel_diario          (normal, sin consola)
+    uv run python -m panel_diario --demo    (datos de prueba, sin internet)
+    uv run python -m panel_diario --consola (muestra el log en consola)
 """
 
 from __future__ import annotations
@@ -26,9 +26,12 @@ from pathlib import Path
 import webview
 from PIL import Image, ImageDraw, ImageFont
 
-import datos
+from panel_diario import datos
 
-BASE = Path(__file__).resolve().parent
+BASE = Path(__file__).resolve().parent   # carpeta del paquete: ui/ y demo.json
+# config.json vive en la raíz del proyecto (src/panel_diario -> src -> raíz), donde lo edita cada uno.
+# Funciona porque uv instala el proyecto en modo editable: el código se ejecuta desde esta carpeta.
+CONFIG = BASE.parents[1] / "config.json"
 DATOS_DIR = Path(os.environ.get("APPDATA", Path.home())) / "PanelDiario"
 DATOS_DIR.mkdir(parents=True, exist_ok=True)
 CACHE = DATOS_DIR / "cache.json"
@@ -57,7 +60,7 @@ class ConfigError(Exception):
     """config.json falta o no se puede leer: el panel no puede arrancar."""
 
 
-def cargar_config(ruta: Path = BASE / "config.json") -> dict:
+def cargar_config(ruta: Path = CONFIG) -> dict:
     if not ruta.exists():
         raise ConfigError("No trobo config.json. Executa instalar.bat: el crea a partir de config.example.json.")
     try:
@@ -655,7 +658,7 @@ def iniciar_bandeja(api, estado, cfg, icono_ref):
         menu = pystray.Menu(
             pystray.MenuItem("Obre el panell", lambda: api.alternar(), default=True),
             pystray.MenuItem("Actualitza ara", lambda: api.refrescar()),
-            pystray.MenuItem("Obre config.json", lambda: os.startfile(BASE / "config.json")),
+            pystray.MenuItem("Obre config.json", lambda: os.startfile(CONFIG)),
             pystray.MenuItem("Surt", lambda icono: salir(icono)),
         )
         icono = pystray.Icon("PanelDiario", icono_temperatura(None), "Panel Diario", menu)
@@ -782,6 +785,3 @@ def main():
 
     webview.start(arranque, private_mode=True)
 
-
-if __name__ == "__main__":
-    main()

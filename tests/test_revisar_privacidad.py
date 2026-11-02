@@ -3,8 +3,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-import revisar_privacidad as rp  # noqa: E402
+import revisar_privacidad as rp   # scripts/ está en el pythonpath de pytest (pyproject.toml)
 
 
 def test_encuentra_terminos_sin_distinguir_mayusculas():
@@ -18,6 +17,13 @@ def test_encuentra_formas_de_claves_sin_lista():
     url = "https://x/calendar/ical/a%40b/" + "priv" + "ate-zz/basic.ics"
     texto = f'clave = "{clave}"\nurl = "{url}"'
     assert rp.revisar_texto(texto, []) == [(1, "clave hexadecimal larga"), (2, "dirección iCal secreta")]
+
+
+def test_en_uv_lock_no_busca_hexadecimal_pero_si_terminos():
+    linea = 'url = "https://x/' + "cd" * 30 + '/p.whl", hash = "sha256:' + "ab" * 32 + '" ciudadfalsa'
+    uv_lock = rp.patrones_para(Path("uv.lock"))
+    assert rp.revisar_texto(linea, ["ciudadfalsa"], uv_lock) == [(1, "término privado «ciudadfalsa»")]
+    assert rp.revisar_texto(linea, [], rp.patrones_para(Path("otro.py"))) == [(1, "clave hexadecimal larga")]
 
 
 def test_texto_limpio():

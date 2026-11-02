@@ -42,7 +42,16 @@ def ficheros_versionados() -> list[Path]:
     return [RAIZ / f for f in salida.splitlines() if (RAIZ / f).is_file()]
 
 
-def revisar_texto(texto: str, terminos: list[str]) -> list[tuple[int, str]]:
+def patrones_para(ruta: Path) -> dict[str, re.Pattern[str]]:
+    """uv.lock (lo genera uv) está lleno de huellas y URLs de PyPI en hexadecimal: son públicas,
+    así que ahí no se busca "clave hexadecimal"; los términos y el resto de patrones, sí."""
+    if ruta.name == "uv.lock":
+        return {k: v for k, v in PATRONES.items() if k != "clave hexadecimal larga"}
+    return PATRONES
+
+
+def revisar_texto(texto: str, terminos: list[str],
+                  patrones: dict[str, re.Pattern[str]] = PATRONES) -> list[tuple[int, str]]:
     """Devuelve (número de línea, motivo) de cada hallazgo. El motivo nunca incluye el secreto."""
     hallazgos = []
     for n, linea in enumerate(texto.splitlines(), start=1):
@@ -50,7 +59,7 @@ def revisar_texto(texto: str, terminos: list[str]) -> list[tuple[int, str]]:
         for t in terminos:
             if t.lower() in minus:
                 hallazgos.append((n, f"término privado «{t}»"))
-        for motivo, patron in PATRONES.items():
+        for motivo, patron in patrones.items():
             if patron.search(linea):
                 hallazgos.append((n, motivo))
     return hallazgos
@@ -69,7 +78,7 @@ def main(argv: list[str]) -> int:
             texto = ruta.read_text(encoding="utf-8")
         except (UnicodeDecodeError, FileNotFoundError):
             continue   # binarios (imágenes...) y ficheros borrados: no hay texto que revisar
-        for n, motivo in revisar_texto(texto, terminos):
+        for n, motivo in revisar_texto(texto, terminos, patrones_para(ruta)):
             print(f"{ruta.relative_to(RAIZ)}:{n}: {motivo}")
             total += 1
     if total:

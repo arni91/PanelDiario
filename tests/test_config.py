@@ -8,9 +8,9 @@ from pathlib import Path
 
 import pytest
 
+from panel_diario import panel
+
 RAIZ = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(RAIZ))
-import panel  # noqa: E402
 
 
 def test_config_correcta(tmp_path):
