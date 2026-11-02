@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from panel_diario import config
+from panel_diario.fuentes import comun
 
 RAIZ = Path(__file__).resolve().parent.parent
 
@@ -43,3 +44,21 @@ def test_la_plantilla_publica_se_puede_cargar() -> None:
     assert {p["id"] for p in cfg["pestanas"]} == set(cfg["fuentes"])
     assert cfg["futbol"]["football_data_api_key"] == "" and cfg["claude"]["api_key"] == ""
     assert cfg["agenda"]["ical_urls"] == []
+
+
+def test_zona_horaria_de_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(comun, "TZ", comun.TZ)  # se restaura al acabar el test
+    config.aplicar_zona_horaria({"ubicacion": {"zona_horaria": "America/Mexico_City"}})
+    assert str(comun.TZ) == "America/Mexico_City"
+
+
+def test_sin_zona_horaria_se_queda_la_de_por_defecto(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(comun, "TZ", comun.TZ)
+    config.aplicar_zona_horaria({"ubicacion": {}})
+    assert str(comun.TZ) == "Europe/Madrid"
+
+
+def test_zona_horaria_desconocida_explica_el_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(comun, "TZ", comun.TZ)
+    with pytest.raises(config.ConfigError, match="Marte/Olimpo"):
+        config.aplicar_zona_horaria({"ubicacion": {"zona_horaria": "Marte/Olimpo"}})

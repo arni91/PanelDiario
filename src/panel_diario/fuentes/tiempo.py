@@ -55,7 +55,7 @@ def obtener_tiempo(cfg: dict) -> dict:
     params = {
         "latitude": u["lat"],
         "longitude": u["lon"],
-        "timezone": "Europe/Madrid",
+        "timezone": "auto",  # horas en la zona de la ubicación (la calcula Open-Meteo)
         "current": "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,"
         "precipitation,relative_humidity_2m,is_day",
         "hourly": "temperature_2m,precipitation_probability,weather_code,is_day",

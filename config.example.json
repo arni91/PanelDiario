@@ -2,7 +2,8 @@
   "ubicacion": {
     "nombre": "Girona",
     "lat": 41.9794,
-    "lon": 2.8214
+    "lon": 2.8214,
+    "zona_horaria": "Europe/Madrid"
   },
   "ficha_escritorio": {
     "activa": true,

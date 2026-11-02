@@ -9,6 +9,9 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+from panel_diario.fuentes import comun
 
 PAQUETE = Path(__file__).resolve().parent  # carpeta del paquete: ui/ y demo.json
 # config.json vive en la raíz del proyecto (src/panel_diario -> src -> raíz), donde lo edita cada uno.
@@ -38,3 +41,20 @@ def cargar_config(ruta: Path = CONFIG) -> dict:
     if not isinstance(cfg, dict):
         raise ConfigError("config.json ha de ser un objecte JSON ({ ... }).")
     return cfg
+
+
+def aplicar_zona_horaria(cfg: dict) -> None:
+    """Fija la zona horaria de las fechas que se muestran (ubicacion.zona_horaria, p. ej. "Europe/Madrid").
+
+    Sin valor se queda la de por defecto (comun.TZ). Un nombre que no existe es un error de
+    config.json: mejor avisar al arrancar que mostrar horas equivocadas.
+    """
+    nombre = (cfg.get("ubicacion") or {}).get("zona_horaria")
+    if not nombre:
+        return
+    try:
+        comun.TZ = ZoneInfo(nombre)
+    except (ZoneInfoNotFoundError, ValueError) as ex:
+        raise ConfigError(
+            f"config.json: la zona horària «{nombre}» no existeix (ubicacion → zona_horaria). Exemple: Europe/Madrid."
+        ) from ex

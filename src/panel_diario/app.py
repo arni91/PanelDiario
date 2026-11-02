@@ -25,7 +25,7 @@ import webview
 
 from panel_diario import VERSION
 from panel_diario.bandeja import iniciar_bandeja, refrescar_icono
-from panel_diario.config import DATOS_DIR, PAQUETE, POSICION, ConfigError, cargar_config
+from panel_diario.config import DATOS_DIR, PAQUETE, POSICION, ConfigError, aplicar_zona_horaria, cargar_config
 from panel_diario.estado import Estado, actualizar
 from panel_diario.win32 import (
     anclar_al_escritorio,
@@ -323,6 +323,7 @@ def main() -> None:
         return
     try:
         cfg = cargar_config()
+        aplicar_zona_horaria(cfg)
     except ConfigError as ex:
         log.error("%s", ex)
         avisar_error(str(ex))
