@@ -29,6 +29,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - Comprobar fuentes reales: uv run python -m panel_diario.probar_fuentes
 
 # Convenciones
+- main está protegida: cada cambio va en su rama (feat/…, fix/…, docs/…) y entra por Pull Request con CI en verde, fusionando con squash.
 - Commits pequeños (Conventional Commits) con ruff, mypy y tests en verde; pre-commit lo comprueba.
 - Un fallo se reproduce primero con un test; un fallo que solo se ve con ventanas reales (pywebview) se prueba arrancando --demo y se anota en "Trampas conocidas".
 - Un módulo por responsabilidad, con cabecera de 1-3 líneas (qué hace y cómo encaja); comentarios del porqué, separando bloques con títulos. Funciones con type hints.
