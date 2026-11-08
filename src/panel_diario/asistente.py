@@ -52,9 +52,18 @@ COMPETICIONES = [
     {"codigo": "CL", "nombre": "Lliga de Campions"},
 ]
 
+# ETF UCITS indexados más negociados, con su ticker de Xetra en Yahoo Finance (verificados).
+# El primero sale elegido por defecto en el asistente.
 ETF_HABITUALES = [
+    {"ticker": "VWCE.DE", "nombre": "Vanguard FTSE All-World (acumulació)"},
+    {"ticker": "VGWL.DE", "nombre": "Vanguard FTSE All-World (distribució)"},
     {"ticker": "EUNL.DE", "nombre": "iShares Core MSCI World"},
+    {"ticker": "XDWD.DE", "nombre": "Xtrackers MSCI World"},
+    {"ticker": "IUSQ.DE", "nombre": "iShares MSCI ACWI"},
+    {"ticker": "SPYI.DE", "nombre": "SPDR MSCI ACWI IMI"},
     {"ticker": "SXR8.DE", "nombre": "iShares Core S&P 500"},
+    {"ticker": "VUAA.DE", "nombre": "Vanguard S&P 500 (acumulació)"},
+    {"ticker": "SXRV.DE", "nombre": "iShares Nasdaq 100"},
     {"ticker": "IS3N.DE", "nombre": "iShares Core MSCI EM IMI (emergents)"},
 ]
 
