@@ -29,7 +29,7 @@ El plan gratuito incluye las ligas principales y la Champions, pero no las copas
 
 ## Caídas de un ETF (`drawdown`)
 
-- `ticker`: símbolo del ETF en Yahoo Finance (p. ej. `EUNL.DE`). Vacío = sección oculta. `nombre`: cómo quieres que aparezca.
+- `ticker`: símbolo del ETF en Yahoo Finance (p. ej. `VWCE.DE` para el Vanguard FTSE All-World o `EUNL.DE` para el MSCI World; el asistente ofrece los 10 más negociados). Vacío = sección oculta. `nombre`: cómo quieres que aparezca.
 - `niveles`: a partir de qué caída (`caida`, en %) cuánto aportar de más ese mes, en % sobre tu aportación habitual (`extra_pct`; 100 = el doble). El último puede ser `"toda_la_reserva": true`. Por defecto: −10 % → +50 %, −20 % → +100 %, −30 % → +200 %, −40 % → toda la reserva. El widget no guarda importes.
 - Caída = (precio actual − máximo histórico) / máximo histórico, con todos los cierres del ETF desde que cotiza. Si Yahoo no responde, se muestra el último dato guardado con un aviso.
 
