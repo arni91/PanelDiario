@@ -162,10 +162,11 @@ const PASOS = [
     pintar: () => {
       const f = INICIO.actual.futbol || {};
       return `<div class="paso"><h2>⚽ El teu equip</h2>
-      <p>Propers partits i últim resultat. Cal una clau gratuïta de football-data.org:
+      <p>Propers partits i últim resultat de <b>totes</b> les competicions de l'equip que inclou la clau gratuïta de football-data.org
+      (lligues i Champions; la Copa del Rei i la Supercopa no hi són):
       <a data-url="https://www.football-data.org/client/register">demana-la aquí</a> (1 minut, t'arriba per correu).</p>
       <label>Clau de football-data.org</label><input type="text" id="clave-futbol" value="${esc(f.football_data_api_key || "")}">
-      <label>Competició</label>
+      <label>Competició (només per trobar l'equip a la llista)</label>
       <div class="fila"><select id="competicion">${INICIO.competiciones.map(c => `<option value="${c.codigo}">${esc(c.nombre)}</option>`).join("")}</select>
         <button class="btn" id="btn-equipos">Carrega els equips</button></div>
       <label>Equip</label><select id="equipo">${f.team_id ? `<option value="${f.team_id}">${esc(f.nombre || "El teu equip actual")}</option>` : `<option value="">— primer carrega els equips —</option>`}</select>
