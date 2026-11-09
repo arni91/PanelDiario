@@ -40,7 +40,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 
 # Reglas del proyecto
 - Una fuente caída nunca rompe el panel: se muestra el último dato bueno y un aviso en el pie.
-- Textos de la interfaz en catalán. Noticias: las que están en catalán o castellano se dejan tal cual; las de otros idiomas (inglés...) se traducen al castellano. Comentarios y documentación en castellano. Código nuevo con nombres en inglés; no renombrar el código existente sin motivo.
+- Textos de la interfaz en catalán. Noticias: las que están en catalán o castellano se dejan tal cual; las de otros idiomas (inglés...) se traducen al catalán; si no se puede, se dejan en el original. Comentarios y documentación en castellano. Código nuevo con nombres en inglés; no renombrar el código existente sin motivo.
 - Fuentes RSS: verificar que responden antes de añadirlas. Las que están en catalán o castellano llevan "idioma": "ca" o "es" (así no pasan por el traductor). El asistente solo ofrece fuentes generales verificadas.
 - Pestañas de noticias, nombre del equipo y textos de las secciones salen de config.json, no se fijan en el código.
 
@@ -64,4 +64,5 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - instalar.bat usa `uv sync --no-dev --inexact`: sin --inexact borraría las herramientas de desarrollo del .venv.
 - La revisión de privacidad no busca hexadecimal en uv.lock (huellas públicas de PyPI); sus propios ejemplos se escriben por partes. Busca subcadenas: un término puede saltar dentro de otra palabra; entonces se cambia la frase.
 - Los .bat necesitan CRLF (.gitattributes): con LF, cmd.exe puede fallar en los goto. Tras editarlos: git checkout del fichero para recuperar CRLF.
+- Traductor de Google (no oficial): pedir en lotes por translate_a/t (devuelve el idioma detectado de cada texto), de uno en uno y con memoria. Con muchas peticiones responde 429 con una página "Sorry... automated queries" y puede bloquear el cliente durante horas. Las excepciones de requests llevan la URL con los textos: no loguearlas tal cual.
 - astral-sh/setup-uv no publica etiquetas cortas (v10): fijar la versión completa en ci.yml.

@@ -39,6 +39,7 @@ from panel_diario.config import (
     guardar_config,
 )
 from panel_diario.estado import Estado, actualizar
+from panel_diario.fuentes import traduccion
 from panel_diario.win32 import (
     anclar_al_escritorio,
     area_del_monitor,
@@ -356,6 +357,7 @@ def main() -> None:
         return
     cfg_ficha = cfg.get("ficha_escritorio") or {}
     estado = Estado()
+    traduccion.configurar_memoria(DATOS_DIR / "traduccions.json")
 
     if demo:
         datos_demo = json.loads((PAQUETE / "demo.json").read_text(encoding="utf-8"))
