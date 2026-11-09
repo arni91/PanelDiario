@@ -88,6 +88,7 @@ Comprobados el 9 de noviembre de 2026: cada feed responde, es RSS válido, sus n
 
 | Mitjà | Idioma | Seccions |
 |---|---|---|
+| Time Out Barcelona | català | Cultura (por Google Noticias: no publica RSS) |
 | Jot Down | castellà | Cultura |
 | Sàpiens | català | Cultura |
 | The Atlantic | anglès | Portades |
@@ -98,7 +99,7 @@ Comprobados el 9 de noviembre de 2026: cada feed responde, es RSS válido, sus n
 
 Comprobados el mismo día; se pueden añadir con «Un altre…» si se encuentra un feed que funcione.
 
-- **Sin RSS que funcione**: Público, Time Out, El Temps, CTXT, Agencia SINC, National Geographic España (403), elEconomista (403), New Scientist (406).
+- **Sin RSS que funcione**: Público, El Temps, CTXT, Agencia SINC, National Geographic España (403), elEconomista (403), New Scientist (406).
 - **De pago o bloqueados**: The Telegraph (402), La Razón respondía 503 a sus antiguas direcciones (se usan las de `?outputType=xml`).
 - **Abandonados** (la última noticia tiene meses o años): RTVE, CNN, The Wall Street Journal, Corriere della Sera.
 - **Poco actualizados o vacíos**: Der Spiegel International, Expansión, Sport, L'Esportiu, las secciones de ciencia de El Confidencial y Ara, deportes de El Mundo y The New York Times, política de VilaWeb y El Nacional.
