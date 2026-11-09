@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from panel_diario import asistente, config
+from panel_diario import asistente, config, outlets
 from panel_diario.fuentes import comun, drawdown
 
 GIRONA = {
@@ -216,7 +216,7 @@ def test_paso_de_orientacion_lista_catalogo_y_fuentes_propias() -> None:
     mitjans = asistente.mitjans_amb_orientacio(cfg)
     nombres = [m["nombre"] for m in mitjans]
     assert nombres[:6] == ["El Salto", "eldiario.es", "La Directa", "Ara", "La Vanguardia", "El País"]
-    assert nombres[6:] == ["Diari Local"]
+    assert nombres[len(outlets.CATALOG) :] == ["Diari Local"]  # las propias, después del catálogo
     assert next(m for m in mitjans if m["nombre"] == "El País")["ideologia"] == "centre"  # lo de config manda
 
 
