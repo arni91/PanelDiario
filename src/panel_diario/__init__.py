@@ -4,4 +4,4 @@ El arranque está en app.py; los datos de cada fuente, en sources/ (un módulo p
 """
 
 # Versión visible abajo del panel: súbela en cada cambio visible (pyproject.toml la lee de aquí)
-VERSION = "4.7"
+VERSION = "4.8"

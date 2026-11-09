@@ -10,6 +10,7 @@ from __future__ import annotations
 import ctypes
 import logging
 import os
+from pathlib import Path
 
 import webview
 
@@ -124,6 +125,16 @@ def _user32() -> ctypes.WinDLL:
         u.IsWindowVisible.argtypes = [wintypes.HWND]
         u.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
         u.MessageBoxW.argtypes = [wintypes.HWND, wintypes.LPCWSTR, wintypes.LPCWSTR, ctypes.c_uint]
+        u.LoadImageW.argtypes = [
+            wintypes.HINSTANCE,
+            wintypes.LPCWSTR,
+            ctypes.c_uint,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_uint,
+        ]
+        u.LoadImageW.restype = wintypes.HANDLE
+        u.SendMessageW.argtypes = [wintypes.HWND, ctypes.c_uint, wintypes.WPARAM, wintypes.LPARAM]
         _U32 = u
     return _U32
 
@@ -248,6 +259,17 @@ def anclar_al_escritorio(hwnd: int, pos: list[int]) -> tuple[int, int] | None:
     except Exception as ex:  # noqa: BLE001
         log.warning("No se pudo anclar la ficha al escritorio: %s", ex)
         return None
+
+
+def poner_icono(hwnd: int | None, ico: Path) -> None:
+    """Pone el logo en la barra de título y la barra de tareas (pywebview no lo permite en Windows)."""
+    if not hwnd or not ico.exists():
+        return
+    u = _user32()
+    for tipo, lado in ((1, 32), (0, 16)):  # ICON_BIG (barra de tareas, Alt+Tab) e ICON_SMALL (título)
+        hicon = u.LoadImageW(None, str(ico), 1, lado, lado, 0x10)  # IMAGE_ICON, LR_LOADFROMFILE
+        if hicon:
+            u.SendMessageW(hwnd, 0x80, tipo, hicon)  # WM_SETICON
 
 
 def buscar_ventana(titulo: str) -> int | None:

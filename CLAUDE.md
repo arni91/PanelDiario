@@ -58,6 +58,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - Win32: usar siempre _user32() (copia propia de user32, en desktop/win32.py). Declarar tipos en ctypes.windll.user32 rompe pywebview.
 - pywebview publica en JS los atributos PÚBLICOS del objeto js_api: una ventana (webview.Window) como atributo público bloquea el puente de TODAS las ventanas. Guardarlas siempre como _ventana.
 - pywebview impone 200x100 px de mínimo: pasar siempre min_size en create_window.
+- pywebview no pone icono a las ventanas en Windows: app.py lo pone con WM_SETICON (win32.poner_icono) al mostrarse, con el hwnd de la propia ventana (hwnd_de: window.native.Handle). Buscarla por título falla si hay dos copias abiertas (--demo y la normal). El logo sale de scripts/generar_logo.py (ui/common/logo.png y logo.ico).
 - Con la píldora anclada al escritorio (SetParent), FindWindowW ya no la encuentra: obtener el hwnd ANTES de anclarla (buscar_ventana).
 - Al abrir el panel desde la píldora, el foco vuelve un instante a ella: por eso se ignora la pérdida de foco durante 1 s. El panel se oculta al perder el foco: al hacer capturas, no hacer clic en otra ventana antes de capturarlo.
 - Un nombre de variable local igual que un módulo de sources/ (noticias, sports...) lo tapa: ruff lo avisa (F823/F821).
