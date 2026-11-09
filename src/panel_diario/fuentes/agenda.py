@@ -1,14 +1,46 @@
-"""Eventos de hoy y de la semana desde Google Calendar (dirección secreta en formato iCal)."""
+"""Eventos de hoy y de la semana desde calendarios iCal (dirección secreta de Google Calendar, Outlook...).
+
+La dirección iCal es secreta: quien la tiene lee el calendario. Por eso los errores de esta
+fuente (que acaban en el log, en cache.json y en el pie del panel) nunca la incluyen.
+"""
 
 from __future__ import annotations
 
 import re
 from datetime import date, datetime, timedelta
 
+import requests
+
 from panel_diario.fuentes import comun
 
 # Por qué iCal y no la API de Google: la dirección secreta solo da lectura y no exige crear
 # un proyecto en Google Cloud ni pantallas de permisos (OAuth). Para CREAR eventos sí haría falta.
+
+
+class ErrorAgenda(Exception):
+    """Un calendario no se puede leer. El mensaje dice cuál (por su número) y por qué, sin la dirección."""
+
+
+def _descargar(url: str, n: int) -> object:
+    """Descarga y lee el calendario número `n`. Los errores de requests llevan la URL: se sustituyen."""
+    import icalendar  # lee el formato .ics
+
+    try:
+        contenido = comun.get(url, timeout=30).content
+    except requests.RequestException as ex:
+        estado = ex.response.status_code if isinstance(ex, requests.HTTPError) and ex.response is not None else 0
+        # "from None": tampoco en la traza encadenada, por si alguien la registra
+        raise ErrorAgenda(f"calendari {n}: {f'HTTP {estado}' if estado else type(ex).__name__}") from None
+    try:
+        return icalendar.Calendar.from_ical(contenido)
+    except ValueError:
+        raise ErrorAgenda(f"calendari {n}: la resposta no és un calendari iCal") from None
+
+
+def comprobar_ical(url: str) -> int:
+    """Número de eventos del calendario (lo usa el asistente). Lanza ErrorAgenda si no se puede leer."""
+    cal = _descargar(url, 1)
+    return len(cal.walk("VEVENT"))  # type: ignore[attr-defined]
 
 
 def resumir_lugar(lugar: str) -> tuple[str, str]:
@@ -36,7 +68,6 @@ def obtener_agenda(cfg: dict) -> dict:
     if not urls:
         return {"sin_url": True}
 
-    import icalendar  # lee el formato .ics
     import recurring_ical_events  # expande los eventos que se repiten (semanales, etc.)
 
     hoy = comun.ahora_local().date()
@@ -45,8 +76,8 @@ def obtener_agenda(cfg: dict) -> dict:
     fin = inicio + timedelta(days=int(ag.get("dias", 7)))
 
     eventos = []
-    for url in urls:
-        cal = icalendar.Calendar.from_ical(comun.get(url, timeout=30).content)
+    for n, url in enumerate(urls, start=1):
+        cal = _descargar(url, n)
         for ev in recurring_ical_events.of(cal).between(inicio, fin):
             ini = ev.get("DTSTART").dt
             fin_ev = ev.get("DTEND").dt if ev.get("DTEND") else None

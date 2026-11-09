@@ -85,8 +85,8 @@
       {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/tecnologia/", "idioma": "es"},
       {"nombre": "La Vanguardia", "url": "https://www.lavanguardia.com/rss/tecnologia.xml", "idioma": "es"},
       {"nombre": "El Salto", "url": "https://www.elsaltodiario.com/tecnologia/feed", "idioma": "es"},
-      {"nombre": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index"},
-      {"nombre": "MIT Technology Review", "url": "https://www.technologyreview.com/feed/"},
+      {"nombre": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index", "idioma": "en"},
+      {"nombre": "MIT Technology Review", "url": "https://www.technologyreview.com/feed/", "idioma": "en"},
       {"nombre": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "idioma": "es"}
     ],
     "cultura": [

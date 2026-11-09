@@ -19,7 +19,7 @@ def test_catalogo_con_los_seis_diarios_y_valores_validos() -> None:
     for o in outlets.CATALOG:
         assert o.ideologia in ("", *outlets.IDEOLOGIES)
         assert o.eix_nacional in ("", *outlets.NATIONAL_AXIS)
-        assert o.language in ("ca", "es")
+        assert o.language in ("ca", "es", "en")
 
 
 def test_cada_medio_tiene_feeds_validos_y_sin_repetir_pestana() -> None:
@@ -33,11 +33,20 @@ def test_reparto_de_los_diarios_por_pestana() -> None:
     def medios(tab: str) -> list[str]:
         return [f["nombre"] for f in outlets.sources_for_tab(tab)]
 
-    assert medios("mon") == ["eldiario.es", "La Vanguardia", "El País"]
+    # Los seis diarios principales primero; después, los medios generales
+    assert medios("mon") == ["eldiario.es", "La Vanguardia", "El País", "Europa Press", "BBC Mundo", "DW", "France 24"]
     assert medios("catalunya") == ["eldiario.es", "La Directa", "Ara", "La Vanguardia"]
     assert medios("espanya") == ["El Salto", "eldiario.es", "El País"]
     assert medios("mobilitzacions") == ["El Salto", "La Directa", "El Crític"]
-    assert medios("tecnologia") == ["El Salto", "eldiario.es", "La Vanguardia", "El País"]
+    assert medios("tecnologia") == [
+        "El Salto",
+        "eldiario.es",
+        "La Vanguardia",
+        "El País",
+        "Xataka",
+        "Ars Technica",
+        "MIT Technology Review",
+    ]
     assert outlets.sources_for_tab("no-existe") == []
 
 
