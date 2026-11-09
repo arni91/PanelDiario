@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import feedparser
 
+from panel_diario import outlets
 from panel_diario.fuentes import comun
 from panel_diario.fuentes.traduccion import traduir_noticies
 
@@ -156,7 +157,7 @@ def agrupar(items: list) -> list:
     return salida
 
 
-def _representante(grupo: dict, prioridad: list) -> dict:
+def _representante(grupo: dict, prioridad: list, indice: dict[str, outlets.Leaning]) -> dict:
     """Elige el titular a mostrar: el del medio más neutro según el orden de prioridad."""
 
     def rango(it: dict) -> int:
@@ -167,6 +168,7 @@ def _representante(grupo: dict, prioridad: list) -> dict:
         return len(prioridad)
 
     it = sorted(grupo["items"], key=lambda x: (rango(x), -(x["ts"] or 0)))[0]
+    otros = [m for m in grupo["medios"] if m != it["medio"]]
     return {
         "titulo": it["titulo"],
         "enlace": it["enlace"],
@@ -175,8 +177,10 @@ def _representante(grupo: dict, prioridad: list) -> dict:
         "idioma": it.get("idioma", ""),
         "ts": grupo["ts"],
         "resumen": it["resumen"],
-        "otros_medios": [m for m in grupo["medios"] if m != it["medio"]],
+        "otros_medios": otros,
         "enlaces": [{"medio": x["medio"], "enlace": x["enlace"]} for x in grupo["items"]][:6],
+        # Una etiqueta por medio (el del titular primero), con su orientación si se conoce
+        "etiquetes": outlets.labels([it["medio"], *otros], indice),
     }
 
 
@@ -224,6 +228,7 @@ def obtener_noticias(cfg: dict) -> tuple[dict, list]:
     n = cfg.get("titulares_por_pestana", 8)
     excluidos = cfg.get("medios_excluidos", [])
     prioridad = cfg.get("prioridad_medios", [])
+    indice = outlets.leaning_index(cfg)
 
     tareas = [(cat, f) for cat, lista in fuentes.items() for f in lista if f.get("activa", True)]
     resultados: dict[str, list[dict]] = {}
@@ -243,7 +248,7 @@ def obtener_noticias(cfg: dict) -> tuple[dict, list]:
     por_cat = cfg.get("titulares_por_categoria", {})
     for cat, items in resultados.items():
         grupos = agrupar(items)
-        noticies = [_representante(g, prioridad) for g in grupos]
+        noticies = [_representante(g, prioridad, indice) for g in grupos]
         noticies = limitar_per_font(noticies, cfg.get("max_per_font", {}).get(cat))
         salida[cat] = noticies[: por_cat.get(cat, n)]
     traduir_noticies(salida, cfg)

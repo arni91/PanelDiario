@@ -16,6 +16,7 @@ from urllib.parse import quote
 
 import webview
 
+from panel_diario import outlets
 from panel_diario.fuentes import comun, drawdown, noticias
 
 log = logging.getLogger("panel")
@@ -295,6 +296,50 @@ def _noticias(resp: dict, lugar: dict | None) -> dict:
     }
 
 
+def _fuentes_directas(cfg: dict) -> list[dict]:
+    """Las fuentes de config.json que son un medio concreto (no un agregador como Google Noticias)."""
+    return [f for lista in (cfg.get("fuentes") or {}).values() for f in lista if not f.get("agregador")]
+
+
+def mitjans_amb_orientacio(cfg: dict) -> list[dict]:
+    """Medios para el paso de orientación: los del catálogo y las fuentes propias, con la orientación actual."""
+    indice = outlets.leaning_index(cfg)
+    nombres = [o.name for o in outlets.CATALOG]
+    for f in _fuentes_directas(cfg):
+        outlet = outlets.find_outlet(f["nombre"])
+        nombre = outlet.name if outlet else f["nombre"]
+        if outlets.outlet_key(nombre) not in {outlets.outlet_key(n) for n in nombres}:
+            nombres.append(nombre)
+    vacio = {"ideologia": "", "eix_nacional": ""}
+    return [{"nombre": n, **indice.get(outlets.outlet_key(n), vacio)} for n in nombres]
+
+
+def _orientacions(cfg: dict, elegidas: list[dict]) -> None:
+    """Guarda en cada fuente la orientación elegida en el asistente.
+
+    Solo se escribe lo que difiere del catálogo: si el catálogo se corrige, las fuentes que no
+    se han tocado reciben el valor nuevo. Se aplica a los medios que son fuente en config.json.
+    """
+    por_medio: dict[str, dict] = {}
+    for e in elegidas:
+        for campo, validos in outlets.LEANING_FIELDS.items():
+            if e.get(campo, "") not in ("", *validos):
+                raise ValueError(f"«{e.get(campo)}» no és una orientació vàlida per a {e.get('nombre', '?')}.")
+        outlet = outlets.find_outlet(e["nombre"])
+        por_medio[outlets.outlet_key(outlet.name if outlet else e["nombre"])] = e
+    for f in _fuentes_directas(cfg):
+        outlet = outlets.find_outlet(f["nombre"])
+        elegida = por_medio.get(outlets.outlet_key(outlet.name if outlet else f["nombre"]))
+        if elegida is None:
+            continue
+        for campo in outlets.LEANING_FIELDS:
+            defecto = getattr(outlet, campo) if outlet else ""
+            if elegida.get(campo, "") == defecto:
+                f.pop(campo, None)
+            else:
+                f[campo] = elegida.get(campo, "")
+
+
 def construir_config(base: dict, respuestas: dict) -> dict:
     """config.json nuevo: `base` (la config actual) con los pasos que el usuario ha completado.
 
@@ -321,6 +366,8 @@ def construir_config(base: dict, respuestas: dict) -> dict:
             cfg["drawdown"]["niveles"] = _niveles(d["niveles"])
     if "noticias" in respuestas:
         cfg.update(_noticias(respuestas["noticias"], lugar))
+    if "orientacions" in respuestas:  # después de noticias: se aplica a las fuentes que quedan
+        _orientacions(cfg, respuestas["orientacions"])
     if "claude" in respuestas:
         cfg.setdefault("claude", {"modelo": "claude-haiku-5-5", "cada_horas": 3})
         cfg["claude"]["api_key"] = respuestas["claude"].get("api_key", "").strip()
@@ -359,6 +406,11 @@ class ApiAsistente:
             "etfs": ETF_HABITUALES,
             "ambitos": AMBITOS,
             "temas": [{"id": t["id"], "nombre": t["nombre"]} for t in TEMAS],
+            "orientacions": {
+                "ideologia": outlets.IDEOLOGIES,
+                "eix_nacional": outlets.NATIONAL_AXIS,
+                "mitjans": mitjans_amb_orientacio(c),
+            },
             "actual": {
                 "lugar": (c.get("ubicacion") or {}).get("nombre", ""),
                 "ical_urls": (c.get("agenda") or {}).get("ical_urls", []),

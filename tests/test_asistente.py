@@ -200,6 +200,60 @@ def test_fuente_google_noticias_codifica_la_busqueda() -> None:
     assert f["tema"] == "IA"
 
 
+# --- Orientación de los medios ---
+
+
+def _cfg_con_fuentes(*fuentes: dict) -> dict:
+    return {"fuentes": {"mon": list(fuentes)}}
+
+
+def test_paso_de_orientacion_lista_catalogo_y_fuentes_propias() -> None:
+    cfg = _cfg_con_fuentes(
+        {"nombre": "EL PAÍS", "url": "u", "ideologia": "centre"},  # alias del catálogo: no se repite
+        {"nombre": "Diari Local", "url": "v"},
+        {"nombre": "Google Noticias", "url": "w", "agregador": True},  # agregador: no es un medio
+    )
+    mitjans = asistente.mitjans_amb_orientacio(cfg)
+    nombres = [m["nombre"] for m in mitjans]
+    assert nombres[:6] == ["El Salto", "eldiario.es", "La Directa", "Ara", "La Vanguardia", "El País"]
+    assert nombres[6:] == ["Diari Local"]
+    assert next(m for m in mitjans if m["nombre"] == "El País")["ideologia"] == "centre"  # lo de config manda
+
+
+def test_guardar_orientacion_solo_lo_que_difiere_del_catalogo() -> None:
+    base = _cfg_con_fuentes(
+        {"nombre": "El País", "url": "u", "ideologia": "centre"},
+        {"nombre": "Ara", "url": "a"},
+        {"nombre": "Diari Local", "url": "v"},
+    )
+    elegidas = [
+        {"nombre": "El País", "ideologia": "centreesquerra", "eix_nacional": ""},  # vuelve al valor del catálogo
+        {"nombre": "Ara", "ideologia": "", "eix_nacional": "sobiranista"},
+        {"nombre": "Diari Local", "ideologia": "centre", "eix_nacional": ""},
+        {"nombre": "La Directa", "ideologia": "esquerra", "eix_nacional": ""},  # no es fuente: no se guarda
+    ]
+    fuentes = asistente.construir_config(base, {"orientacions": elegidas})["fuentes"]["mon"]
+    assert fuentes == [
+        {"nombre": "El País", "url": "u"},
+        {"nombre": "Ara", "url": "a", "eix_nacional": "sobiranista"},
+        {"nombre": "Diari Local", "url": "v", "ideologia": "centre"},
+    ]
+
+
+def test_orientacion_no_valida_en_el_asistente_se_explica() -> None:
+    with pytest.raises(ValueError, match="no és una orientació vàlida"):
+        asistente.construir_config(
+            _cfg_con_fuentes({"nombre": "Ara", "url": "a"}),
+            {"orientacions": [{"nombre": "Ara", "ideologia": "liberal"}]},
+        )
+
+
+def test_inicio_envia_las_opciones_de_orientacion() -> None:
+    o = asistente.ApiAsistente(plantilla(), lambda cfg: None).inicio()["orientacions"]
+    assert o["ideologia"][0] == "esquerra" and "no_independentista" in o["eix_nacional"]
+    assert o["mitjans"][0]["nombre"] == "El Salto"
+
+
 # --- Guardar ---
 
 
