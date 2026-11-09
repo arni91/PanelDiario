@@ -15,7 +15,7 @@ from typing import Any
 
 from panel_diario import VERSION
 from panel_diario.config import CACHE, DATOS_DIR
-from panel_diario.fuentes import agenda, avisos, comun, drawdown, futbol, ia, noticias, tiempo
+from panel_diario.sources import agenda, avisos, comun, drawdown, futbol, ia, noticias, tiempo
 
 log = logging.getLogger("panel")
 

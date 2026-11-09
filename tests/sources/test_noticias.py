@@ -10,7 +10,7 @@ from email.utils import formatdate
 
 import pytest
 
-from panel_diario.fuentes import comun, noticias
+from panel_diario.sources import comun, noticias
 
 
 def rss(titulares: Sequence[tuple[str, float]]) -> bytes:

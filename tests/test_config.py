@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from panel_diario import config
-from panel_diario.fuentes import comun
+from panel_diario.sources import comun
 
 RAIZ = Path(__file__).resolve().parent.parent
 

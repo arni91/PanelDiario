@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 from panel_diario.config import cargar_config
-from panel_diario.fuentes import avisos, drawdown, futbol, noticias, tiempo
+from panel_diario.sources import avisos, drawdown, futbol, noticias, tiempo
 
 
 def linea(ok: bool, nombre: str, detalle: str) -> None:

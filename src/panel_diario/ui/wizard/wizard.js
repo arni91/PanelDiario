@@ -1,98 +1,3 @@
-<!doctype html>
-<!--
-  Asistente de configuración del Panel Diario (tercera ventana de pywebview).
-  Un paso por sección; cada paso se puede saltar. Al final envía las respuestas a Python
-  (asistente.py → ApiAsistente.guardar), que escribe config.json y aplica los cambios sin reiniciar.
-  Textos de la interfaz en catalán; comentarios en castellano.
--->
-<html lang="ca">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel Diario · Configuració</title>
-<style>
-  :root {
-    --bg: #0f1419; --panel: #171e26; --panel-2: #1e2731; --line: #26313d;
-    --text: #e8edf2; --muted: #8a99a8; --accent: #5fb3e8; --up: #3ccf8e; --down: #ff6b6b;
-    --radius: 12px;
-  }
-  @media (prefers-color-scheme: light) {
-    :root { --bg: #f3f5f8; --panel: #fff; --panel-2: #eef2f6; --line: #dde3ea;
-            --text: #15202b; --muted: #5d6b79; --accent: #1f6fae; --up: #12935b; --down: #d63c3c; }
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-  body { background: var(--bg); color: var(--text); display: flex; flex-direction: column;
-         font: 14px/1.45 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
-  button, input, select, textarea { font: inherit; color: inherit; }
-
-  /* Cabecera con el progreso */
-  header { padding: 16px 20px 10px; }
-  header h1 { margin: 0 0 10px; font-size: 17px; font-weight: 600; }
-  .progreso { display: flex; gap: 4px; }
-  .progreso span { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
-  .progreso span.hecho { background: var(--accent); }
-  .progreso span.saltado { background: var(--muted); opacity: .5; }
-
-  main { flex: 1; overflow-y: auto; padding: 6px 20px 16px; }
-  .paso h2 { font-size: 15px; margin: 6px 0 4px; }
-  .paso p { margin: 4px 0 12px; color: var(--muted); }
-  .paso p b { color: var(--text); }
-  label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
-  input[type=text], input[type=number], input[type=password], select, textarea {
-    width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--panel); outline: none;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-  textarea { min-height: 70px; resize: vertical; }
-  .fila { display: flex; gap: 8px; align-items: center; }
-  .fila > input, .fila > select { flex: 1; }
-
-  .btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2);
-         cursor: pointer; white-space: nowrap; }
-  .btn:hover { border-color: var(--accent); }
-  .btn.principal { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn:disabled { opacity: .5; cursor: default; }
-
-  /* Listas de opciones (lugares, ámbitos, temas...) */
-  .opciones { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-  .opcion { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px;
-            border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
-  .opcion:hover, .opcion.on { border-color: var(--accent); }
-  .opcion small { color: var(--muted); }
-  /* Casillas del catálogo: la fila entera se puede clicar (es un <label>) */
-  label.opcion { font-size: 14px; color: var(--text); margin: 0; }
-  .grupo { margin: 14px 0 4px; font-size: 13px; font-weight: 600; }
-  .oculto { display: none !important; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
-  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-  .niveles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; align-items: center; }
-  .mensaje { margin-top: 10px; font-size: 13px; min-height: 18px; }
-  .mensaje.ok { color: var(--up); } .mensaje.error { color: var(--down); }
-  .nota { font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .nota a, p a { color: var(--accent); cursor: pointer; }
-  .resumen div { padding: 6px 0; border-bottom: 1px solid var(--line); }
-
-  footer { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); }
-  footer .espacio { flex: 1; }
-</style>
-</head>
-<body>
-  <header>
-    <h1>Configura el teu Panel Diario</h1>
-    <div class="progreso" id="progreso"></div>
-  </header>
-  <main id="contenido"></main>
-  <footer>
-    <button class="btn" id="btn-enrere">← Enrere</button>
-    <span class="espacio"></span>
-    <button class="btn" id="btn-saltar">Salta</button>
-    <button class="btn principal" id="btn-seguent">Següent →</button>
-  </footer>
-
-<script>
 // --- Estado del asistente ---
 let INICIO = null;           // opciones y configuración actual que manda Python (ApiAsistente.inicio)
 const respuestas = {};       // solo los pasos completados; los saltados no aparecen (se quedan como estaban)
@@ -104,7 +9,6 @@ const tmp = { lugares: [], lugar: null, calendario: "google", ticker: null, prop
 const IDIOMAS = { ca: "català", es: "castellà", en: "anglès (es tradueix)" };
 
 const api = () => window.pywebview.api;
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $ = (id) => document.getElementById(id);
 
 function mensaje(texto, tipo) {
@@ -500,6 +404,3 @@ async function iniciar() {
 }
 window.addEventListener("pywebviewready", iniciar);
 if (window.pywebview && window.pywebview.api && window.pywebview.api.inicio) iniciar();
-</script>
-</body>
-</html>

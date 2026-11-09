@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta
 
 import requests
 
-from panel_diario.fuentes import comun
+from panel_diario.sources import comun
 
 # Por qué iCal y no la API de Google: la dirección secreta solo da lectura y no exige crear
 # un proyecto en Google Cloud ni pantallas de permisos (OAuth). Para CREAR eventos sí haría falta.

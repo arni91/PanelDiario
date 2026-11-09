@@ -1,0 +1,31 @@
+<!doctype html>
+<!--
+  Asistente de configuración del Panel Diario (tercera ventana de pywebview).
+  Un paso por sección; cada paso se puede saltar. Al final envía las respuestas a Python
+  (asistente.py → ApiAsistente.guardar), que escribe config.json y aplica los cambios sin reiniciar.
+  Textos de la interfaz en catalán; comentarios en castellano.
+-->
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel Diario · Configuració</title>
+<link rel="stylesheet" href="wizard.css">
+</head>
+<body>
+  <header>
+    <h1>Configura el teu Panel Diario</h1>
+    <div class="progreso" id="progreso"></div>
+  </header>
+  <main id="contenido"></main>
+  <footer>
+    <button class="btn" id="btn-enrere">← Enrere</button>
+    <span class="espacio"></span>
+    <button class="btn" id="btn-saltar">Salta</button>
+    <button class="btn principal" id="btn-seguent">Següent →</button>
+  </footer>
+
+<script src="../common/util.js"></script>
+<script src="wizard.js"></script>
+</body>
+</html>

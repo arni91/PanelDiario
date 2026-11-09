@@ -11,7 +11,7 @@ from typing import Any, NoReturn
 
 import pytest
 
-from panel_diario.fuentes import drawdown
+from panel_diario.sources import drawdown
 
 CFG: dict[str, Any] = {
     "drawdown": {

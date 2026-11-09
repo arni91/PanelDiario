@@ -25,8 +25,6 @@ from logging.handlers import RotatingFileHandler
 import webview
 
 from panel_diario import VERSION
-from panel_diario.asistente import ApiAsistente
-from panel_diario.bandeja import iniciar_bandeja, refrescar_icono
 from panel_diario.config import (
     CONFIG,
     DATOS_DIR,
@@ -38,9 +36,8 @@ from panel_diario.config import (
     cargar_config,
     guardar_config,
 )
-from panel_diario.estado import Estado, actualizar
-from panel_diario.fuentes import traduccion
-from panel_diario.win32 import (
+from panel_diario.desktop.bandeja import iniciar_bandeja, refrescar_icono
+from panel_diario.desktop.win32 import (
     anclar_al_escritorio,
     area_del_monitor,
     avisar_error,
@@ -53,6 +50,9 @@ from panel_diario.win32 import (
     tamano_pantalla,
     ya_en_marcha,
 )
+from panel_diario.sources import traduccion
+from panel_diario.state import Estado, actualizar
+from panel_diario.wizard.asistente import ApiAsistente
 
 ANCHO = 440  # ancho del panel desplegado
 ANCHO_FICHA = 176  # ficha en forma de píldora (icono + temperatura + máx/mín + lluvia)
@@ -75,12 +75,12 @@ def configurar_log(consola: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Puente con el JavaScript del panel (ui/index.html)
+# Puente con el JavaScript del panel (ui/panel/index.html)
 # ---------------------------------------------------------------------------
 
 
 class Api:
-    """Puente con el JavaScript del panel desplegado (ui/index.html): datos, abrir enlaces, mostrar y ocultar."""
+    """Puente con el JavaScript del panel desplegado (ui/panel/index.html): datos, abrir enlaces, mostrar y ocultar."""
 
     def __init__(self, estado: Estado, cfg: dict, icono_ref: dict) -> None:
         """La ventana y la píldora se asignan después, en main(), cuando ya existen."""
@@ -218,12 +218,12 @@ class Api:
 
 
 # ---------------------------------------------------------------------------
-# Puente con el JavaScript de la píldora (ui/ficha.html)
+# Puente con el JavaScript de la píldora (ui/pill/ficha.html)
 # ---------------------------------------------------------------------------
 
 
 class ApiFicha:
-    """Puente con el JavaScript de la píldora (ui/ficha.html): datos mínimos, clic y arrastre."""
+    """Puente con el JavaScript de la píldora (ui/pill/ficha.html): datos mínimos, clic y arrastre."""
 
     def __init__(self, estado: Estado, panel: Api, pos: list[int]) -> None:
         """`pos` es la posición inicial en pantalla (la guardada o la de por defecto)."""
@@ -375,7 +375,7 @@ def main() -> None:
     # Panel desplegado (oculto hasta que se pulsa la ficha)
     ventana = webview.create_window(
         TITULO_PANEL,
-        url=str(PAQUETE / "ui" / "index.html"),
+        url=str(PAQUETE / "ui" / "panel" / "index.html"),
         js_api=api,
         width=ANCHO,
         height=api._alto,
@@ -414,7 +414,7 @@ def main() -> None:
     api_asistente = ApiAsistente(cargar_config(EJEMPLO) if demo else cfg, al_guardar)
     ventana_asistente = webview.create_window(
         TITULO_ASISTENTE,
-        url=str(PAQUETE / "ui" / "asistente.html"),
+        url=str(PAQUETE / "ui" / "wizard" / "asistente.html"),
         js_api=api_asistente,
         width=640,
         height=760,
@@ -441,7 +441,7 @@ def main() -> None:
         ficha = api._ficha = nueva_ficha
         vf = webview.create_window(
             TITULO_FICHA,
-            url=str(PAQUETE / "ui" / "ficha.html"),
+            url=str(PAQUETE / "ui" / "pill" / "ficha.html"),
             js_api=ficha,
             width=ANCHO_FICHA,
             height=ALTO_FICHA,

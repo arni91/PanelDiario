@@ -10,7 +10,7 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 from panel_diario.config import CONFIG
-from panel_diario.estado import Estado
+from panel_diario.state import Estado
 
 
 def _fuente(tam: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:

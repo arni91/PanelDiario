@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from panel_diario.fuentes import comun, futbol
+from panel_diario.sources import comun, futbol
 
 CFG = {"futbol": {"nombre": "Equip d'exemple", "football_data_api_key": "clave-falsa", "team_id": 1}}
 
