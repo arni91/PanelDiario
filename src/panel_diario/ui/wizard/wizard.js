@@ -30,8 +30,8 @@ const PASOS = [
   {
     id: "inicio", sinSaltar: true,
     pintar: () => `<div class="paso"><h2>Hola! 👋</h2>
-      <p>En uns minuts deixem el panell al teu gust: el temps de la teva ciutat, la teva agenda, el teu equip,
-      un ETF per seguir i les notícies que t'interessen.</p>
+      <p>En uns minuts deixem el panell al teu gust: el temps de la teva ciutat, la teva agenda, els teus esports i equips,
+      la borsa i les notícies que t'interessen.</p>
       <p>Cada pas es pot <b>saltar</b>: el que saltis no es mostra al panell (o es queda com estava, si ja ho tenies).
       Tot es desa al teu ordinador, a <b>config.json</b>; no s'envia enlloc.</p></div>`,
     recoger: () => true,
