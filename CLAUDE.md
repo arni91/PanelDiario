@@ -11,7 +11,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - app.py: ventanas, puente con JS (Api, ApiFicha), bucle de actualización y arranque (main).
 - config.py: rutas (CONFIG, EJEMPLO, DATOS_DIR), leer/guardar config.json, zona horaria.
 - estado.py: último dato bueno de cada sección y caché; actualizar() pide las fuentes en paralelo.
-- outlets.py: catálogo público de medios (nombre, alias, idioma, orientación y feeds RSS por tipo de pestaña: de ahí salen config.example.json y el asistente) y orientación de cada fuente (validación al cargar config.json, índice catálogo + config, etiquetas de cada titular).
+- outlets.py: catálogo público de medios (nombre, idioma y feeds RSS por tipo de pestaña): de ahí salen config.example.json y el asistente. Cada titular muestra solo el nombre del medio.
 - asistente.py: lógica del asistente (búsquedas, comprobaciones, construir_config) y ApiAsistente.
 - bandeja.py: icono junto al reloj; recibe las acciones como funciones (sin depender de app.py).
 - win32.py: todo lo que usa ctypes (monitores, anclar al escritorio, barra de tareas, errores).
@@ -43,7 +43,6 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - Una fuente caída nunca rompe el panel: se muestra el último dato bueno y un aviso en el pie.
 - Textos de la interfaz en catalán. Noticias: las que están en catalán o castellano se dejan tal cual; las de otros idiomas (inglés...) se traducen al catalán; si no se puede, se dejan en el original. Comentarios y documentación en castellano. Código nuevo con nombres en inglés; no renombrar el código existente sin motivo.
 - Fuentes RSS: verificar que responden antes de añadirlas. Las que están en catalán o castellano llevan "idioma": "ca" o "es" (así no pasan por el traductor). El asistente ofrece el catálogo de outlets.py (solo feeds verificados), los seis diarios principales primero; cada lista termina en «Un altre…» (entrada manual que se comprueba antes de guardar).
-- Orientación de los medios (ideologia, eix_nacional): por defecto solo la de Media Bias/Fact Check, citada en docs/fonts.md con enlace y fecha. Sin ficha, vacía; el eje nacional, vacío (ningún medio lo declara). Nunca una orientación sin fuente.
 - Pestañas de noticias, nombre del equipo y textos de las secciones salen de config.json, no se fijan en el código.
 
 # Privacidad (repositorio público)

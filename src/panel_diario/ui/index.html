@@ -173,11 +173,10 @@
   .noti .meta { font-size: 11px; color: var(--muted); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .chip { background: var(--panel-2); border-radius: 999px; padding: 1px 7px; font-size: 10.5px; }
   .chip.tema { color: var(--accent); }
-  /* El medio de cada titular siempre a la vista: de dónde sale la información y, discreta, su orientación */
+  /* El medio de cada titular siempre a la vista: de dónde sale la información */
   .noti .medio { font-weight: 600; color: var(--text); }
   .etiqueta { display: inline-flex; gap: 5px; align-items: baseline; padding: 0 7px; border-radius: 999px;
               border: 1px solid var(--line); }
-  .etiqueta .orient { font-size: 10px; color: var(--muted); }
   #noticias h3 { margin: 0 0 8px; }
   .periodo { display: flex; gap: 6px; margin: 8px 0 2px; }
   .periodo:empty { display: none; }
@@ -444,11 +443,6 @@ function pintarTabs() {
     `<button class="tab ${p === actual ? "on" : ""}" data-tab="${esc(p.id)}">${esc(p.nombre)}</button>`).join("");
 }
 
-// Orientación de un medio en texto: "centreesquerra · no independentista" ("" si no se conoce)
-function orientacio(e) {
-  return [e.ideologia, e.eix_nacional].filter(Boolean).map(v => v.replace(/_/g, " ")).join(" · ");
-}
-
 function pintarLista() {
   const el = document.getElementById("lista");
   const s = (D && D.secciones) || {};
@@ -471,18 +465,17 @@ function pintarLista() {
     return;
   }
   el.innerHTML = lista.map(n => {
-    // Una etiqueta por medio (el del titular primero). La caché de versiones anteriores no las trae.
-    const et = n.etiquetes || [n.medio, ...(n.otros_medios || [])].map(medio => ({ medio }));
+    // Una etiqueta por medio que lo publica (el del titular primero)
+    const medios = [n.medio, ...(n.otros_medios || [])];
     // En las pestañas con periodo se muestra también el resumen de la fuente (dónde, cuándo, de qué va)
     const resumen = n.resumen_ia || (conPeriodo ? n.resumen : "") || "";
     return `<div class="noti ${leidos.has(n.enlace) ? "leida" : ""}" data-url="${esc(n.enlace)}"
-              title="${esc(et.map(e => orientacio(e) ? `${e.medio} (${orientacio(e)})` : e.medio).join("\n"))}">
+              title="${esc(medios.join("\n"))}">
       <div class="tit">${esc(n.titulo)}</div>
       ${resumen ? `<div class="res-ia">${esc(resumen)}</div>` : ""}
       <div class="meta">
-        ${et.slice(0, 3).map(e => `<span class="etiqueta"><span class="medio">${esc(e.medio)}</span>${
-          orientacio(e) ? `<span class="orient">${esc(orientacio(e))}</span>` : ""}</span>`).join("")}
-        ${et.length > 3 ? `<span class="chip">+${et.length - 3}</span>` : ""}
+        ${medios.slice(0, 3).map(m => `<span class="etiqueta"><span class="medio">${esc(m)}</span></span>`).join("")}
+        ${medios.length > 3 ? `<span class="chip">+${medios.length - 3}</span>` : ""}
         <span>${hace(n.ts)}</span>
         ${n.tema ? `<span class="chip tema">${esc(n.tema)}</span>` : ""}
       </div>
