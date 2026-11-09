@@ -16,3 +16,6 @@ __pycache__/
 
 # Accesos directos de Windows: guardan rutas absolutas con el usuario
 *.lnk
+
+# Herramientas locales del editor y del asistente de código
+.claude/
