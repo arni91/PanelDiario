@@ -38,7 +38,7 @@ El plan gratuito incluye las ligas principales y la Champions, pero no las copas
 ## Noticias
 
 - `pestanas`: lista de pestañas con `id`, `nombre` y, para ver noticias de hasta un mes atrás con los botones "Aquesta setmana / Aquest mes", `"filtro_periodo": true`.
-- `fuentes`: para cada `id` de pestaña, la lista de medios con `nombre` y `url` del RSS. Opcional: `idioma` (`"ca"`, `"es"`…: evita pasar por el traductor), `ideologia` (`esquerra`, `centreesquerra`, `centre`, `centredreta`, `dreta`) y `eix_nacional` (`independentista`, `sobiranista`, `no_independentista`, `unionista`), que sustituyen a los del catálogo ([fonts.md](fonts.md)) y valen también para las noticias de ese medio que llegan por Google Noticias (`""` quita la del catálogo; un valor no válido se avisa en el log y se ignora), `horas_max` (antigüedad máxima), `tema` (etiqueta), `requereix` (solo titulares con alguna de esas palabras).
+- `fuentes`: para cada `id` de pestaña, la lista de medios con `nombre` y `url` del RSS. Opcional: `idioma` (`"ca"`, `"es"`…: evita pasar por el traductor), `horas_max` (antigüedad máxima), `tema` (etiqueta), `requereix` (solo titulares con alguna de esas palabras).
 - Los feeds verificados de los diarios del catálogo (por pestaña: Món, Catalunya, Espanya, Mobilitzacions, Tecnologia) están en [fonts.md](fonts.md).
 - Un tema o un medio sin RSS: Google Noticias como fuente con `"agregador": true`, p. ej. `https://news.google.com/rss/search?q=robotica&hl=es&gl=ES&ceid=ES:es` o `...?q=site:ejemplo.com`.
 - La misma noticia publicada por varios medios se muestra una vez, con la versión del primer medio de `prioridad_medios`, y "també a …" con los demás.
