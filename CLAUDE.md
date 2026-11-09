@@ -11,7 +11,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - app.py: ventanas, puente con JS (Api, ApiFicha), bucle de actualización y arranque (main).
 - config.py: rutas (CONFIG, EJEMPLO, DATOS_DIR), leer/guardar config.json, zona horaria.
 - estado.py: último dato bueno de cada sección y caché; actualizar() pide las fuentes en paralelo.
-- outlets.py: catálogo público de medios (nombre, alias, idioma, orientación) y orientación de cada fuente (validación al cargar config.json, índice catálogo + config, etiquetas de cada titular).
+- outlets.py: catálogo público de medios (nombre, alias, idioma, orientación y feeds RSS por tipo de pestaña: de ahí salen config.example.json y el asistente) y orientación de cada fuente (validación al cargar config.json, índice catálogo + config, etiquetas de cada titular).
 - asistente.py: lógica del asistente (búsquedas, comprobaciones, construir_config) y ApiAsistente.
 - bandeja.py: icono junto al reloj; recibe las acciones como funciones (sin depender de app.py).
 - win32.py: todo lo que usa ctypes (monitores, anclar al escritorio, barra de tareas, errores).

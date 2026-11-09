@@ -1,5 +1,7 @@
-"""Catálogo público de medios y orientación de cada fuente (ideología y eje nacional).
+"""Catálogo público de medios (feeds RSS verificados por sección) y orientación de cada fuente.
 
+Cada medio del catálogo trae sus feeds RSS oficiales, cada uno con el tipo de pestaña al que va
+(Món, Catalunya, Espanya...): de aquí salen config.example.json y las opciones del asistente.
 Cada titular lleva una etiqueta con el nombre del medio y su orientación. La orientación sale de
 config.json (campos "ideologia" y "eix_nacional" de cada fuente, que el usuario puede cambiar
 desde el asistente) o, si no la tiene, de este catálogo. En las fuentes agregadoras (Google
@@ -23,6 +25,25 @@ NATIONAL_AXIS = ("independentista", "sobiranista", "no_independentista", "unioni
 LEANING_FIELDS: dict[str, tuple[str, ...]] = {"ideologia": IDEOLOGIES, "eix_nacional": NATIONAL_AXIS}
 
 
+# Tipos de pestaña a los que puede ir un feed del catálogo: id -> nombre que ve el usuario
+TABS: dict[str, str] = {
+    "mon": "Món",
+    "catalunya": "Catalunya",
+    "espanya": "Espanya",
+    "mobilitzacions": "Mobilitzacions",
+    "tecnologia": "Tecnologia",
+}
+
+
+@dataclass(frozen=True)
+class Feed:
+    """Un feed RSS oficial de un medio. `tab`: clave de TABS; `section`: cómo lo llama el medio."""
+
+    tab: str
+    section: str
+    url: str
+
+
 @dataclass(frozen=True)
 class Outlet:
     """Un medio del catálogo. `aliases`: otros nombres con que aparece (p. ej. en Google Noticias)."""
@@ -32,18 +53,89 @@ class Outlet:
     aliases: tuple[str, ...] = ()
     ideologia: str = ""
     eix_nacional: str = ""
+    feeds: tuple[Feed, ...] = ()
 
+
+_EL_PAIS = "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/"
 
 # Orientación por defecto: valoración de Media Bias/Fact Check (ver docs/fonts.md). Los medios
 # sin ficha en MBFC y todo el eje nacional (ningún medio declara su posición) quedan vacíos.
+# Feeds comprobados (responden y tienen noticias del día) el 9-11-2026; los que no existen,
+# en docs/fonts.md. Los seis diarios principales van primero: el asistente los ofrece así.
 CATALOG: tuple[Outlet, ...] = (
-    Outlet("El Salto", "es", aliases=("El Salto Diario", "elsaltodiario.com")),
-    Outlet("eldiario.es", "es", aliases=("elDiario.es",), ideologia="centreesquerra"),
-    Outlet("La Directa", "ca", aliases=("Directa", "directa.cat")),
-    Outlet("Ara", "ca", aliases=("Diari Ara", "ara.cat", "Ara.cat")),
-    Outlet("La Vanguardia", "es", aliases=("lavanguardia.com",), ideologia="centreesquerra"),
-    Outlet("El País", "es", aliases=("elpais.com", "EL PAÍS"), ideologia="centreesquerra"),
+    Outlet(
+        "El Salto",
+        "es",
+        aliases=("El Salto Diario", "elsaltodiario.com"),
+        feeds=(
+            Feed("mobilitzacions", "Portada", "https://www.elsaltodiario.com/general/feed"),
+            Feed("espanya", "Política", "https://www.elsaltodiario.com/politica/feed"),
+            Feed("tecnologia", "Tecnología", "https://www.elsaltodiario.com/tecnologia/feed"),
+        ),
+    ),
+    Outlet(
+        "eldiario.es",
+        "es",
+        aliases=("elDiario.es",),
+        ideologia="centreesquerra",
+        feeds=(
+            Feed("mon", "Internacional", "https://www.eldiario.es/rss/internacional/"),
+            Feed("catalunya", "Catalunya", "https://www.eldiario.es/rss/catalunya/"),
+            Feed("espanya", "Política", "https://www.eldiario.es/rss/politica/"),
+            Feed("tecnologia", "Tecnología", "https://www.eldiario.es/rss/tecnologia/"),
+        ),
+    ),
+    Outlet(
+        "La Directa",
+        "ca",
+        aliases=("Directa", "directa.cat"),
+        feeds=(
+            Feed("catalunya", "Portada", "https://directa.cat/feed/"),
+            Feed("mobilitzacions", "Portada", "https://directa.cat/feed/"),
+        ),
+    ),
+    Outlet(
+        "Ara",
+        "ca",
+        aliases=("Diari Ara", "ara.cat", "Ara.cat"),
+        feeds=(Feed("catalunya", "Portada", "https://www.ara.cat/rss/"),),
+    ),
+    Outlet(
+        "La Vanguardia",
+        "es",
+        aliases=("lavanguardia.com",),
+        ideologia="centreesquerra",
+        feeds=(
+            Feed("mon", "Internacional", "https://www.lavanguardia.com/rss/internacional.xml"),
+            Feed("catalunya", "Catalunya", "https://www.lavanguardia.com/rss/local/catalunya.xml"),
+            Feed("tecnologia", "Tecnología", "https://www.lavanguardia.com/rss/tecnologia.xml"),
+        ),
+    ),
+    Outlet(
+        "El País",
+        "es",
+        aliases=("elpais.com", "EL PAÍS"),
+        ideologia="centreesquerra",
+        feeds=(
+            Feed("mon", "Internacional", _EL_PAIS + "internacional/portada"),
+            # El País no publica un feed solo de política: su sección España es la más cercana
+            Feed("espanya", "España", _EL_PAIS + "espana/portada"),
+            Feed("tecnologia", "Tecnología", _EL_PAIS + "tecnologia/portada"),
+        ),
+    ),
+    Outlet(
+        "El Crític",
+        "ca",
+        aliases=("elcritic.cat",),
+        feeds=(Feed("mobilitzacions", "Portada", "https://www.elcritic.cat/feed"),),
+    ),
 )
+
+
+def sources_for_tab(tab: str) -> list[dict]:
+    """Fuentes de config.json para una pestaña: los feeds del catálogo de ese tipo, en su orden."""
+    return [{"nombre": o.name, "url": f.url, "idioma": o.language} for o in CATALOG for f in o.feeds if f.tab == tab]
+
 
 Leaning = dict[str, str]  # {"ideologia": ..., "eix_nacional": ...}
 

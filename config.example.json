@@ -48,31 +48,53 @@
   "pestanas": [
     {"id": "mundo", "nombre": "Món"},
     {"id": "catalunya", "nombre": "Catalunya"},
+    {"id": "espanya", "nombre": "Espanya"},
+    {"id": "mobilitzacions", "nombre": "Mobilitzacions"},
     {"id": "tecnologia", "nombre": "Tecnologia"},
     {"id": "cultura", "nombre": "Cultura", "filtro_periodo": true}
   ],
   "fuentes": {
     "mundo": [
-      {"nombre": "Europa Press", "url": "https://www.europapress.es/rss/rss.aspx?ch=69"},
-      {"nombre": "BBC Mundo", "url": "https://feeds.bbci.co.uk/mundo/rss.xml"},
-      {"nombre": "DW", "url": "https://rss.dw.com/rdf/rss-sp-all"},
-      {"nombre": "France 24", "url": "https://www.france24.com/es/rss"}
+      {"nombre": "El País", "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/internacional/portada", "idioma": "es"},
+      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/internacional/", "idioma": "es"},
+      {"nombre": "La Vanguardia", "url": "https://www.lavanguardia.com/rss/internacional.xml", "idioma": "es"},
+      {"nombre": "Europa Press", "url": "https://www.europapress.es/rss/rss.aspx?ch=69", "idioma": "es"},
+      {"nombre": "BBC Mundo", "url": "https://feeds.bbci.co.uk/mundo/rss.xml", "idioma": "es"},
+      {"nombre": "DW", "url": "https://rss.dw.com/rdf/rss-sp-all", "idioma": "es"},
+      {"nombre": "France 24", "url": "https://www.france24.com/es/rss", "idioma": "es"}
     ],
     "catalunya": [
       {"nombre": "Ara", "url": "https://www.ara.cat/rss/", "idioma": "ca"},
+      {"nombre": "La Vanguardia", "url": "https://www.lavanguardia.com/rss/local/catalunya.xml", "idioma": "es"},
+      {"nombre": "La Directa", "url": "https://directa.cat/feed/", "idioma": "ca"},
+      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/catalunya/", "idioma": "es"},
       {"nombre": "Google Noticias", "url": "https://news.google.com/rss/search?q=Generalitat%20OR%20Parlament%20OR%20Govern%20when%3A1", "agregador": true}
     ],
+    "espanya": [
+      {"nombre": "El País", "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/espana/portada", "idioma": "es"},
+      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/politica/", "idioma": "es"},
+      {"nombre": "El Salto", "url": "https://www.elsaltodiario.com/politica/feed", "idioma": "es"}
+    ],
+    "mobilitzacions": [
+      {"nombre": "El Salto", "url": "https://www.elsaltodiario.com/general/feed", "idioma": "es"},
+      {"nombre": "La Directa", "url": "https://directa.cat/feed/", "idioma": "ca"},
+      {"nombre": "El Crític", "url": "https://www.elcritic.cat/feed", "idioma": "ca"}
+    ],
     "tecnologia": [
+      {"nombre": "El País", "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/tecnologia/portada", "idioma": "es"},
+      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/tecnologia/", "idioma": "es"},
+      {"nombre": "La Vanguardia", "url": "https://www.lavanguardia.com/rss/tecnologia.xml", "idioma": "es"},
+      {"nombre": "El Salto", "url": "https://www.elsaltodiario.com/tecnologia/feed", "idioma": "es"},
       {"nombre": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index"},
       {"nombre": "MIT Technology Review", "url": "https://www.technologyreview.com/feed/"},
-      {"nombre": "Xataka", "url": "https://www.xataka.com/feedburner.xml"}
+      {"nombre": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "idioma": "es"}
     ],
     "cultura": [
       {"nombre": "Google Noticias", "url": "https://news.google.com/rss/search?q=Girona%20%28concert%20OR%20exposici%C3%B3%20OR%20festival%29&hl=ca&gl=ES&ceid=ES:ca", "tema": "Girona", "agregador": true, "horas_max": 720}
     ]
   },
-  "titulares_por_categoria": {"mundo": 12, "tecnologia": 12, "cultura": 20},
-  "max_per_font": {"mundo": 3, "tecnologia": 3, "cultura": 4},
+  "titulares_por_categoria": {"mundo": 12, "catalunya": 12, "espanya": 12, "mobilitzacions": 12, "tecnologia": 12, "cultura": 20},
+  "max_per_font": {"mundo": 3, "catalunya": 4, "espanya": 4, "mobilitzacions": 5, "tecnologia": 3, "cultura": 4},
   "medios_excluidos": [],
   "prioridad_medios": ["Europa Press", "EFE", "RTVE", "BBC", "DW", "France 24", "Ara", "MIT Technology Review", "Ars Technica", "Xataka"],
   "paraules_excloses": {},
