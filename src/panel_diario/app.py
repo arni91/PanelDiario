@@ -358,6 +358,7 @@ def main() -> None:
     cfg_ficha = cfg.get("ficha_escritorio") or {}
     estado = Estado()
     traduccion.configurar_memoria(DATOS_DIR / "traduccions.json")
+    traduccion.configurar_pausa(DATOS_DIR / "traductor_pausa.json")
 
     if demo:
         datos_demo = json.loads((PAQUETE / "demo.json").read_text(encoding="utf-8"))
