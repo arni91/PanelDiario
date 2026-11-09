@@ -165,6 +165,21 @@ def test_verificar_ical_cuenta_los_eventos(monkeypatch: pytest.MonkeyPatch) -> N
     assert asistente.verificar_ical("webcal://cal.example.com/x") == {"eventos": 3}
 
 
+def test_direccion_publica_de_google_explica_que_hace_falta_la_secreta(monkeypatch: pytest.MonkeyPatch) -> None:
+    """El caso real: se pega la dirección pública (/public/basic.ics) y Google responde 404."""
+    pedidas: list[str] = []
+
+    def comprobar(url: str) -> int:
+        pedidas.append(url)
+        return 0
+
+    monkeypatch.setattr(agenda, "comprobar_ical", comprobar)
+    publica = "https://calendar.google.com/calendar/ical/usuario%40example.com/public/basic.ics"
+    r = asistente.ApiAsistente(plantilla(), lambda cfg: None).verificar_ical(publica)
+    assert r["ok"] is False and "secreta" in r["error"] and "usuario" not in r["error"]
+    assert pedidas == []  # ni se intenta: no funcionaría
+
+
 def test_verificar_ical_que_falla_explica_sin_la_direccion(monkeypatch: pytest.MonkeyPatch) -> None:
     def falla(url: str) -> int:
         raise agenda.ErrorAgenda("calendari 1: HTTP 404")
