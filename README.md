@@ -1,6 +1,6 @@
 # Panel Diario
 
-[![CI](https://github.com/arni91/panel-diario/actions/workflows/ci.yml/badge.svg)](https://github.com/arni91/panel-diario/actions/workflows/ci.yml)
+[![CI](https://github.com/arni91/PanelDiario/actions/workflows/ci.yml/badge.svg)](https://github.com/arni91/PanelDiario/actions/workflows/ci.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
 ![Windows](https://img.shields.io/badge/plataforma-Windows-0078d4)
 [![uv](https://img.shields.io/badge/deps-uv-de5fe9)](https://docs.astral.sh/uv/)

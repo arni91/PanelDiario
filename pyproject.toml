@@ -1,6 +1,6 @@
 # Proyecto y dependencias. Las versiones exactas quedan fijadas en uv.lock (uv sync las instala).
 [project]
-name = "panel-diario"
+name = "PanelDiario"
 dynamic = ["version"]
 description = "Widget de escritorio para Windows: tiempo, avisos, agenda, fútbol, caídas de un ETF y noticias por pestañas"
 readme = "README.md"
