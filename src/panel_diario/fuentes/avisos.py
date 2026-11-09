@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 import feedparser
 
 from panel_diario.fuentes import comun
-from panel_diario.fuentes.traduccion import traduir
+from panel_diario.fuentes.traduccion import traduir_textos
 
 SEVERIDAD = {"moderate": ("amarillo", 1), "severe": ("naranja", 2), "extreme": ("rojo", 3)}
 
@@ -67,10 +67,8 @@ def obtener_avisos(cfg: dict) -> list:
         if inicio and inicio > ahora + timedelta(hours=36):
             continue
         evento = e.get("cap_event") or e.get("title", "Avís")
-        try:
-            evento = traduir(evento)  # AEMET els publica en castellà
-        except Exception:  # noqa: BLE001
-            pass
+        # AEMET los publica en castellano; si el traductor falla, se queda el original
+        evento = traduir_textos([evento], "ca", ("ca",)).get(evento, evento)
         clave = (area, evento, sev)
         if clave in vistos:
             continue
