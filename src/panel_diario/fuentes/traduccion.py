@@ -34,13 +34,27 @@ MAX_CARACTERES_LOTE = 3000
 MAX_TEXTOS_LOTE = 50
 REINTENTOS = 3  # tras el primer intento: esperas de 1, 2 y 4 s
 ESPERA_BASE = 1.0
-# Si Google sigue respondiendo 429 tras los reintentos, no se le vuelve a pedir nada en este rato
+# Si Google sigue respondiendo 429 tras los reintentos, no se le vuelve a pedir nada en un rato.
+# Cada bloqueo seguido dobla la pausa (5 min, 10, 20... hasta 6 h): su bloqueo puede durar horas.
 PAUSA_TRAS_LIMITE = 300.0
+PAUSA_MAXIMA = 6 * 3600.0
 MAX_MEMORIA = 5000
 
 # ---------------------------------------------------------------------------
-# Memoria de traducciones (en disco)
+# Estado en disco: memoria de traducciones y pausa por límite de peticiones
 # ---------------------------------------------------------------------------
+
+
+def _escribir_json(ruta: Path, datos: object) -> bool:
+    """Escribe primero en un temporal: un corte no deja el fichero a medias."""
+    tmp = ruta.with_name(ruta.name + ".tmp")
+    try:
+        tmp.write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")
+        os.replace(tmp, ruta)
+        return True
+    except OSError as ex:
+        log.warning("No se puede guardar %s: %s", ruta.name, ex)
+        return False
 
 
 class MemoriaTraduccions:
@@ -77,22 +91,60 @@ class MemoriaTraduccions:
         self._cambios = True
 
     def desar(self) -> None:
-        """Escribe el JSON si hay cambios (primero en un temporal: un corte no deja el fichero a medias)."""
+        """Escribe el JSON si hay cambios."""
         if not self.ruta or not self._cambios:
             return
         filas = [[d, t, tr, i] for (d, t), (tr, i) in self._entradas.items()]
-        tmp = self.ruta.with_name(self.ruta.name + ".tmp")
-        try:
-            tmp.write_text(json.dumps(filas, ensure_ascii=False), encoding="utf-8")
-            os.replace(tmp, self.ruta)
+        if _escribir_json(self.ruta, filas):
             self._cambios = False
-        except OSError as ex:
-            log.warning("No se puede guardar la memoria de traducciones: %s", ex)
+
+
+class PausaTraductor:
+    """Hasta cuándo no se pide nada al traductor tras un 429 persistente. Se guarda en disco si hay
+    ruta, para que un reinicio del panel no vuelva a insistir a Google durante el bloqueo.
+
+    Usa la hora real (time.time), no la monotónica: la monotónica empieza de nuevo en cada proceso.
+    """
+
+    def __init__(self, ruta: Path | None = None) -> None:
+        self.ruta = ruta
+        self.hasta = 0.0
+        self.segundos = 0.0  # duración de la última pausa; 0 = ningún bloqueo desde la última traducción buena
+        if ruta and ruta.exists():
+            self._cargar(ruta)
+
+    def _cargar(self, ruta: Path) -> None:
+        try:
+            datos = json.loads(ruta.read_text(encoding="utf-8"))
+            self.hasta, self.segundos = float(datos["hasta"]), float(datos["segundos"])
+        except (OSError, ValueError, TypeError, KeyError) as ex:
+            log.warning("Pausa del traductor ilegible, se ignora: %s", ex)
+            self.hasta = self.segundos = 0.0
+
+    def activa(self) -> bool:
+        return time.time() < self.hasta
+
+    def iniciar(self) -> float:
+        """Empieza una pausa el doble de larga que la anterior y devuelve su duración en segundos."""
+        self.segundos = min(PAUSA_MAXIMA, self.segundos * 2) if self.segundos else PAUSA_TRAS_LIMITE
+        self.hasta = time.time() + self.segundos
+        self._desar()
+        return self.segundos
+
+    def reiniciar(self) -> None:
+        """El traductor ha respondido bien: el próximo bloqueo vuelve a empezar por la pausa corta."""
+        if self.segundos:
+            self.hasta = self.segundos = 0.0
+            self._desar()
+
+    def _desar(self) -> None:
+        if self.ruta:
+            _escribir_json(self.ruta, {"hasta": self.hasta, "segundos": self.segundos})
 
 
 _memoria = MemoriaTraduccions()
+_pausa = PausaTraductor()
 _lock = threading.Lock()  # noticias y avisos se actualizan en hilos distintos: una petición cada vez
-_pausa_hasta = 0.0
 
 
 def configurar_memoria(ruta: Path) -> None:
@@ -100,6 +152,13 @@ def configurar_memoria(ruta: Path) -> None:
     global _memoria
     with _lock:
         _memoria = MemoriaTraduccions(ruta)
+
+
+def configurar_pausa(ruta: Path) -> None:
+    """Guarda la pausa por límite de peticiones en `ruta` (la llama app.py al arrancar)."""
+    global _pausa
+    with _lock:
+        _pausa = PausaTraductor(ruta)
 
 
 # ---------------------------------------------------------------------------
@@ -179,24 +238,22 @@ def _leer_respuesta(datos: object, n: int) -> list[tuple[str, str]]:
 
 def traduir_textos(textos: Iterable[str], desti: str = "ca", conservar: Iterable[str] = ()) -> dict[str, str]:
     """{texto: texto a mostrar}. Nunca lanza excepción: lo que no se puede traducir queda como estaba."""
-    global _pausa_hasta
     conservar = set(conservar)
     unicos = list(dict.fromkeys(t for t in textos if t and t.strip()))
     with _lock:
         pendientes = [t for t in unicos if _memoria.get(desti, t) is None]
-        if pendientes and time.monotonic() < _pausa_hasta:
+        if pendientes and _pausa.activa():
             log.info("Traductor en pausa por límite de peticiones: %d textos sin traducir", len(pendientes))
         elif pendientes:
             for lote in lotes(pendientes):
                 try:
                     for text, (traduit, idioma) in zip(lote, _pedir_lote(lote, desti), strict=True):
                         _memoria.put(desti, text, traduit or text, idioma)
+                    _pausa.reiniciar()
                 except LimiteTraductor as ex:
-                    _pausa_hasta = time.monotonic() + PAUSA_TRAS_LIMITE
+                    segundos = _pausa.iniciar()
                     restantes = len(pendientes) - pendientes.index(lote[0])
-                    log.warning(
-                        "Traducción: %d textos sin traducir; pausa de %.0f s (%s)", restantes, PAUSA_TRAS_LIMITE, ex
-                    )
+                    log.warning("Traducción: %d textos sin traducir; pausa de %.0f s (%s)", restantes, segundos, ex)
                     break  # no insistir: el resto de lotes también recibiría 429
                 except Exception as ex:  # noqa: BLE001  (red, formato...): se sigue con el siguiente lote
                     log.warning("Traducción: lote de %d textos sin traducir (%s)", len(lote), ex)

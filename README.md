@@ -84,7 +84,7 @@ docs/                 referencia de configuración, medios del catálogo (feeds 
 | Google Calendar por iCal | Solo lectura, sin proyecto en Google Cloud ni pantallas OAuth | API de Google Calendar: más permisos de los necesarios |
 | Niveles del ETF en % | El widget no guarda importes: cada uno aplica el % a su aportación | Importes en euros: dato personal dentro de la configuración |
 | uv + `uv.lock` | Instalación reproducible y descarga de Python incluida | pip + requirements: sin lock real |
-| Traducción en lotes, secuencial y con memoria en disco | Una petición por titular hacía que Google respondiera 429; así son 1-2 peticiones por actualización, y cada texto se traduce una sola vez | Una petición por texto en paralelo |
+| Traducción en lotes, secuencial y con memoria en disco | Una petición por titular hacía que Google respondiera 429; así son 1-2 peticiones por actualización, cada texto se traduce una sola vez y, si Google bloquea, la pausa se guarda en disco y se dobla con cada bloqueo seguido | Una petición por texto en paralelo |
 | Orientación de los medios solo de una fuente verificable (MBFC) | Una etiqueta sin fuente sería una opinión; lo que no se puede verificar se deja vacío y cada uno lo puede poner | Etiquetas por impresión o mezclando fuentes que se contradicen |
 | Asistente con listas y «Un altre…» al final | Elegir es más rápido y da menos errores que escribir; lo que se escribe (RSS, iCal, ticker) se comprueba antes de guardarlo | Editar config.json a mano |
 | Errores por fuente, no globales | Un servicio caído no puede dejar el panel en blanco | Un único try global: todo o nada |
@@ -94,7 +94,7 @@ docs/                 referencia de configuración, medios del catálogo (feeds 
 Requisitos: Windows 10/11 y [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`). No hace falta instalar Python: uv descarga la versión correcta.
 
 1. Descarga el proyecto (**Code → Download ZIP** o `git clone`) en una carpeta fuera de OneDrive, por ejemplo `C:\dev\PanelDiario`.
-2. Doble clic en **`instalar.bat`**: instala las dependencias exactas de `uv.lock`, crea los accesos directos (también para arrancar con Windows) y abre el panel.
+2. Doble clic en **`instalar.bat`**: instala las dependencias exactas de `uv.lock`, crea los accesos directos (también para arrancar con Windows) y abre el panel. Desde una terminal o un script: `instalar.bat /silencioso` (sin pausas).
 3. La primera vez se abre el **asistente**: elige tu ciudad, calendario, equipo, ETF y los medios de cada pestaña de noticias de listas y casillas (la última opción, «Un altre…», abre una entrada manual). Cada paso se puede saltar.
 
 Uso: clic en la píldora para desplegar el panel (otro clic, Esc o clic fuera lo recoge); arrástrala para moverla; **Ctrl+Alt+N** también lo abre. Desde el icono junto al reloj: actualizar, **Configura…** (el asistente) y salir.
