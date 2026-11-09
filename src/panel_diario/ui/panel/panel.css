@@ -178,6 +178,16 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 
 .vacio { padding: 18px 6px; text-align: center; color: var(--muted); font-size: 12px; }
 .nota { font-size: 11px; color: var(--muted); }
+
+/* Borsa: una fila por índice o valor (nombre, precio, variación del día) */
+.mercat { display: grid; grid-template-columns: 1fr auto auto; gap: 3px 10px; font-size: 12px; align-items: baseline; }
+.mercat .nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mercat .nom small { color: var(--muted); margin-left: 4px; }
+.mercat .preu { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.mercat .canvi { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mercat .canvi.puja { color: var(--up); }
+.mercat .canvi.baixa { color: var(--down); }
+.mercat-sub { font-size: 11px; color: var(--muted); margin: 10px 0 4px; border-top: 1px solid var(--line); padding-top: 6px; }
 .nota a { color: var(--accent); cursor: pointer; text-decoration: underline; }
 
 footer { padding: 6px 14px 9px; font-size: 11px; color: var(--muted); display: flex; gap: 8px;

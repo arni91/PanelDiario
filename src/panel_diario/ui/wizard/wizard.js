@@ -129,18 +129,43 @@ const PASOS = [
     },
   },
   {
+    id: "borsa",
+    pintar: () => {
+      const act = INICIO.borsa_actual;
+      const grupos = [...new Set(INICIO.borsa.indexs.map(i => i.grup))];
+      return `<div class="paso"><h2>📈 Borsa</h2>
+      <p>Els índexs que vulguis seguir, amb la variació del dia, i les accions que més es mouen avui
+      (mercat dels Estats Units).</p>
+      ${grupos.map(g => `<div class="grupo">${esc(g)}</div><div class="opciones">${INICIO.borsa.indexs.filter(i => i.grup === g).map(i => `
+        <label class="opcion"><input type="checkbox" data-index value="${esc(i.simbol)}" ${act.indexs.includes(i.simbol) ? "checked" : ""}>
+          <b>${esc(i.nom)}</b><small>${esc(i.simbol)}</small></label>`).join("")}</div>`).join("")}
+      <div class="grupo">Accions del dia</div>
+      <div class="opciones">${INICIO.borsa.moviments.map(m => `
+        <label class="opcion"><input type="checkbox" data-moviment value="${m.id}" ${act.moviments.includes(m.id) ? "checked" : ""}>
+          <b>${esc(m.nombre)}</b></label>`).join("")}</div>
+      <div class="mensaje" id="mensaje"></div></div>`;
+    },
+    recoger: () => {
+      const marcados = (attr) => [...document.querySelectorAll(`[data-${attr}]:checked`)].map(el => el.value);
+      const r = { indexs: marcados("index"), moviments: marcados("moviment") };
+      if (!r.indexs.length && !r.moviments.length) { mensaje("Tria almenys un índex o una llista (o salta aquest pas).", "error"); return null; }
+      return r;
+    },
+  },
+  {
     id: "drawdown",
     pintar: () => {
       const d = INICIO.actual.drawdown || {};
       const niv = (d.niveles && d.niveles.length ? d.niveles : [
         { caida: -10, extra_pct: 50 }, { caida: -20, extra_pct: 100 }, { caida: -30, extra_pct: 200 }, { caida: -40, toda_la_reserva: true }]);
-      return `<div class="paso"><h2>📉 Un ETF per seguir</h2>
-      <p>Mostra quant ha caigut des del seu màxim històric i quant aportar <b>de més</b> aquell mes,
-      en % sobre la teva aportació habitual. El panell no guarda cap import.</p>
-      <label>ETF</label><div class="fila"><select id="etf">
+      return `<div class="paso"><h2>📉 El teu ETF o acció (opcional)</h2>
+      <p>Si inverteixes periòdicament en un ETF o una acció, el panell mostra quant ha caigut des del seu màxim
+      i quant aportar <b>de més</b> aquell mes, en % sobre la teva aportació habitual. No guarda cap import.
+      Si no t'interessa, prem <b>Salta</b>.</p>
+      <label>ETF o acció</label><div class="fila"><select id="etf">
         ${INICIO.etfs.map(e => `<option value="${e.ticker}">${esc(e.nombre)} (${e.ticker})</option>`).join("")}
         <option value="">Un altre…</option></select></div>
-      <div class="fila oculto" id="otro-etf" style="margin-top:6px"><input type="text" id="ticker" placeholder="Ticker de Yahoo Finance (p. ex. EUNL.DE)" value="${esc(d.ticker || "")}">
+      <div class="fila oculto" id="otro-etf" style="margin-top:6px"><input type="text" id="ticker" placeholder="Símbol de Yahoo Finance (p. ex. EUNL.DE o AAPL)" value="${esc(d.ticker || "")}">
         <button class="btn" id="btn-ticker">Comprova</button></div>
       <label>Si cau… → aporta de més (%)</label>
       <div class="niveles" id="niveles">${niv.map((n, i) => `
@@ -269,7 +294,7 @@ const PASOS = [
   {
     id: "final", sinSaltar: true,
     pintar: () => {
-      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", drawdown: "📉 ETF", noticias: "📰 Mitjans", seccions: "🗂️ Seccions", claude: "✨ IA" };
+      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", borsa: "📈 Borsa", drawdown: "📉 El teu ETF", noticias: "📰 Mitjans", seccions: "🗂️ Seccions", claude: "✨ IA" };
       return `<div class="paso"><h2>Tot a punt</h2><p>Això és el que es desarà:</p>
       <div class="resumen">${Object.entries(nombres).map(([id, n]) =>
         `<div>${n}: ${estadoPaso[id] === "hecho" ? "<b>configurat</b>" : "es queda com estava"}</div>`).join("")}</div>

@@ -21,6 +21,18 @@
     ],
     "zonas_excluir": []
   },
+  "borsa": {
+    "indexs": [
+      "^IBEX",
+      "^STOXX50E",
+      "^GSPC",
+      "^IXIC"
+    ],
+    "moviments": [
+      "day_gainers",
+      "day_losers"
+    ]
+  },
   "drawdown": {
     "nombre": "",
     "ticker": "",

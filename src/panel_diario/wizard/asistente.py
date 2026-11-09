@@ -16,7 +16,7 @@ from typing import Any
 import webview
 
 from panel_diario.sources import agenda, comun, drawdown, noticias
-from panel_diario.wizard import news
+from panel_diario.wizard import markets, news
 
 log = logging.getLogger("panel")
 
@@ -55,14 +55,13 @@ COMPETICIONES = [
 # ETF UCITS indexados más negociados, con su ticker de Xetra en Yahoo Finance (verificados).
 # El primero sale elegido por defecto en el asistente.
 ETF_HABITUALES = [
-    {"ticker": "VWCE.DE", "nombre": "Vanguard FTSE All-World (acumulació)"},
-    {"ticker": "VGWL.DE", "nombre": "Vanguard FTSE All-World (distribució)"},
+    {"ticker": "VWCE.DE", "nombre": "Vanguard FTSE All-World"},
     {"ticker": "EUNL.DE", "nombre": "iShares Core MSCI World"},
     {"ticker": "XDWD.DE", "nombre": "Xtrackers MSCI World"},
     {"ticker": "IUSQ.DE", "nombre": "iShares MSCI ACWI"},
     {"ticker": "SPYI.DE", "nombre": "SPDR MSCI ACWI IMI"},
     {"ticker": "SXR8.DE", "nombre": "iShares Core S&P 500"},
-    {"ticker": "VUAA.DE", "nombre": "Vanguard S&P 500 (acumulació)"},
+    {"ticker": "VUAA.DE", "nombre": "Vanguard S&P 500"},
     {"ticker": "SXRV.DE", "nombre": "iShares Nasdaq 100"},
     {"ticker": "IS3N.DE", "nombre": "iShares Core MSCI EM IMI (emergents)"},
 ]
@@ -253,6 +252,8 @@ def construir_config(base: dict, respuestas: dict) -> dict:
             "football_data_api_key": f.get("football_data_api_key", "").strip(),
             "team_id": int(f["team_id"]) if f.get("team_id") else None,
         }
+    if "borsa" in respuestas:
+        cfg.update(markets.build(respuestas["borsa"]))
     if "drawdown" in respuestas:
         d = respuestas["drawdown"]
         cfg.setdefault("drawdown", {"actualizar_minutos": 30, "recalcular_dias": 7})
@@ -304,6 +305,8 @@ class ApiAsistente:
             "calendarios": CALENDARIOS,
             "competiciones": COMPETICIONES,
             "etfs": ETF_HABITUALES,
+            "borsa": markets.options(),
+            "borsa_actual": markets.current_choices(c),
             "grupos_medios": news.outlet_groups(),
             "seccions": news.sections(),
             "noticias_actuales": news.current_choices(c),
