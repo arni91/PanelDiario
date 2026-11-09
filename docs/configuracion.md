@@ -40,7 +40,7 @@ El plan gratuito incluye las ligas principales y la Champions, pero no las copas
 - Un tema o un medio sin RSS: Google Noticias como fuente con `"agregador": true`, p. ej. `https://news.google.com/rss/search?q=robotica&hl=es&gl=ES&ceid=ES:es` o `...?q=site:ejemplo.com`.
 - La misma noticia publicada por varios medios se muestra una vez, con la versión del primer medio de `prioridad_medios`, y "també a …" con los demás.
 - `medios_excluidos`: medios que no quieres ver. `paraules_excloses`: por pestaña, descarta titulares con esas palabras.
-- `traduccio`: `idioma` al que se traduce y `conservar`, los idiomas que se dejan tal cual (por defecto catalán y castellano).
+- `traduccio`: `activa`, `idioma` al que se traduce (por defecto `"ca"`) y `conservar`, los idiomas que se dejan tal cual (por defecto `["ca", "es"]`). El traductor detecta el idioma de cada titular que no lo tenga declarado en su fuente. Las traducciones se guardan en `%APPDATA%\PanelDiario\traduccions.json`; si el traductor responde 429 (demasiadas peticiones), se reintenta con espera, se hace una pausa de 5 minutos y mientras tanto se muestra el texto original.
 - Comprueba tus fuentes con **probar_fuentes.bat**.
 
 ## Otros

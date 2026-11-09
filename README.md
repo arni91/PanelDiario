@@ -27,7 +27,7 @@ Una píldora en el escritorio muestra la temperatura; un clic despliega el panel
 | 📅 Agenda | Eventos de hoy y de la semana; enlaces de videollamada clicables | Google Calendar (iCal) |
 | ⚽ Fútbol | Próximos partidos y último resultado de tu equipo | football-data.org |
 | 📉 Caídas de un ETF | Caída desde el máximo histórico y cuánto aportar de más (en %) en cada nivel | Yahoo Finance |
-| 📰 Noticias | Pestañas por ámbito, tema o medio; la misma noticia en varios medios se agrupa; inglés → castellano | RSS, Google Noticias |
+| 📰 Noticias | Pestañas por ámbito, tema o medio; la misma noticia en varios medios se agrupa; otros idiomas → catalán | RSS, Google Noticias |
 | ✨ IA (opcional) | Selecciona las noticias más relevantes y las resume en una línea | API de Claude |
 
 ## Aspectos técnicos destacados
@@ -82,6 +82,7 @@ docs/                 referencia de configuración y capturas
 | Google Calendar por iCal | Solo lectura, sin proyecto en Google Cloud ni pantallas OAuth | API de Google Calendar: más permisos de los necesarios |
 | Niveles del ETF en % | El widget no guarda importes: cada uno aplica el % a su aportación | Importes en euros: dato personal dentro de la configuración |
 | uv + `uv.lock` | Instalación reproducible y descarga de Python incluida | pip + requirements: sin lock real |
+| Traducción en lotes, secuencial y con memoria en disco | Una petición por titular hacía que Google respondiera 429; así son 1-2 peticiones por actualización, y cada texto se traduce una sola vez | Una petición por texto en paralelo |
 | Errores por fuente, no globales | Un servicio caído no puede dejar el panel en blanco | Un único try global: todo o nada |
 
 ## Instalación
@@ -117,7 +118,7 @@ Log en ejecución: `%APPDATA%\PanelDiario\panel.log`.
 
 - Solo Windows: el anclaje al escritorio usa la API Win32.
 - Yahoo Finance, el traductor de Google y Google Noticias son servicios no oficiales: pueden fallar puntualmente (el panel muestra el último dato bueno).
-- Interfaz solo en catalán; las noticias se muestran en catalán o castellano y el resto se traduce al castellano.
+- Interfaz solo en catalán; las noticias se muestran en catalán o castellano y el resto se traduce al catalán (si el traductor no responde, se deja el original).
 
 ## Licencia
 
