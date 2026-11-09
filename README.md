@@ -10,7 +10,7 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 <p align="center">
   <img src="docs/capturas/panel.png" width="31%" alt="Panel: avisos, tiempo, agenda y bolsa">
   <img src="docs/capturas/panel-noticias.png" width="31%" alt="Panel: deportes y noticias por secciones">
-  <img src="docs/capturas/asistente.png" width="34%" alt="Asistente de configuración">
+  <img src="docs/capturas/asistente.png" width="34%" alt="Asistente: paso de medios">
 </p>
 <p align="center"><sub>Capturas con <code>--demo</code> (datos inventados). Interfaz en catalán.</sub></p>
 
