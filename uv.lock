@@ -568,7 +568,7 @@ wheels = [
 ]
 
 [[package]]
-name = "panel-diario"
+name = "paneldiario"
 source = { editable = "." }
 dependencies = [
     { name = "feedparser" },
