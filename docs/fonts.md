@@ -37,8 +37,24 @@ Medios generales del catálogo (también comprobados el 9-11-2026), después de 
 | Tecnologia | Xataka | castellano | `https://www.xataka.com/feedburner.xml` |
 | Tecnologia | Ars Technica | inglés (se traduce) | `https://feeds.arstechnica.com/arstechnica/index` |
 | Tecnologia | MIT Technology Review | inglés (se traduce) | `https://www.technologyreview.com/feed/` |
+| Món | VilaWeb | catalán | `https://www.vilaweb.cat/categoria/mon/feed/` |
+| Món | El Periódico | castellano | `https://www.elperiodico.com/es/rss/internacional/rss.xml` |
+| Món | The Guardian | inglés (se traduce) | `https://www.theguardian.com/world/rss` |
+| Món | Al Jazeera | inglés (se traduce) | `https://www.aljazeera.com/xml/rss/all.xml` |
+| Món | The New York Times | inglés (se traduce) | `https://rss.nytimes.com/services/xml/rss/nyt/World.xml` |
+| Tecnologia | VilaWeb | catalán | `https://www.vilaweb.cat/categoria/ciencia-i-tecnologia/feed/` (publica poco: a veces varios días sin noticias) |
+| Tecnologia | El Periódico | castellano | `https://www.elperiodico.com/es/rss/tecnologia/rss.xml` |
+| Tecnologia | Genbeta | castellano | `https://www.genbeta.com/feedburner.xml` |
+| Tecnologia | The Verge | inglés (se traduce) | `https://www.theverge.com/rss/index.xml` |
+| Tecnologia | Wired | inglés (se traduce) | `https://www.wired.com/feed/rss` |
+| Tecnologia | TechCrunch | inglés (se traduce) | `https://techcrunch.com/feed/` |
+| Tecnologia | Engadget | inglés (se traduce) | `https://www.engadget.com/rss.xml` |
+| Tecnologia | Hacker News | inglés (se traduce) | `https://hnrss.org/frontpage` |
 
-Feeds que no existen (comprobados el mismo día):
+Feeds que no existen o no sirven (comprobados el mismo día):
+
+- **El Nacional.cat, RTVE y Público**: las direcciones de sus feeds de internacional y ciencia dan 404.
+- **Le Monde diplomatique en español**: su feed no pone fecha a las noticias.
 
 - **El País, Política**: no hay feed solo de política (las rutas `section/politica` y `section/espana/subsection/politica` dan 404 o vienen vacías). En su lugar va la sección España, que es sobre todo política.
 - **Ara, tecnología**: no tiene feed de esa sección (`/rss/tecnologia/` y `/rss/ciencia-i-tecnologia/` dan 404).

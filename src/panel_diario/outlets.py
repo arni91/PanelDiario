@@ -111,6 +111,35 @@ CATALOG: tuple[Outlet, ...] = (
     Outlet(
         "MIT Technology Review", "en", feeds=(Feed("tecnologia", "Portada", "https://www.technologyreview.com/feed/"),)
     ),
+    Outlet(
+        "VilaWeb",
+        "ca",
+        feeds=(
+            Feed("mon", "Món", "https://www.vilaweb.cat/categoria/mon/feed/"),
+            Feed("tecnologia", "Ciència i tecnologia", "https://www.vilaweb.cat/categoria/ciencia-i-tecnologia/feed/"),
+        ),
+    ),
+    Outlet(
+        "El Periódico",
+        "es",
+        feeds=(
+            Feed("mon", "Internacional", "https://www.elperiodico.com/es/rss/internacional/rss.xml"),
+            Feed("tecnologia", "Tecnología", "https://www.elperiodico.com/es/rss/tecnologia/rss.xml"),
+        ),
+    ),
+    Outlet("The Guardian", "en", feeds=(Feed("mon", "World", "https://www.theguardian.com/world/rss"),)),
+    Outlet("Al Jazeera", "en", feeds=(Feed("mon", "Portada", "https://www.aljazeera.com/xml/rss/all.xml"),)),
+    Outlet(
+        "The New York Times",
+        "en",
+        feeds=(Feed("mon", "World", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"),),
+    ),
+    Outlet("Genbeta", "es", feeds=(Feed("tecnologia", "Portada", "https://www.genbeta.com/feedburner.xml"),)),
+    Outlet("The Verge", "en", feeds=(Feed("tecnologia", "Portada", "https://www.theverge.com/rss/index.xml"),)),
+    Outlet("Wired", "en", feeds=(Feed("tecnologia", "Portada", "https://www.wired.com/feed/rss"),)),
+    Outlet("TechCrunch", "en", feeds=(Feed("tecnologia", "Portada", "https://techcrunch.com/feed/"),)),
+    Outlet("Engadget", "en", feeds=(Feed("tecnologia", "Portada", "https://www.engadget.com/rss.xml"),)),
+    Outlet("Hacker News", "en", feeds=(Feed("tecnologia", "Portada", "https://hnrss.org/frontpage"),)),
 )
 
 
