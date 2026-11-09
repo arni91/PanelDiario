@@ -60,7 +60,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - pywebview impone 200x100 px de mínimo: pasar siempre min_size en create_window.
 - Con la píldora anclada al escritorio (SetParent), FindWindowW ya no la encuentra: obtener el hwnd ANTES de anclarla (buscar_ventana).
 - Al abrir el panel desde la píldora, el foco vuelve un instante a ella: por eso se ignora la pérdida de foco durante 1 s. El panel se oculta al perder el foco: al hacer capturas, no hacer clic en otra ventana antes de capturarlo.
-- Un nombre de variable local igual que un módulo de sources/ (noticias, ia...) lo tapa: ruff lo avisa (F823/F821).
+- Un nombre de variable local igual que un módulo de sources/ (noticias, sports...) lo tapa: ruff lo avisa (F823/F821).
 - uv: en algunos Windows los hardlinks desde la caché fallan ("operación de nube"); por eso link-mode = "copy" en pyproject.toml.
 - mypy: el Control de aplicaciones de Windows (Smart App Control) puede bloquear sus DLL compiladas; por eso se instala en Python puro (no-binary-package).
 - uv: tras mover o renombrar la carpeta del proyecto, los .exe de .venv\Scripts (mypy, pytest...) fallan con "uv trampoline failed to canonicalize script path": guardan la ruta antigua. Se arregla con `uv sync --reinstall`.

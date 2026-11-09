@@ -58,4 +58,3 @@ El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`)
 
 - `ficha_escritorio.modo`: `"escritorio"` deja la píldora a la altura de los iconos (detrás de las ventanas, visible con Win+D); `"encima"`, siempre por encima. `activa: false` la quita.
 - `atajo_teclado`: atajo para abrir el panel. `actualizar_minutos`: cada cuánto se refrescan los datos (mínimo 10).
-- **Filtro con IA (opcional)**: con una clave de la API de Anthropic en `claude.api_key`, elige las noticias más relevantes y añade un resumen de una línea. Se ejecuta como mucho cada `cada_horas` horas.

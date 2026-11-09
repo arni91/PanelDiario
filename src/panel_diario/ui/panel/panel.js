@@ -270,11 +270,11 @@ function pintarLista() {
     // Una etiqueta por medio que lo publica (el del titular primero)
     const medios = [n.medio, ...(n.otros_medios || [])];
     // En las pestañas con periodo se muestra también el resumen de la fuente (dónde, cuándo, de qué va)
-    const resumen = n.resumen_ia || (conPeriodo ? n.resumen : "") || "";
+    const resumen = (conPeriodo ? n.resumen : "") || "";
     return `<div class="noti ${leidos.has(n.enlace) ? "leida" : ""}" data-url="${esc(n.enlace)}"
               title="${esc(medios.join("\n"))}">
       <div class="tit">${esc(n.titulo)}</div>
-      ${resumen ? `<div class="res-ia">${esc(resumen)}</div>` : ""}
+      ${resumen ? `<div class="resum">${esc(resumen)}</div>` : ""}
       <div class="meta">
         ${medios.slice(0, 3).map(m => `<span class="etiqueta"><span class="medio">${esc(m)}</span></span>`).join("")}
         ${medios.length > 3 ? `<span class="chip">+${medios.length - 3}</span>` : ""}
@@ -290,14 +290,13 @@ function pintarPie() {
   const caidas = (D && D.fuentes_caidas) || [];
   const err = (D && D.errores) || {};
   const partes = [];
-  if (D && D.ia_activa) partes.push("Selecció amb IA");
   const falta = sinConfigurar((D && D.secciones) || {});
   if (falta.length) partes.push(`<span title="Sense configurar: ${esc(falta.join(", "))}.\nOmple-ho a config.json (instruccions al README).">⚙ ${falta.length} ${falta.length === 1 ? "secció" : "seccions"} per configurar</span>`);
   if (caidas.length) {
     const lista = caidas.map(c => `${c.fuente} (${c.categoria}): ${c.error}`).join("\n");
     partes.push(`<span class="aviso-f" title="${esc(lista)}">⚠ ${caidas.length} ${caidas.length === 1 ? "font no respon" : "fonts no responen"}</span>`);
   }
-  const nombres = { tiempo: "temps", avisos: "avisos", esports: "esports", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", ia: "IA", agenda: "agenda" };
+  const nombres = { tiempo: "temps", avisos: "avisos", esports: "esports", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", agenda: "agenda" };
   const fallos = Object.keys(err).map(k => nombres[k] || k);
   if (fallos.length) partes.push(`<span class="aviso-f" title="${esc(Object.entries(err).map(([k, v]) => k + ": " + v).join("\n"))}">⚠ sense actualitzar: ${esc(fallos.join(", "))}</span>`);
   pie.innerHTML = (partes.length ? partes.join(" · ") : "Tot en ordre")

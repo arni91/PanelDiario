@@ -9,13 +9,12 @@ from __future__ import annotations
 import json
 import logging
 import threading
-import time
 from collections.abc import Callable
 from typing import Any
 
 from panel_diario import VERSION
 from panel_diario.config import CACHE, DATOS_DIR
-from panel_diario.sources import agenda, avisos, comun, drawdown, ia, markets, noticias, sports, tiempo
+from panel_diario.sources import agenda, avisos, comun, drawdown, markets, noticias, sports, tiempo
 
 log = logging.getLogger("panel")
 
@@ -32,8 +31,6 @@ class Estado:
             "fuentes_caidas": [],
             "actualizado": None,
             "leidos": [],
-            "ia_ts": 0,
-            "ia_activa": False,
         }
         if CACHE.exists():
             try:
@@ -55,7 +52,7 @@ class Estado:
         return d
 
 
-def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
+def actualizar(estado: Estado, cfg: dict) -> None:
     """Pide todas las fuentes en paralelo y guarda lo que llega; lo que falla conserva su dato anterior."""
     if estado.actualizando:
         return
@@ -91,21 +88,6 @@ def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
         caidas = []
         if "noticias" in resultados:
             titulares, caidas = resultados["noticias"]
-            # Filtro con IA, como mucho cada N horas (y conservando el último resultado)
-            cfg_ia = cfg.get("claude") or {}
-            if (cfg_ia.get("api_key") or "").strip():
-                toca = forzar_ia or time.time() - estado.datos.get("ia_ts", 0) > cfg_ia.get("cada_horas", 3) * 3600
-                if toca:
-                    try:
-                        titulares = ia.filtrar_con_ia(cfg, titulares)
-                        estado.datos["ia_ts"] = time.time()
-                        estado.datos["ia_activa"] = True
-                    except Exception as ex:  # noqa: BLE001
-                        errores["ia"] = str(ex)[:200]
-                        log.warning("Filtro IA falla: %s", ex)
-                elif estado.datos.get("ia_activa"):
-                    # Entre llamadas a la IA se mantiene su selección anterior
-                    titulares = estado.datos["secciones"].get("noticias", titulares)
             resultados["noticias"] = titulares
 
         with estado.lock:
