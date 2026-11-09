@@ -104,7 +104,7 @@ class Api:
 
     def refrescar(self) -> bool:
         def tarea() -> None:
-            actualizar(self._estado, self._cfg, True)
+            actualizar(self._estado, self._cfg)
             refrescar_icono(self._estado, self._icono_ref)
             self._repintar()
 

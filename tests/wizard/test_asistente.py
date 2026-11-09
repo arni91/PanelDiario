@@ -118,11 +118,11 @@ def test_pasos_saltados_no_cambian_nada() -> None:
 def test_no_modifica_la_config_de_partida() -> None:
     base = plantilla()
     original = json.loads(json.dumps(base))
-    asistente.construir_config(base, {"ubicacion": LUGAR, "claude": {"api_key": "x"}})
+    asistente.construir_config(base, {"ubicacion": LUGAR, "agenda": {"ical_urls": []}})
     assert base == original
 
 
-def test_esports_drawdown_agenda_y_claude() -> None:
+def test_esports_drawdown_y_agenda() -> None:
     respuestas = {
         "esports": {"equips": [{"lliga": "soccer/esp.1", "id": 7, "nom": " Equip "}], "f1": True},
         "drawdown": {
@@ -135,7 +135,6 @@ def test_esports_drawdown_agenda_y_claude() -> None:
             ],
         },
         "agenda": {"ical_urls": [" https://calendar.example.com/a.ics ", ""]},
-        "claude": {"api_key": " clave "},
     }
     base = {**plantilla(), "futbol": {"football_data_api_key": "k"}}
     cfg = asistente.construir_config(base, respuestas)
@@ -146,7 +145,6 @@ def test_esports_drawdown_agenda_y_claude() -> None:
     assert [n["caida"] for n in cfg["drawdown"]["niveles"]] == [-10, -20, -40]
     assert cfg["drawdown"]["actualizar_minutos"] == 30  # lo que el asistente no pregunta se conserva
     assert cfg["agenda"]["ical_urls"] == ["https://calendar.example.com/a.ics"]
-    assert cfg["claude"]["api_key"] == "clave"
 
 
 @pytest.mark.parametrize("url", ["http://no-es-segura.com/x.ics", "calendar.example.com/x.ics", "ftp://x/y.ics"])
@@ -237,8 +235,8 @@ def test_guardar_config_hace_copia_de_la_anterior(tmp_path: Path) -> None:
 def test_api_guardar_construye_y_entrega_la_config_nueva() -> None:
     recibidas: list[dict] = []
     api = asistente.ApiAsistente(plantilla(), recibidas.append)
-    assert api.guardar({"claude": {"api_key": "k"}}) == {"ok": True, "datos": True}
-    assert recibidas[0]["claude"]["api_key"] == "k"
+    assert api.guardar({"esports": {"equips": [], "f1": True}}) == {"ok": True, "datos": True}
+    assert recibidas[0]["esports"]["f1"] is True
 
 
 def test_api_explica_los_errores_sin_lanzar_excepciones(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -1,6 +1,6 @@
 """Asistente de configuración: la lógica que hay detrás de ui/wizard/asistente.html.
 
-Pregunta paso a paso (tiempo, agenda, deportes, bolsa, noticias, IA) y construye config.json.
+Pregunta paso a paso (tiempo, agenda, deportes, bolsa y noticias) y construye config.json.
 Cada paso se puede saltar: lo saltado se queda como estaba. Las funciones que salen a internet
 usan comun.get (los tests la sustituyen). ApiAsistente es el puente con el JavaScript de la ventana.
 """
@@ -244,9 +244,6 @@ def construir_config(base: dict, respuestas: dict) -> dict:
         seccions = respuestas.get("seccions") or {k: actual[k] for k in ("seccions", "plans", "temes", "traduir")}
         ciudad = (lugar or cfg.get("ubicacion") or {}).get("nombre", "")
         cfg.update(news.build(medios, seccions, ciudad))
-    if "claude" in respuestas:
-        cfg.setdefault("claude", {"modelo": "claude-haiku-5-5", "cada_horas": 3})
-        cfg["claude"]["api_key"] = respuestas["claude"].get("api_key", "").strip()
     return cfg
 
 
@@ -292,7 +289,6 @@ class ApiAsistente:
                 "lugar": (c.get("ubicacion") or {}).get("nombre", ""),
                 "ical_urls": (c.get("agenda") or {}).get("ical_urls", []),
                 "drawdown": c.get("drawdown") or {},
-                "claude_api_key": (c.get("claude") or {}).get("api_key", ""),
                 "pestanas": [p["nombre"] for p in c.get("pestanas", [])],
             },
         }

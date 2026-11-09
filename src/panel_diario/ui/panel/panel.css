@@ -161,7 +161,7 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 .noti:last-child { border-bottom: 0; }
 .noti:hover { background: var(--panel-2); }
 .noti .tit { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
-.noti .res-ia { font-size: 12px; color: var(--muted); margin-top: 3px;
+.noti .resum { font-size: 12px; color: var(--muted); margin-top: 3px;
                overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .noti .meta { font-size: 11px; color: var(--muted); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .chip { background: var(--panel-2); border-radius: 999px; padding: 1px 7px; font-size: 10.5px; }

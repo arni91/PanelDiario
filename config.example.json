@@ -65,11 +65,6 @@
     "equips": [],
     "f1": false
   },
-  "claude": {
-    "api_key": "",
-    "modelo": "claude-haiku-5-5",
-    "cada_horas": 3
-  },
   "pestanas": [
     {
       "id": "portades",

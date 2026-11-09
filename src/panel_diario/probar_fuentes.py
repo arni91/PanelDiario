@@ -77,8 +77,6 @@ def main() -> int:
             fallos += 1
             linea(False, nombre, str(ex)[:90])
 
-    clave_ia = (cfg.get("claude") or {}).get("api_key", "").strip()
-    print(f"\nFiltro con IA: {'activado' if clave_ia else 'desactivado (sin clave de API)'}")
     print(f"\nResultado: {'todo responde' if not fallos else f'{fallos} fallos'}\n")
     return 1 if fallos else 0
 

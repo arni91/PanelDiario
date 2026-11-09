@@ -285,22 +285,9 @@ const PASOS = [
     },
   },
   {
-    id: "claude",
-    pintar: () => `<div class="paso"><h2>✨ Filtre amb IA (opcional)</h2>
-      <p>Amb una clau de l'API de Claude, el panell tria les notícies més rellevants i n'escriu un resum d'una línia.
-      Costa uns cèntims al mes. Si no en tens, salta aquest pas: tot funciona igual.</p>
-      <label>Clau de l'API d'Anthropic</label>
-      <input type="password" id="clave-claude" value="${esc(INICIO.actual.claude_api_key || "")}" placeholder="sk-ant-…">
-      <div class="mensaje" id="mensaje"></div></div>`,
-    recoger: () => {
-      const k = $("clave-claude").value.trim();
-      return k ? { api_key: k } : (mensaje("Posa la clau o salta aquest pas.", "error"), null);
-    },
-  },
-  {
     id: "final", sinSaltar: true,
     pintar: () => {
-      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", esports: "🏅 Esports", borsa: "📈 Borsa", drawdown: "📉 El teu ETF", noticias: "📰 Mitjans", seccions: "🗂️ Seccions", claude: "✨ IA" };
+      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", esports: "🏅 Esports", borsa: "📈 Borsa", drawdown: "📉 El teu ETF", noticias: "📰 Mitjans", seccions: "🗂️ Seccions" };
       return `<div class="paso"><h2>Tot a punt</h2><p>Això és el que es desarà:</p>
       <div class="resumen">${Object.entries(nombres).map(([id, n]) =>
         `<div>${n}: ${estadoPaso[id] === "hecho" ? "<b>configurat</b>" : "es queda com estava"}</div>`).join("")}</div>

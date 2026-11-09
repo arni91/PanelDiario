@@ -42,7 +42,6 @@ def test_la_plantilla_publica_se_puede_cargar() -> None:
     cfg = config.cargar_config(RAIZ / "config.example.json")
     # Cada pestaña tiene sus fuentes, no hay ninguna clave rellenada ni gustos personales
     assert {p["id"] for p in cfg["pestanas"]} == set(cfg["fuentes"])
-    assert cfg["claude"]["api_key"] == ""
     assert cfg["agenda"]["ical_urls"] == []
     assert cfg["esports"] == {"equips": [], "f1": False}
 

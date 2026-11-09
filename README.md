@@ -24,7 +24,6 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 | Bolsa | Índices con la variación del día y los valores que más suben, bajan o se negocian | Yahoo Finance |
 | ETF propio (opcional) | Caída desde el máximo y aportación extra por niveles (en %) | Yahoo Finance |
 | Noticias | 56 medios para elegir (Catalunya, España, Europa, mundo, temáticos y revistas) y secciones por tema; «Portades» resume las noticias principales de todas las portades. Cada titular en su idioma, con traducción opcional | RSS, Google Noticias |
-| IA (opcional) | Selección y resumen de las noticias más relevantes | API de Claude |
 
 ## Stack
 
