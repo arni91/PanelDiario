@@ -90,7 +90,6 @@ function sinConfigurar(s) {
   if (s.agenda && s.agenda.sin_url) falta.push("agenda (adreça iCal)");
   if (s.futbol && s.futbol.sin_clave) falta.push("futbol (clau de football-data)");
   else if (s.futbol && s.futbol.sin_equipo) falta.push("futbol (team_id)");
-  if (s.drawdown && s.drawdown.sin_configurar) falta.push("caigudes (ticker de l'ETF)");
   return falta;
 }
 
@@ -155,6 +154,29 @@ function pintarFutbol(b) {
   }
   if (sec.length) html += `<div class="partido-sec">${sec.join("")}</div>`;
   el.innerHTML = html;
+}
+
+// --- Borsa: índices con la variación del día y listas de valores del día ---
+// Precio con separador de miles y dos decimales, al estilo catalán (12.000,00)
+const preuCa = (n) => Number(n).toLocaleString("ca-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function filaMercat(nom, detall, preu, canvi) {
+  const cls = canvi > 0 ? "puja" : canvi < 0 ? "baixa" : "";
+  return `<span class="nom">${esc(nom)}${detall ? `<small>${esc(detall)}</small>` : ""}</span>
+    <span class="preu">${preu === null || preu === undefined ? "" : preuCa(preu)}</span>
+    <span class="canvi ${cls}">${canvi > 0 ? "+" : ""}${coma(canvi)} %</span>`;
+}
+
+function pintarBorsa(b, error) {
+  const el = document.getElementById("borsa");
+  if (ocultarSi(el, !b || !!b.sin_configurar)) return;
+  const indexs = (b.indexs || []).map(i => filaMercat(i.nom, "", i.preu, i.canvi_pct)).join("");
+  const llistes = (b.moviments || []).map(m => `<div class="mercat-sub">${esc(m.nombre)}</div>
+    <div class="mercat">${m.valors.map(v => filaMercat(v.nom, v.simbol, v.preu, v.canvi_pct)).join("")}</div>`).join("");
+  const hora = (b.indexs || [])[0] ? ` · ${esc(b.indexs[0].hora)}` : "";
+  el.innerHTML = `<h3>📈 Borsa${hora}</h3>
+    ${indexs ? `<div class="mercat">${indexs}</div>` : ""}${llistes}
+    ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: Yahoo Finance no respon</div>` : ""}`;
 }
 
 // --- Caídas del ETF desde su máximo y compras extra (en % sobre la aportación habitual) ---
@@ -271,7 +293,7 @@ function pintarPie() {
     const lista = caidas.map(c => `${c.fuente} (${c.categoria}): ${c.error}`).join("\n");
     partes.push(`<span class="aviso-f" title="${esc(lista)}">⚠ ${caidas.length} ${caidas.length === 1 ? "font no respon" : "fonts no responen"}</span>`);
   }
-  const nombres = { tiempo: "temps", avisos: "avisos", futbol: "futbol", drawdown: "caigudes", noticias: "notícies", ia: "IA", agenda: "agenda" };
+  const nombres = { tiempo: "temps", avisos: "avisos", futbol: "futbol", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", ia: "IA", agenda: "agenda" };
   const fallos = Object.keys(err).map(k => nombres[k] || k);
   if (fallos.length) partes.push(`<span class="aviso-f" title="${esc(Object.entries(err).map(([k, v]) => k + ": " + v).join("\n"))}">⚠ sense actualitzar: ${esc(fallos.join(", "))}</span>`);
   pie.innerHTML = (partes.length ? partes.join(" · ") : "Tot en ordre")
@@ -288,6 +310,7 @@ async function cargar() {
   pintarTiempo(s.tiempo);
   pintarAgenda(s.agenda, D && D.errores && D.errores.agenda);
   pintarFutbol(s.futbol);
+  pintarBorsa(s.borsa, D && D.errores && D.errores.borsa);
   pintarDrawdown(s.drawdown, D && D.errores && D.errores.drawdown);
   pintarTabs();
   pintarLista();

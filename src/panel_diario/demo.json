@@ -346,6 +346,80 @@
     }
    ]
   },
+  "borsa": {
+   "indexs": [
+    {
+     "simbol": "^IBEX",
+     "nom": "IBEX 35",
+     "preu": 12000.0,
+     "canvi_pct": 0.85,
+     "moneda": "EUR",
+     "hora": "09/11 17:35"
+    },
+    {
+     "simbol": "^STOXX50E",
+     "nom": "Euro Stoxx 50",
+     "preu": 5000.0,
+     "canvi_pct": -0.32,
+     "moneda": "EUR",
+     "hora": "09/11 17:35"
+    },
+    {
+     "simbol": "^GSPC",
+     "nom": "S&P 500",
+     "preu": 6000.0,
+     "canvi_pct": 1.12,
+     "moneda": "USD",
+     "hora": "09/11 17:35"
+    },
+    {
+     "simbol": "^IXIC",
+     "nom": "Nasdaq",
+     "preu": 20000.0,
+     "canvi_pct": 1.54,
+     "moneda": "USD",
+     "hora": "09/11 17:35"
+    }
+   ],
+   "moviments": [
+    {
+     "id": "day_gainers",
+     "nombre": "Les que més pugen",
+     "valors": [
+      {
+       "simbol": "EXA",
+       "nom": "Empresa d'exemple A",
+       "preu": 42.0,
+       "canvi_pct": 18.4
+      },
+      {
+       "simbol": "EXB",
+       "nom": "Empresa d'exemple B",
+       "preu": 12.5,
+       "canvi_pct": 11.2
+      }
+     ]
+    },
+    {
+     "id": "day_losers",
+     "nombre": "Les que més baixen",
+     "valors": [
+      {
+       "simbol": "EXC",
+       "nom": "Empresa d'exemple C",
+       "preu": 8.1,
+       "canvi_pct": -14.7
+      },
+      {
+       "simbol": "EXD",
+       "nom": "Empresa d'exemple D",
+       "preu": 30.0,
+       "canvi_pct": -9.3
+      }
+     ]
+    }
+   ]
+  },
   "drawdown": {
    "nombre": "ETF global d'exemple",
    "ticker": "EXEMPLE.DE",

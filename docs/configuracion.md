@@ -6,7 +6,7 @@ Lo normal es configurar el panel con el **asistente** (se abre solo la primera v
 
 ## Qué funciona sin claves
 
-Tiempo, avisos meteorológicos, noticias y caídas del ETF funcionan sin ninguna clave. Agenda y fútbol necesitan los datos de abajo. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
+Tiempo, avisos meteorológicos, noticias, borsa y el ETF propio funcionan sin ninguna clave. Agenda y fútbol necesitan los datos de abajo. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
 
 ## Ubicación y avisos
 
@@ -29,9 +29,15 @@ En Google Calendar, desde el ordenador: abre Google Calendar → ⚙ Configuraci
 
 El plan gratuito incluye las ligas principales y la Champions, pero no las copas nacionales.
 
-## Caídas de un ETF (`drawdown`)
+## Borsa (`borsa`)
 
-- `ticker`: símbolo del ETF en Yahoo Finance (p. ej. `VWCE.DE` para el Vanguard FTSE All-World o `EUNL.DE` para el MSCI World; el asistente ofrece los 10 más negociados). Vacío = sección oculta. `nombre`: cómo quieres que aparezca.
+- `indexs`: símbolos de Yahoo Finance de los índices o activos a seguir (IBEX 35 `^IBEX`, Euro Stoxx 50 `^STOXX50E`, S&P 500 `^GSPC`, Nasdaq `^IXIC`, oro, Brent, euro/dólar, bitcoin…; la lista del asistente está en [`catalog/markets.py`](../src/panel_diario/catalog/markets.py)). Cada uno muestra el precio y la variación respecto al cierre de la sesión anterior.
+- `moviments`: listas de valores del día del mercado de EE. UU.: `day_gainers` (los que más suben), `day_losers` (los que más bajan), `most_actives` (los más negociados). Cinco valores por lista.
+- Sin `borsa` (o con las dos listas vacías), la sección no se muestra. Yahoo Finance no es un servicio oficial: si un índice no responde se omite; si no responde ninguno, se muestra el último dato bueno.
+
+## El teu ETF o acció, opcional (`drawdown`)
+
+- `ticker`: símbolo del ETF o la acción en Yahoo Finance (p. ej. `VWCE.DE` para el Vanguard FTSE All-World o `EUNL.DE` para el MSCI World; el asistente ofrece los 10 más negociados). Vacío = sección oculta. `nombre`: cómo quieres que aparezca.
 - `niveles`: a partir de qué caída (`caida`, en %) cuánto aportar de más ese mes, en % sobre tu aportación habitual (`extra_pct`; 100 = el doble). El último puede ser `"toda_la_reserva": true`. Por defecto: −10 % → +50 %, −20 % → +100 %, −30 % → +200 %, −40 % → toda la reserva. El widget no guarda importes.
 - Caída = (precio actual − máximo histórico) / máximo histórico, con todos los cierres del ETF desde que cotiza. Si Yahoo no responde, se muestra el último dato guardado con un aviso.
 
