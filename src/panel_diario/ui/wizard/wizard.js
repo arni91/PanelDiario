@@ -96,37 +96,41 @@ const PASOS = [
   {
     id: "esports",
     pintar: () => {
-      if (!tmp.equips) { tmp.equips = [...INICIO.esports_actual.equips]; tmp.f1 = INICIO.esports_actual.f1; }
+      if (!tmp.equips) {
+        tmp.equips = [...INICIO.esports_actual.equips];
+        tmp.f1 = INICIO.esports_actual.f1;
+        tmp.esport = "futbol";
+        tmp.lliga = null;
+      }
       return `<div class="paso"><h2>🏅 Els teus esports</h2>
-      <p>Tria un esport i una competició, carrega'n els equips i afegeix tots els que vulguis seguir:
-      el panell mostra els seus propers partits i l'últim resultat. En futbol surten totes les competicions de l'equip
-      (lliga, copa, Champions…). Dades d'ESPN, sense cap clau.</p>
-      <label>Esport</label><select id="esport">${INICIO.esports.esports.map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("")}</select>
-      <label>Competició</label><div class="fila"><select id="lliga"></select>
-        <button class="btn" id="btn-equipos">Carrega els equips</button></div>
-      <label>Equip</label><div class="fila"><select id="equipo"><option value="">— primer carrega els equips —</option></select>
-        <button class="btn" id="btn-afegir">Afegeix</button></div>
-      <div class="grupo">Equips que segueixes</div><div class="opciones" id="equips"></div>
+      <p>Marca els equips que vols seguir: el panell mostra els seus propers partits i l'últim resultat.
+      Pots triar-ne tants com vulguis, de diferents esports. En futbol hi surten totes les competicions de l'equip
+      (lliga, copa, Champions…).</p>
+      <div class="grupo">1. Esport</div>
+      <div class="chips">${INICIO.esports.esports.map(e => `<span class="chip ${tmp.esport === e.id ? "on" : ""}" data-esport="${e.id}">${esc(e.nombre)}</span>`).join("")}</div>
+      <div class="grupo">2. Competició</div>
+      <div class="chips" id="lligues"></div>
+      <div class="grupo">3. Equips</div>
+      <div id="equips-lliga" class="nota">Tria una competició per veure'n els equips.</div>
+      <div class="grupo">Equips que segueixes</div>
+      <div class="opciones" id="equips"></div>
+      <div class="grupo">Motor</div>
       <div class="opciones"><label class="opcion"><input type="checkbox" id="f1" ${tmp.f1 ? "checked" : ""}>
-        <b>Fórmula 1</b><small>propera cursa i guanyador de l'última</small></label></div>
+        <b>Fórmula 1</b><small>la propera cursa i qui va guanyar l'última</small></label></div>
       <div class="mensaje" id="mensaje"></div></div>`;
     },
     alMostrar: () => {
-      const pintarLligues = () => {
-        $("lliga").innerHTML = INICIO.esports.lligues.filter(l => l.esport === $("esport").value)
-          .map(l => `<option value="${l.path}">${esc(l.nom)}</option>`).join("");
-        $("equipo").innerHTML = `<option value="">— primer carrega els equips —</option>`;
-      };
-      $("esport").onchange = pintarLligues;
-      $("lliga").onchange = () => { $("equipo").innerHTML = `<option value="">— primer carrega els equips —</option>`; };
-      pintarLligues();
-      $("btn-equipos").onclick = cargarEquipos;
-      $("btn-afegir").onclick = anadirEquipo;
+      document.querySelectorAll("[data-esport]").forEach(el => el.onclick = () => {
+        tmp.esport = el.dataset.esport; tmp.lliga = null;
+        document.querySelectorAll("[data-esport]").forEach(x => x.classList.toggle("on", x === el));
+        pintarLligues();
+      });
       $("f1").onchange = () => { tmp.f1 = $("f1").checked; };
+      pintarLligues();
       pintarEquipos();
     },
     recoger: () => {
-      if (!tmp.equips.length && !tmp.f1) { mensaje("Afegeix almenys un equip o marca la Fórmula 1 (o salta aquest pas).", "error"); return null; }
+      if (!tmp.equips.length && !tmp.f1) { mensaje("Marca almenys un equip o la Fórmula 1 (o salta aquest pas).", "error"); return null; }
       return { equips: tmp.equips, f1: tmp.f1 };
     },
   },
@@ -326,31 +330,46 @@ function pintarLugares() {
   });
 }
 
-// --- Deportes: equipos de la competición elegida (ESPN) ---
-async function cargarEquipos() {
-  const equipos = await llamar("equipos", $("lliga").value);
-  if (!equipos) return;
-  $("equipo").innerHTML = equipos.map(e => `<option value="${esc(e.id)}">${esc(e.nom)}</option>`).join("");
-  mensaje(`${equipos.length} equips. Tria'n un i prem «Afegeix».`, "ok");
+// --- Deportes: esport → competición → equipos (casillas); los marcados se siguen ---
+const sigue = (lliga, id) => tmp.equips.some(e => e.lliga === lliga && e.id === id);
+const nomLliga = (path) => (INICIO.esports.lligues.find(l => l.path === path) || { nom: path }).nom;
+
+function pintarLligues() {
+  $("lligues").innerHTML = INICIO.esports.lligues.filter(l => l.esport === tmp.esport).map(l =>
+    `<span class="chip ${tmp.lliga === l.path ? "on" : ""}" data-lliga="${l.path}">${esc(l.nom)}</span>`).join("");
+  document.querySelectorAll("[data-lliga]").forEach(el => el.onclick = () => {
+    tmp.lliga = el.dataset.lliga;
+    document.querySelectorAll("[data-lliga]").forEach(x => x.classList.toggle("on", x === el));
+    cargarEquipos();
+  });
+  if (!tmp.lliga) $("equips-lliga").innerHTML = `<div class="nota">Tria una competició per veure'n els equips.</div>`;
 }
 
-function anadirEquipo() {
-  const sel = $("equipo");
-  if (!sel.value) { mensaje("Primer carrega els equips i tria'n un.", "error"); return; }
-  const equip = { lliga: $("lliga").value, id: sel.value, nom: sel.options[sel.selectedIndex].text };
-  if (!tmp.equips.some(e => e.lliga === equip.lliga && e.id === equip.id)) tmp.equips.push(equip);
-  mensaje("");
-  pintarEquipos();
+async function cargarEquipos() {
+  const lliga = tmp.lliga;
+  $("equips-lliga").innerHTML = `<div class="nota">Carregant els equips de ${esc(nomLliga(lliga))}…</div>`;
+  const equipos = await llamar("equipos", lliga);
+  if (!equipos || lliga !== tmp.lliga) return;  // otra competición elegida mientras tanto
+  $("equips-lliga").innerHTML = `<div class="rejilla">${equipos.map(e => `
+    <label class="opcion"><input type="checkbox" data-equip="${esc(e.id)}" data-nom="${esc(e.nom)}" ${sigue(lliga, e.id) ? "checked" : ""}>
+      <b>${esc(e.nom)}</b></label>`).join("")}</div>`;
+  document.querySelectorAll("[data-equip]").forEach(el => el.onchange = () => {
+    if (el.checked) { if (!sigue(lliga, el.dataset.equip)) tmp.equips.push({ lliga, id: el.dataset.equip, nom: el.dataset.nom }); }
+    else tmp.equips = tmp.equips.filter(e => !(e.lliga === lliga && e.id === el.dataset.equip));
+    pintarEquipos();
+  });
 }
 
 function pintarEquipos() {
-  const lliga = (path) => (INICIO.esports.lligues.find(l => l.path === path) || { nom: path }).nom;
   $("equips").innerHTML = tmp.equips.length ? tmp.equips.map((e, i) => `
-    <div class="opcion on"><b>${esc(e.nom)}</b><small style="flex:1">${esc(lliga(e.lliga))}</small>
+    <div class="opcion on"><b>${esc(e.nom)}</b><small style="flex:1">${esc(nomLliga(e.lliga))}</small>
       <button class="btn" data-quitar-equip="${i}">Treu</button></div>`).join("")
     : `<div class="nota">Encara no en segueixes cap.</div>`;
   document.querySelectorAll("[data-quitar-equip]").forEach(el => el.onclick = () => {
-    tmp.equips.splice(Number(el.dataset.quitarEquip), 1); pintarEquipos();
+    const [quitado] = tmp.equips.splice(Number(el.dataset.quitarEquip), 1);
+    const casilla = document.querySelector(`[data-equip="${CSS.escape(quitado.id)}"]`);
+    if (casilla && quitado.lliga === tmp.lliga) casilla.checked = false;
+    pintarEquipos();
   });
 }
 

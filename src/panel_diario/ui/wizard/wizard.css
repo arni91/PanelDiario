@@ -49,6 +49,8 @@ textarea { min-height: 70px; resize: vertical; }
 .opcion small { color: var(--muted); }
 /* Casillas del catálogo: la fila entera se puede clicar (es un <label>) */
 label.opcion { font-size: 14px; color: var(--text); margin: 0; }
+/* Equipos de una competición: casillas en dos columnas */
+.rejilla { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
 .grupo { margin: 14px 0 4px; font-size: 13px; font-weight: 600; }
 .oculto { display: none !important; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
