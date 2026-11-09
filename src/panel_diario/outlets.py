@@ -129,6 +129,20 @@ CATALOG: tuple[Outlet, ...] = (
         aliases=("elcritic.cat",),
         feeds=(Feed("mobilitzacions", "Portada", "https://www.elcritic.cat/feed"),),
     ),
+    # Medios generales (feeds comprobados; orientación aún no comprobada en MBFC: vacía)
+    Outlet(
+        "Europa Press", "es", feeds=(Feed("mon", "Internacional", "https://www.europapress.es/rss/rss.aspx?ch=69"),)
+    ),
+    Outlet("BBC Mundo", "es", feeds=(Feed("mon", "Portada", "https://feeds.bbci.co.uk/mundo/rss.xml"),)),
+    Outlet("DW", "es", aliases=("DW Español",), feeds=(Feed("mon", "Portada", "https://rss.dw.com/rdf/rss-sp-all"),)),
+    Outlet("France 24", "es", feeds=(Feed("mon", "Portada", "https://www.france24.com/es/rss"),)),
+    Outlet("Xataka", "es", feeds=(Feed("tecnologia", "Portada", "https://www.xataka.com/feedburner.xml"),)),
+    Outlet(
+        "Ars Technica", "en", feeds=(Feed("tecnologia", "Portada", "https://feeds.arstechnica.com/arstechnica/index"),)
+    ),
+    Outlet(
+        "MIT Technology Review", "en", feeds=(Feed("tecnologia", "Portada", "https://www.technologyreview.com/feed/"),)
+    ),
 )
 
 

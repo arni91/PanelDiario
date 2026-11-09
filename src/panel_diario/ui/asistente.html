@@ -60,6 +60,10 @@
             border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
   .opcion:hover, .opcion.on { border-color: var(--accent); }
   .opcion small { color: var(--muted); }
+  /* Casillas del catálogo: la fila entera se puede clicar (es un <label>) */
+  label.opcion { font-size: 14px; color: var(--text); margin: 0; }
+  .grupo { margin: 14px 0 4px; font-size: 13px; font-weight: 600; }
+  .oculto { display: none !important; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
   .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -95,7 +99,11 @@ const respuestas = {};       // solo los pasos completados; los saltados no apar
 const estadoPaso = {};       // id del paso -> "hecho" | "saltado"
 let actual = 0;
 // Datos temporales de cada paso mientras se rellena
-const tmp = { lugares: [], lugar: null, equipos: [], ticker: null, ambitos: [], temas: [], mitjans: [] };
+const tmp = { lugares: [], lugar: null, calendario: "google", ticker: null, propios: null, temasPropios: [] };
+// Idioma de cada medio del catálogo, en palabras
+const IDIOMAS = { ca: "català", es: "castellà", en: "anglès (es tradueix)" };
+// Orientación de un medio en texto: "centreesquerra · no independentista" ("" si no se conoce)
+const orientacio = (m) => [m.ideologia, m.eix_nacional].filter(Boolean).map(v => v.replace(/_/g, " ")).join(" · ");
 
 const api = () => window.pywebview.api;
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -129,13 +137,21 @@ const PASOS = [
   {
     id: "ubicacion",
     pintar: () => `<div class="paso"><h2>🌤️ On ets?</h2>
-      <p>Per al temps i els avisos meteorològics.${INICIO.actual.lugar ? ` Ara: <b>${esc(INICIO.actual.lugar)}</b>.` : ""}</p>
-      <div class="fila"><input type="text" id="ciudad" placeholder="Nom de la teva ciutat">
+      <p>Per al temps i els avisos meteorològics. Tria la teva ciutat${INICIO.actual.lugar ? ` (ara: <b>${esc(INICIO.actual.lugar)}</b>)` : ""}.</p>
+      <div class="chips">${INICIO.ciudades.map(c => `<span class="chip" data-ciudad="${esc(c)}">${esc(c)}</span>`).join("")}
+        <span class="chip" data-ciudad="">Un altre…</span></div>
+      <div class="fila oculto" id="otra-ciudad" style="margin-top:8px"><input type="text" id="ciudad" placeholder="Nom de la teva ciutat">
         <button class="btn" id="btn-buscar">Cerca</button></div>
       <div class="opciones" id="lugares"></div><div class="mensaje" id="mensaje"></div></div>`,
     alMostrar: () => {
-      $("btn-buscar").onclick = buscarLugar;
-      $("ciudad").onkeydown = (e) => { if (e.key === "Enter") buscarLugar(); };
+      document.querySelectorAll("[data-ciudad]").forEach(el => el.onclick = () => {
+        document.querySelectorAll("[data-ciudad]").forEach(x => x.classList.toggle("on", x === el));
+        const otra = !el.dataset.ciudad;
+        $("otra-ciudad").classList.toggle("oculto", !otra);
+        if (otra) { $("ciudad").focus(); } else { buscarLugar(el.dataset.ciudad); }
+      });
+      $("btn-buscar").onclick = () => buscarLugar($("ciudad").value);
+      $("ciudad").onkeydown = (e) => { if (e.key === "Enter") buscarLugar($("ciudad").value); };
       pintarLugares();
     },
     recoger: () => tmp.lugar || (mensaje("Cerca la teva ciutat i tria-la de la llista.", "error"), null),
@@ -143,17 +159,35 @@ const PASOS = [
   {
     id: "agenda",
     pintar: () => `<div class="paso"><h2>📅 La teva agenda</h2>
-      <p>Enganxa l'<b>adreça secreta en format iCal</b> del teu Google Calendar (una per línia si en tens més d'una).</p>
-      <p class="nota">On és: Google Calendar a l'ordinador → ⚙ Configuració → a l'esquerra, el teu calendari →
-      «Integra el calendari» → «Adreça secreta en format iCal» (acaba en <b>.ics</b>). És privada: no la comparteixis.</p>
-      <label>Adreces iCal</label><textarea id="ical">${esc((INICIO.actual.ical_urls || []).join("\n"))}</textarea>
+      <p>Quin calendari fas servir?</p>
+      <div class="opciones">${INICIO.calendarios.map(c =>
+        `<div class="opcion ${tmp.calendario === c.id ? "on" : ""}" data-calendario="${c.id}"><b>${esc(c.nombre)}</b></div>`).join("")}</div>
+      <p class="nota" id="ayuda-calendario"></p>
+      <label>Enganxa aquí la seva adreça secreta (una per línia si en tens més d'una). És privada: no la comparteixis.</label>
+      <textarea id="ical">${esc((INICIO.actual.ical_urls || []).join("\n"))}</textarea>
       <div class="mensaje" id="mensaje"></div></div>`,
-    recoger: () => {
+    alMostrar: () => {
+      const ayuda = () => {
+        $("ayuda-calendario").textContent = "On és: " + INICIO.calendarios.find(c => c.id === tmp.calendario).ayuda;
+      };
+      document.querySelectorAll("[data-calendario]").forEach(el => el.onclick = () => {
+        tmp.calendario = el.dataset.calendario;
+        document.querySelectorAll("[data-calendario]").forEach(x => x.classList.toggle("on", x === el));
+        ayuda();
+      });
+      ayuda();
+    },
+    // Cada adreça es comprova abans de seguir (Python la llegeix; mai l'escriu al registre)
+    recoger: async () => {
       const urls = $("ical").value.split("\n").map(s => s.trim()).filter(Boolean);
       if (!urls.length) { mensaje("Enganxa almenys una adreça o salta aquest pas.", "error"); return null; }
-      if (urls.some(u => !u.startsWith("https://") || !u.includes(".ics"))) {
-        mensaje("Cada adreça ha de començar per https:// i acabar en .ics", "error"); return null;
+      let eventos = 0;
+      for (const u of urls) {
+        const r = await llamar("verificar_ical", u);
+        if (!r) return null;
+        eventos += r.eventos;
       }
+      mensaje(`✓ ${urls.length === 1 ? "Calendari llegit" : urls.length + " calendaris llegits"} (${eventos} esdeveniments)`, "ok");
       return { ical_urls: urls };
     },
   },
@@ -167,16 +201,29 @@ const PASOS = [
       <a data-url="https://www.football-data.org/client/register">demana-la aquí</a> (1 minut, t'arriba per correu).</p>
       <label>Clau de football-data.org</label><input type="text" id="clave-futbol" value="${esc(f.football_data_api_key || "")}">
       <label>Competició (només per trobar l'equip a la llista)</label>
-      <div class="fila"><select id="competicion">${INICIO.competiciones.map(c => `<option value="${c.codigo}">${esc(c.nombre)}</option>`).join("")}</select>
+      <div class="fila"><select id="competicion">${INICIO.competiciones.map(c => `<option value="${c.codigo}">${esc(c.nombre)}</option>`).join("")}
+        <option value="">Un altre…</option></select>
         <button class="btn" id="btn-equipos">Carrega els equips</button></div>
-      <label>Equip</label><select id="equipo">${f.team_id ? `<option value="${f.team_id}">${esc(f.nombre || "El teu equip actual")}</option>` : `<option value="">— primer carrega els equips —</option>`}</select>
+      <input type="text" id="codigo-competicion" class="oculto" style="margin-top:6px" placeholder="Codi de la competició a football-data.org (p. ex. ELC)">
+      <label>Equip</label><select id="equipo">${f.team_id ? `<option value="${f.team_id}">${esc(f.nombre || "El teu equip actual")}</option>` : `<option value="">— primer carrega els equips —</option>`}
+        <option value="otro">Un altre…</option></select>
+      <div class="fila oculto" id="otro-equipo" style="margin-top:6px">
+        <input type="text" id="equipo-nombre" placeholder="Nom de l'equip" style="flex:.6">
+        <input type="number" id="equipo-id" placeholder="Identificador a football-data.org"></div>
       <div class="mensaje" id="mensaje"></div></div>`;
     },
-    alMostrar: () => { $("btn-equipos").onclick = cargarEquipos; },
+    alMostrar: () => {
+      $("btn-equipos").onclick = cargarEquipos;
+      $("competicion").onchange = () => $("codigo-competicion").classList.toggle("oculto", $("competicion").value !== "");
+      $("equipo").onchange = () => $("otro-equipo").classList.toggle("oculto", $("equipo").value !== "otro");
+    },
     recoger: () => {
       const clave = $("clave-futbol").value.trim(), sel = $("equipo");
-      if (!clave || !sel.value) { mensaje("Posa la clau i tria el teu equip (o salta aquest pas).", "error"); return null; }
-      return { football_data_api_key: clave, team_id: Number(sel.value), nombre: sel.options[sel.selectedIndex].text };
+      const otro = sel.value === "otro";
+      const id = otro ? $("equipo-id").value : sel.value;
+      const nombre = otro ? $("equipo-nombre").value.trim() : sel.options[sel.selectedIndex].text;
+      if (!clave || !id || !nombre) { mensaje("Posa la clau i tria el teu equip (o salta aquest pas).", "error"); return null; }
+      return { football_data_api_key: clave, team_id: Number(id), nombre };
     },
   },
   {
@@ -191,7 +238,7 @@ const PASOS = [
       <label>ETF</label><div class="fila"><select id="etf">
         ${INICIO.etfs.map(e => `<option value="${e.ticker}">${esc(e.nombre)} (${e.ticker})</option>`).join("")}
         <option value="">Un altre…</option></select></div>
-      <div class="fila" style="margin-top:6px"><input type="text" id="ticker" placeholder="Ticker de Yahoo Finance (p. ex. EUNL.DE)" value="${esc(d.ticker || "")}">
+      <div class="fila oculto" id="otro-etf" style="margin-top:6px"><input type="text" id="ticker" placeholder="Ticker de Yahoo Finance (p. ex. EUNL.DE)" value="${esc(d.ticker || "")}">
         <button class="btn" id="btn-ticker">Comprova</button></div>
       <label>Si cau… → aporta de més (%)</label>
       <div class="niveles" id="niveles">${niv.map((n, i) => `
@@ -200,12 +247,17 @@ const PASOS = [
       <div class="mensaje" id="mensaje"></div></div>`;
     },
     alMostrar: () => {
-      $("etf").onchange = () => { $("ticker").value = $("etf").value; tmp.ticker = null; };
-      if (!$("ticker").value) $("ticker").value = $("etf").value;
+      // El ticker actual: si es uno de la lista, se elige ahí; si no, "Un altre…" con el campo ya escrito
+      const actualTicker = (INICIO.actual.drawdown || {}).ticker || "";
+      const enLista = INICIO.etfs.some(e => e.ticker === actualTicker);
+      $("etf").value = enLista ? actualTicker : (actualTicker ? "" : INICIO.etfs[0].ticker);
+      const mostrarOtro = () => $("otro-etf").classList.toggle("oculto", $("etf").value !== "");
+      $("etf").onchange = () => { tmp.ticker = null; mostrarOtro(); if ($("etf").value === "") $("ticker").focus(); };
+      mostrarOtro();
       $("btn-ticker").onclick = comprobarTicker;
     },
     recoger: async () => {
-      if (!tmp.ticker || tmp.ticker.ticker !== $("ticker").value.trim().toUpperCase()) {
+      if (!tmp.ticker || tmp.ticker.ticker !== tickerElegido()) {
         if (!(await comprobarTicker())) return null;
       }
       const niveles = [...document.querySelectorAll("[data-caida]")].map(el => {
@@ -217,31 +269,61 @@ const PASOS = [
   },
   {
     id: "noticias",
-    pintar: () => `<div class="paso"><h2>📰 Les teves notícies</h2>
-      <p>Cada opció que triïs serà una pestanya. Cada titular diu de quin mitjà surt.
+    pintar: () => {
+      prepararNoticias();
+      return `<div class="paso"><h2>📰 Les teves notícies</h2>
+      <p>Marca els mitjans de cada pestanya: una pestanya sense cap mitjà no surt. Cada titular porta el nom del mitjà
+      i la seva orientació (<a data-url="https://github.com/arni91/PanelDiario/blob/main/docs/fonts.md">d'on surt</a>).
       ${INICIO.actual.pestanas.length ? `<br>Substituirà les pestanyes actuals (<b>${esc(INICIO.actual.pestanas.join(", "))}</b>).` : ""}</p>
+      ${INICIO.catalogo.map(t => `<div class="grupo">${esc(t.nombre)}</div>
+        <div class="opciones">${t.medios.map(m => `
+          <label class="opcion"><input type="checkbox" data-cat="${t.id}" value="${esc(m.url)}" ${tmp.catalogo[t.id].has(m.url) ? "checked" : ""}>
+            <b>${esc(m.nombre)}</b><small>${esc(m.seccion)} · ${esc(IDIOMAS[m.idioma] || m.idioma)}${orientacio(m) ? " · " + esc(orientacio(m)) : ""}</small></label>`).join("")}
+          <div id="propios-${t.id}" class="opciones" style="margin-top:0"></div>
+          <div class="opcion" data-otro-medio="${t.id}"><b>Un altre…</b><small>un mitjà amb la seva adreça RSS</small></div>
+          <div class="fila oculto" id="form-${t.id}">
+            <input type="text" id="nom-${t.id}" placeholder="Nom del mitjà" style="flex:.6">
+            <input type="text" id="rss-${t.id}" placeholder="https://…/feed">
+            <button class="btn" data-anadir="${t.id}">Comprova i afegeix</button></div>
+        </div>`).join("")}
+      <div class="grupo">Google Notícies</div>
       <label>Idioma de les cerques</label>
-      <div class="chips" id="idioma"><span class="chip on" data-idioma="ca">Català</span><span class="chip" data-idioma="es">Castellano</span></div>
+      <div class="chips"><span class="chip on" data-idioma="ca">Català</span><span class="chip" data-idioma="es">Castellano</span></div>
       <label>Àmbits</label><div class="chips">${INICIO.ambitos.map(a => `<span class="chip" data-ambito="${a.id}">${esc(a.nombre)}</span>`).join("")}</div>
-      <label>Temes</label><div class="chips">${INICIO.temas.map(t => `<span class="chip" data-tema="${t.id}">${esc(t.nombre)}</span>`).join("")}</div>
-      <label>Afegeix els teus mitjans (adreça RSS)</label>
-      <div class="fila"><input type="text" id="mitja-nom" placeholder="Nom" style="flex:.6">
-        <input type="text" id="mitja-url" placeholder="https://…/feed"><button class="btn" id="btn-mitja">Comprova i afegeix</button></div>
-      <div class="opciones" id="mitjans"></div><div class="mensaje" id="mensaje"></div></div>`,
+      <label>Temes</label><div class="chips">${INICIO.temas.map(t => `<span class="chip" data-tema="${t.id}">${esc(t.nombre)}</span>`).join("")}
+        <span class="chip" id="otro-tema">Un altre…</span></div>
+      <div class="fila oculto" id="form-tema" style="margin-top:6px"><input type="text" id="tema-texto" placeholder="Paraules del tema (p. ex. energia solar)">
+        <button class="btn" id="btn-tema">Afegeix</button></div>
+      <div class="opciones" id="temas-propios"></div>
+      <div class="mensaje" id="mensaje"></div></div>`;
+    },
     alMostrar: () => {
+      document.querySelectorAll("[data-cat]").forEach(el => el.onchange = () => {
+        tmp.catalogo[el.dataset.cat][el.checked ? "add" : "delete"](el.value);
+      });
+      document.querySelectorAll("[data-otro-medio]").forEach(el => el.onclick = () => {
+        $("form-" + el.dataset.otroMedio).classList.remove("oculto");
+        $("nom-" + el.dataset.otroMedio).focus();
+      });
+      document.querySelectorAll("[data-anadir]").forEach(el => el.onclick = () => anadirPropio(el.dataset.anadir));
       document.querySelectorAll("[data-idioma]").forEach(el => el.onclick = () => {
         document.querySelectorAll("[data-idioma]").forEach(x => x.classList.toggle("on", x === el));
       });
       document.querySelectorAll("[data-ambito],[data-tema]").forEach(el => el.onclick = () => el.classList.toggle("on"));
-      $("btn-mitja").onclick = anadirMitja;
-      pintarMitjans();
+      $("otro-tema").onclick = () => { $("form-tema").classList.remove("oculto"); $("tema-texto").focus(); };
+      $("btn-tema").onclick = anadirTema;
+      $("tema-texto").onkeydown = (e) => { if (e.key === "Enter") anadirTema(); };
+      INICIO.catalogo.forEach(t => pintarPropios(t.id));
+      pintarTemasPropios();
     },
     recoger: () => {
       const on = (attr) => [...document.querySelectorAll(`[data-${attr}].on`)].map(el => el.dataset[attr]);
-      const r = { idioma: on("idioma")[0] || "ca", ambitos: on("ambito"), temas: on("tema"), mitjans: tmp.mitjans };
-      if (!r.ambitos.length && !r.temas.length && !r.mitjans.length) {
-        mensaje("Tria almenys un àmbit, un tema o un mitjà (o salta aquest pas).", "error"); return null;
-      }
+      const catalogo = Object.fromEntries(Object.entries(tmp.catalogo).map(([tab, urls]) => [tab, [...urls]]));
+      const r = { idioma: on("idioma")[0] || "ca", catalogo, propios: tmp.propios, ambitos: on("ambito"),
+                  temas: on("tema"), temas_propios: tmp.temasPropios };
+      const algo = Object.values(catalogo).some(l => l.length) || Object.values(tmp.propios).some(l => l.length)
+        || r.ambitos.length || r.temas.length || r.temas_propios.length;
+      if (!algo) { mensaje("Tria almenys un mitjà, un àmbit o un tema (o salta aquest pas).", "error"); return null; }
       return r;
     },
   },
@@ -292,10 +374,12 @@ const PASOS = [
 ];
 
 // --- Acciones de los botones de cada paso ---
-async function buscarLugar() {
-  const lugares = await llamar("buscar_lugar", $("ciudad").value);
+// Busca la ciudad y deja elegida la primera (la más poblada): si no es la buena, se elige otra de la lista
+async function buscarLugar(texto) {
+  const lugares = await llamar("buscar_lugar", texto);
   if (!lugares) return;
   tmp.lugares = lugares;
+  tmp.lugar = lugares[0] || null;
   if (!lugares.length) mensaje("No trobo cap ciutat amb aquest nom.", "error");
   pintarLugares();
 }
@@ -310,37 +394,73 @@ function pintarLugares() {
 }
 
 async function cargarEquipos() {
-  const equipos = await llamar("equipos", $("clave-futbol").value, $("competicion").value);
+  const codigo = $("competicion").value || $("codigo-competicion").value.trim().toUpperCase();
+  if (!codigo) { mensaje("Escriu el codi de la competició.", "error"); return; }
+  const equipos = await llamar("equipos", $("clave-futbol").value, codigo);
   if (!equipos) return;
-  $("equipo").innerHTML = equipos.map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("");
+  $("equipo").innerHTML = equipos.map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("")
+    + `<option value="otro">Un altre…</option>`;
+  $("otro-equipo").classList.add("oculto");
   mensaje(`${equipos.length} equips. Tria el teu.`, "ok");
 }
 
+// El ticker elegido: el de la lista o, con "Un altre…", el que se ha escrito
+const tickerElegido = () => ($("etf").value || $("ticker").value).trim().toUpperCase();
+
 async function comprobarTicker() {
-  const t = await llamar("validar_ticker", $("ticker").value);
+  const t = await llamar("validar_ticker", tickerElegido());
   if (!t) return false;
   tmp.ticker = t;
   mensaje(`✓ ${t.nombre} · ${t.precio ?? "?"} ${t.moneda}`, "ok");
   return true;
 }
 
-async function anadirMitja() {
-  const nombre = $("mitja-nom").value.trim(), url = $("mitja-url").value.trim();
+// La primera vez que se pinta el paso: lo marcado y los medios propios salen de config.json
+function prepararNoticias() {
+  if (tmp.propios) return;
+  const act = INICIO.noticias_actuales;
+  tmp.catalogo = Object.fromEntries(INICIO.catalogo.map(t => [t.id, new Set(act.catalogo[t.id] || [])]));
+  tmp.propios = Object.fromEntries(INICIO.catalogo.map(t => [t.id, [...(act.propios[t.id] || [])]]));
+}
+
+// "Un altre…" en una pestaña: se comprueba el RSS antes de añadirlo
+async function anadirPropio(tab) {
+  const nombre = $("nom-" + tab).value.trim(), url = $("rss-" + tab).value.trim();
   if (!nombre) { mensaje("Posa un nom al mitjà.", "error"); return; }
   const r = await llamar("verificar_rss", url);
   if (!r) return;
-  tmp.mitjans.push({ nombre, url });
-  $("mitja-nom").value = ""; $("mitja-url").value = "";
+  tmp.propios[tab].push({ nombre, url });
+  $("nom-" + tab).value = ""; $("rss-" + tab).value = "";
+  $("form-" + tab).classList.add("oculto");
   mensaje(`✓ ${nombre}: ${r.titulares} titulars (p. ex. «${r.ejemplo}»)`, "ok");
-  pintarMitjans();
+  pintarPropios(tab);
 }
 
-function pintarMitjans() {
-  $("mitjans").innerHTML = tmp.mitjans.map((m, i) => `
-    <div class="opcion"><b>${esc(m.nombre)}</b><small style="flex:1">${esc(m.url)}</small>
-      <button class="btn" data-quitar="${i}">Treu</button></div>`).join("");
-  document.querySelectorAll("[data-quitar]").forEach(el => el.onclick = () => {
-    tmp.mitjans.splice(Number(el.dataset.quitar), 1); pintarMitjans();
+function pintarPropios(tab) {
+  $("propios-" + tab).innerHTML = tmp.propios[tab].map((m, i) => `
+    <div class="opcion on"><b>${esc(m.nombre)}</b><small style="flex:1">${esc(m.url)}</small>
+      <button class="btn" data-quitar="${tab}:${i}">Treu</button></div>`).join("");
+  $("propios-" + tab).querySelectorAll("[data-quitar]").forEach(el => el.onclick = () => {
+    tmp.propios[tab].splice(Number(el.dataset.quitar.split(":")[1]), 1); pintarPropios(tab);
+  });
+}
+
+// "Un altre…" tema: unas palabras que Google Noticias busca en los titulares
+function anadirTema() {
+  const texto = $("tema-texto").value.trim();
+  if (!texto) { mensaje("Escriu les paraules del tema.", "error"); return; }
+  tmp.temasPropios.push(texto);
+  $("tema-texto").value = "";
+  mensaje("");
+  pintarTemasPropios();
+}
+
+function pintarTemasPropios() {
+  $("temas-propios").innerHTML = tmp.temasPropios.map((t, i) => `
+    <div class="opcion on"><b>${esc(t)}</b><small style="flex:1">tema propi (Google Notícies)</small>
+      <button class="btn" data-quitar-tema="${i}">Treu</button></div>`).join("");
+  document.querySelectorAll("[data-quitar-tema]").forEach(el => el.onclick = () => {
+    tmp.temasPropios.splice(Number(el.dataset.quitarTema), 1); pintarTemasPropios();
   });
 }
 

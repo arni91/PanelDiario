@@ -10,7 +10,7 @@
 
 **Widget de escritorio para Windows que reúne en un vistazo lo que miro cada mañana**: el tiempo y los avisos de mi ciudad, mi agenda, los partidos de mi equipo, cuánto ha caído un ETF desde su máximo y las noticias de los medios que elijo, cada una con su fuente.
 
-Una píldora en el escritorio muestra la temperatura; un clic despliega el panel. La primera vez, un asistente pregunta qué quieres ver; nada personal está en el código.
+Una píldora en el escritorio muestra la temperatura; un clic despliega el panel. La primera vez, un asistente pregunta qué quieres ver con listas y casillas (siempre con «Un altre…» al final), para escribir lo mínimo; nada personal está en el código.
 
 <p align="center">
   <img src="docs/capturas/panel.png" width="31%" alt="Panel: avisos, tiempo por horas y días, agenda y caídas de un ETF">
@@ -24,7 +24,7 @@ Una píldora en el escritorio muestra la temperatura; un clic despliega el panel
 | Sección | Detalle | Fuente |
 |---|---|---|
 | 🌤️ Tiempo y avisos | Ahora, próximas 12 h, 6 días y avisos oficiales de tu zona | Open-Meteo, MeteoAlarm |
-| 📅 Agenda | Eventos de hoy y de la semana; enlaces de videollamada clicables | Google Calendar (iCal) |
+| 📅 Agenda | Eventos de hoy y de la semana; enlaces de videollamada clicables | Google Calendar, Outlook o iCloud (iCal) |
 | ⚽ Fútbol | Próximos partidos y último resultado de tu equipo | football-data.org |
 | 📉 Caídas de un ETF | Caída desde el máximo histórico y cuánto aportar de más (en %) en cada nivel | Yahoo Finance |
 | 📰 Noticias | Pestañas por ámbito, tema o medio; la misma noticia en varios medios se agrupa; cada titular lleva el medio y su orientación ([fuentes](docs/fonts.md)); catálogo de diarios con sus feeds por sección (Món, Catalunya, Espanya, Mobilitzacions, Tecnologia); otros idiomas → catalán | RSS, Google Noticias |
@@ -34,10 +34,11 @@ Una píldora en el escritorio muestra la temperatura; un clic despliega el panel
 
 - **Integración nativa con Windows sin frameworks pesados**: la píldora se ancla a la capa de iconos del escritorio con la API Win32 (`ctypes`: `SetParent` sobre `SHELLDLL_DefView`), sobrevive a Win+D, recuerda su posición en configuraciones multimonitor y tiene esquinas redondeadas con regiones GDI corregidas por escalado DPI ([`win32.py`](src/panel_diario/win32.py)).
 - **Resiliencia**: cada fuente se consulta en paralelo y por separado; si una falla, se muestra su último dato bueno y un aviso en el pie, nunca un panel roto ([`estado.py`](src/panel_diario/estado.py)).
+- **Secretos fuera de los logs**: la dirección iCal es secreta, y las excepciones de `requests` incluyen la URL; la agenda y el traductor las sustituyen por un motivo corto (`HTTP 404`, `ConnectionError`) antes de que lleguen al log, a la caché o a la interfaz, con un test que lo comprueba ([`fuentes/agenda.py`](src/panel_diario/fuentes/agenda.py)).
 - **Privacidad por diseño en un repositorio público**: toda la configuración personal vive en un `config.json` ignorado por git; un hook de pre-commit (y CI) bloquea cualquier commit que contenga claves, tokens o términos de una lista privada ([`scripts/revisar_privacidad.py`](scripts/revisar_privacidad.py)).
 - **Interfaz web dentro de una app de escritorio**: HTML/CSS/JS sin framework en ventanas de [pywebview](https://pywebview.flowrl.com/), comunicadas con Python mediante su puente `js_api`.
 - **Agrupación de noticias**: detecta la misma noticia en varios medios por similitud de palabras clave (Jaccard) y elige la versión del medio preferido ([`fuentes/noticias.py`](src/panel_diario/fuentes/noticias.py)). Cada titular muestra la etiqueta de cada medio que lo publica, con su orientación cuando hay una fuente verificable ([`outlets.py`](src/panel_diario/outlets.py), [docs/fonts.md](docs/fonts.md)).
-- **Calidad automatizada**: 123 tests con la red simulada (pytest), tipos estrictos en todas las funciones (mypy), lint y formato (ruff), pre-commit y GitHub Actions en Windows.
+- **Calidad automatizada**: 141 tests con la red simulada (pytest), tipos estrictos en todas las funciones (mypy), lint y formato (ruff), pre-commit y GitHub Actions en Windows.
 
 ## Arquitectura
 
@@ -85,6 +86,7 @@ docs/                 referencia de configuración, medios del catálogo (feeds 
 | uv + `uv.lock` | Instalación reproducible y descarga de Python incluida | pip + requirements: sin lock real |
 | Traducción en lotes, secuencial y con memoria en disco | Una petición por titular hacía que Google respondiera 429; así son 1-2 peticiones por actualización, y cada texto se traduce una sola vez | Una petición por texto en paralelo |
 | Orientación de los medios solo de una fuente verificable (MBFC) | Una etiqueta sin fuente sería una opinión; lo que no se puede verificar se deja vacío y cada uno lo puede poner | Etiquetas por impresión o mezclando fuentes que se contradicen |
+| Asistente con listas y «Un altre…» al final | Elegir es más rápido y da menos errores que escribir; lo que se escribe (RSS, iCal, ticker) se comprueba antes de guardarlo | Editar config.json a mano |
 | Errores por fuente, no globales | Un servicio caído no puede dejar el panel en blanco | Un único try global: todo o nada |
 
 ## Instalación
@@ -93,7 +95,7 @@ Requisitos: Windows 10/11 y [uv](https://docs.astral.sh/uv/) (`winget install as
 
 1. Descarga el proyecto (**Code → Download ZIP** o `git clone`) en una carpeta fuera de OneDrive, por ejemplo `C:\dev\PanelDiario`.
 2. Doble clic en **`instalar.bat`**: instala las dependencias exactas de `uv.lock`, crea los accesos directos (también para arrancar con Windows) y abre el panel.
-3. La primera vez se abre el **asistente**: elige tu ciudad, agenda, equipo, ETF y noticias. Cada paso se puede saltar.
+3. La primera vez se abre el **asistente**: elige tu ciudad, calendario, equipo, ETF y los medios de cada pestaña de noticias de listas y casillas (la última opción, «Un altre…», abre una entrada manual). Cada paso se puede saltar.
 
 Uso: clic en la píldora para desplegar el panel (otro clic, Esc o clic fuera lo recoge); arrástrala para moverla; **Ctrl+Alt+N** también lo abre. Desde el icono junto al reloj: actualizar, **Configura…** (el asistente) y salir.
 

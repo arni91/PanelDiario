@@ -17,7 +17,7 @@ from urllib.parse import quote
 import webview
 
 from panel_diario import outlets
-from panel_diario.fuentes import comun, drawdown, noticias
+from panel_diario.fuentes import agenda, comun, drawdown, noticias
 
 log = logging.getLogger("panel")
 
@@ -68,21 +68,48 @@ ETF_HABITUALES = [
     {"ticker": "IS3N.DE", "nombre": "iShares Core MSCI EM IMI (emergents)"},
 ]
 
-# Ámbitos geográficos. "mon" usa medios internacionales en castellano (RSS verificados);
-# "estat" y "local" salen de Google Noticias según el país y la región del lugar elegido.
-FUENTES_MON = [
-    {"nombre": "BBC Mundo", "url": "https://feeds.bbci.co.uk/mundo/rss.xml", "idioma": "es"},
-    {"nombre": "DW", "url": "https://rss.dw.com/rdf/rss-sp-all", "idioma": "es"},
-    {"nombre": "France 24", "url": "https://www.france24.com/es/rss", "idioma": "es"},
-    {"nombre": "Europa Press", "url": "https://www.europapress.es/rss/rss.aspx?ch=69", "idioma": "es"},
+# Ciudades de ejemplo: un clic las busca sin escribir. "Un altre…" abre la búsqueda libre.
+CIUDADES = [
+    "Barcelona", "Girona", "Lleida", "Tarragona", "València", "Palma", "Andorra la Vella",
+    "Madrid", "Bilbao", "Sevilla", "Saragossa", "Perpinyà",
+]  # fmt: skip
+
+# Calendarios con dirección iCal: dónde encontrarla en cada uno (el último, cualquier otro)
+CALENDARIOS = [
+    {
+        "id": "google",
+        "nombre": "Google Calendar",
+        "ayuda": "A l'ordinador: ⚙ Configuració → el teu calendari (a l'esquerra) → «Integra el calendari» → "
+        "«Adreça secreta en format iCal».",
+    },
+    {
+        "id": "outlook",
+        "nombre": "Outlook / Microsoft 365",
+        "ayuda": "Outlook al web: ⚙ Configuració → Calendari → «Calendaris compartits» → «Publica un calendari» → "
+        "tria el calendari i «Pot veure tots els detalls» → Publica → copia l'enllaç ICS.",
+    },
+    {
+        "id": "icloud",
+        "nombre": "Calendari d'iCloud (Apple)",
+        "ayuda": "A iCloud.com o al Mac: al costat del calendari, «Compartir» → marca «Calendari públic» → "
+        "copia l'enllaç (comença per webcal://).",
+    },
+    {
+        "id": "altre",
+        "nombre": "Un altre…",
+        "ayuda": "Qualsevol calendari que doni una adreça iCal (acostuma a acabar en .ics o començar per webcal://).",
+    },
 ]
+
+# Ámbitos que salen de Google Noticias según el país y la región del lugar elegido (los medios
+# concretos de cada pestaña salen del catálogo de outlets.py)
 AMBITOS = [
-    {"id": "mon", "nombre": "Món"},
     {"id": "estat", "nombre": "El teu país"},
     {"id": "local", "nombre": "La teva comunitat"},
 ]
 
 # Temas: búsqueda de Google Noticias en cada idioma. "{ciudad}" se cambia por la del lugar.
+# Tecnologia no está: es una pestaña del catálogo, con los feeds de cada diario.
 TEMAS: list[dict[str, Any]] = [
     {
         "id": "cultura",
@@ -92,11 +119,6 @@ TEMAS: list[dict[str, Any]] = [
             "ca": "{ciudad} (concert OR exposició OR festival OR teatre)",
             "es": "{ciudad} (concierto OR exposición OR festival OR teatro)",
         },
-    },
-    {
-        "id": "tecnologia",
-        "nombre": "Tecnologia",
-        "consulta": {"ca": "tecnologia OR programari OR startups", "es": "tecnología OR software OR startups"},
     },
     {
         "id": "ia",
@@ -187,6 +209,27 @@ def verificar_rss(url: str) -> dict:
     return {"titulares": len(items), "ejemplo": items[0]["titulo"]}
 
 
+def _https_ical(url: str) -> str:
+    """Dirección iCal limpia: webcal:// (iCloud) es https:// con otro nombre. Solo se acepta https."""
+    url = url.strip()
+    if url.startswith("webcal://"):
+        url = "https://" + url[len("webcal://") :]
+    if not url.startswith("https://"):
+        raise ValueError("L'adreça del calendari ha de començar per https:// o webcal://")
+    return url
+
+
+def verificar_ical(url: str) -> dict:
+    """Comprueba que la dirección es un calendario iCal que se puede leer. Sin la dirección en ningún mensaje."""
+    try:
+        return {"eventos": agenda.comprobar_ical(_https_ical(url))}
+    except agenda.ErrorAgenda as ex:
+        motivo = str(ex).split(": ", 1)[-1]
+        raise ValueError(
+            f"No puc llegir aquest calendari ({motivo}). Comprova que has copiat l'adreça sencera."
+        ) from None
+
+
 def fuente_google_noticias(consulta: str, idioma: str, pais: str, tema: str = "") -> dict:
     """Fuente RSS de una búsqueda de Google Noticias (sirve para temas y medios sin RSS propio)."""
     url = f"https://news.google.com/rss/search?q={quote(consulta)}&hl={idioma}&gl={pais}&ceid={pais}:{idioma}"
@@ -236,27 +279,93 @@ def _niveles(niveles: list[dict]) -> list[dict]:
 
 
 def _ical(urls: list[str]) -> list[str]:
-    limpias = [u.strip() for u in urls if u and u.strip()]
-    for u in limpias:
-        if not u.startswith("https://") or ".ics" not in u:
-            raise ValueError("Una adreça del calendari no és iCal: ha de començar per https:// i acabar en .ics")
-    return limpias
+    return [_https_ical(u) for u in urls if u and u.strip()]
+
+
+# Pestañas de config.json que corresponden a una pestaña del catálogo con otro id
+_ID_CATALOGO = {"mundo": "mon"}
+
+
+def noticias_actuales(cfg: dict) -> dict:
+    """Lo que ya hay en config.json, para marcar el catálogo en el asistente.
+
+    -> {"catalogo": {pestaña: [urls del catálogo]}, "propios": {pestaña: [{"nombre", "url"}]}}
+    """
+    catalogo: dict[str, list[str]] = {}
+    propios: dict[str, list[dict]] = {}
+    for id_cfg, lista in (cfg.get("fuentes") or {}).items():
+        tab = _ID_CATALOGO.get(id_cfg, id_cfg)
+        if tab not in outlets.TABS:
+            continue
+        urls_tab = {f["url"] for f in outlets.sources_for_tab(tab)}
+        for f in lista:
+            if f["url"] in urls_tab:
+                catalogo.setdefault(tab, []).append(f["url"])
+            elif not f.get("agregador"):
+                propios.setdefault(tab, []).append({"nombre": f["nombre"], "url": f["url"]})
+    return {"catalogo": catalogo, "propios": propios}
+
+
+def catalogo_por_pestana(cfg: dict) -> list[dict]:
+    """Opciones del paso de noticias: cada pestaña del catálogo con sus medios, idioma y orientación."""
+    indice = outlets.leaning_index(cfg)  # la orientación que el usuario haya cambiado también se ve
+    vacio = {"ideologia": "", "eix_nacional": ""}
+    return [
+        {
+            "id": tab,
+            "nombre": nombre,
+            "medios": [
+                {
+                    "nombre": o.name,
+                    "seccion": f.section,
+                    "url": f.url,
+                    "idioma": o.language,
+                    **indice.get(outlets.outlet_key(o.name), vacio),
+                }
+                for o in outlets.CATALOG
+                for f in o.feeds
+                if f.tab == tab
+            ],
+        }
+        for tab, nombre in outlets.TABS.items()
+    ]
+
+
+def _fuente_propia(m: dict) -> dict:
+    nombre, url = (m.get("nombre") or "").strip(), (m.get("url") or "").strip()
+    if not nombre or not url.startswith("https://"):
+        raise ValueError("Cada mitjà propi necessita un nom i una adreça RSS que comenci per https://")
+    return {"nombre": nombre, "url": url}
+
+
+def _pestanas_catalogo(resp: dict) -> tuple[list[dict], dict[str, list[dict]]]:
+    """Pestañas del catálogo (Món, Catalunya...) con los medios marcados y los propios ("Un altre…")."""
+    pestanas: list[dict] = []
+    fuentes: dict[str, list[dict]] = {}
+    for tab, nombre in outlets.TABS.items():
+        disponibles = outlets.sources_for_tab(tab)
+        marcadas = set(resp.get("catalogo", {}).get(tab, []))
+        if marcadas - {f["url"] for f in disponibles}:
+            raise ValueError(f"Un mitjà triat a «{nombre}» no és al catàleg.")
+        elegidas = [f for f in disponibles if f["url"] in marcadas] + [
+            _fuente_propia(m) for m in resp.get("propios", {}).get(tab, [])
+        ]
+        if elegidas:
+            pestanas.append({"id": tab, "nombre": nombre})
+            fuentes[tab] = elegidas
+    return pestanas, fuentes
 
 
 def _noticias(resp: dict, lugar: dict | None) -> dict:
-    """Pestañas y fuentes de noticias según los ámbitos, temas y medios elegidos."""
+    """Pestañas y fuentes de noticias: catálogo por pestaña, ámbitos y temas de Google Noticias."""
     idioma = resp.get("idioma", "es")
     pais = (lugar or {}).get("codigo_pais") or "ES"
     ciudad = (lugar or {}).get("nombre") or ""
     region = (lugar or {}).get("region") or ""
-    pestanas: list[dict] = []
-    fuentes: dict[str, list[dict]] = {}
+    pestanas, fuentes = _pestanas_catalogo(resp)
 
     for ambito in resp.get("ambitos", []):
-        if ambito == "mon":
-            pestanas.append({"id": "mon", "nombre": "Món"})
-            fuentes["mon"] = copy.deepcopy(FUENTES_MON)
-        elif ambito == "estat":
+        if ambito == "estat":
             # Portada de Google Noticias del país: las noticias generales más destacadas
             pestanas.append({"id": "estat", "nombre": (lugar or {}).get("pais") or "El teu país"})
             url = f"https://news.google.com/rss?hl={idioma}&gl={pais}&ceid={pais}:{idioma}"
@@ -281,13 +390,16 @@ def _noticias(resp: dict, lugar: dict | None) -> dict:
         pestanas.append(pestana)
         fuentes[tema["id"]] = [fuente]
 
-    mitjans = [{"nombre": m["nombre"].strip(), "url": m["url"].strip()} for m in resp.get("mitjans", [])]
-    if mitjans:
-        pestanas.append({"id": "mitjans", "nombre": "Els meus mitjans"})
-        fuentes["mitjans"] = mitjans
+    # "Un altre…" tema: unas palabras, y Google Noticias busca titulares que las contengan
+    for i, texto in enumerate(t.strip() for t in resp.get("temas_propios", [])):
+        if not texto:
+            raise ValueError("Escriu les paraules del tema (p. ex. «energia solar») o treu-lo.")
+        tab = f"tema{i + 1}"
+        pestanas.append({"id": tab, "nombre": texto[:1].upper() + texto[1:]})
+        fuentes[tab] = [fuente_google_noticias(texto, idioma, pais, tema=texto)]
 
     if not pestanas:
-        raise ValueError("Tria almenys un àmbit, un tema o un mitjà (o salta aquest pas).")
+        raise ValueError("Tria almenys un mitjà, un àmbit o un tema (o salta aquest pas).")
     return {
         "pestanas": pestanas,
         "fuentes": fuentes,
@@ -402,8 +514,12 @@ class ApiAsistente:
         """Opciones de cada paso y lo que ya hay configurado (para rellenar los campos)."""
         c = self._cfg
         return {
+            "ciudades": CIUDADES,
+            "calendarios": CALENDARIOS,
             "competiciones": COMPETICIONES,
             "etfs": ETF_HABITUALES,
+            "catalogo": catalogo_por_pestana(c),
+            "noticias_actuales": noticias_actuales(c),
             "ambitos": AMBITOS,
             "temas": [{"id": t["id"], "nombre": t["nombre"]} for t in TEMAS],
             "orientacions": {
@@ -432,6 +548,9 @@ class ApiAsistente:
 
     def verificar_rss(self, url: str) -> dict:
         return self._responder(lambda: verificar_rss(url))
+
+    def verificar_ical(self, url: str) -> dict:
+        return self._responder(lambda: verificar_ical(url))
 
     def guardar(self, respuestas: dict) -> dict:
         def tarea() -> bool:
