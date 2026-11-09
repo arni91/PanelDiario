@@ -27,7 +27,7 @@ Una píldora en el escritorio muestra la temperatura; un clic despliega el panel
 | 📅 Agenda | Eventos de hoy y de la semana; enlaces de videollamada clicables | Google Calendar (iCal) |
 | ⚽ Fútbol | Próximos partidos y último resultado de tu equipo | football-data.org |
 | 📉 Caídas de un ETF | Caída desde el máximo histórico y cuánto aportar de más (en %) en cada nivel | Yahoo Finance |
-| 📰 Noticias | Pestañas por ámbito, tema o medio; la misma noticia en varios medios se agrupa; cada titular lleva el medio y su orientación ([fuentes](docs/fonts.md)); otros idiomas → catalán | RSS, Google Noticias |
+| 📰 Noticias | Pestañas por ámbito, tema o medio; la misma noticia en varios medios se agrupa; cada titular lleva el medio y su orientación ([fuentes](docs/fonts.md)); catálogo de diarios con sus feeds por sección (Món, Catalunya, Espanya, Mobilitzacions, Tecnologia); otros idiomas → catalán | RSS, Google Noticias |
 | ✨ IA (opcional) | Selecciona las noticias más relevantes y las resume en una línea | API de Claude |
 
 ## Aspectos técnicos destacados
@@ -37,7 +37,7 @@ Una píldora en el escritorio muestra la temperatura; un clic despliega el panel
 - **Privacidad por diseño en un repositorio público**: toda la configuración personal vive en un `config.json` ignorado por git; un hook de pre-commit (y CI) bloquea cualquier commit que contenga claves, tokens o términos de una lista privada ([`scripts/revisar_privacidad.py`](scripts/revisar_privacidad.py)).
 - **Interfaz web dentro de una app de escritorio**: HTML/CSS/JS sin framework en ventanas de [pywebview](https://pywebview.flowrl.com/), comunicadas con Python mediante su puente `js_api`.
 - **Agrupación de noticias**: detecta la misma noticia en varios medios por similitud de palabras clave (Jaccard) y elige la versión del medio preferido ([`fuentes/noticias.py`](src/panel_diario/fuentes/noticias.py)). Cada titular muestra la etiqueta de cada medio que lo publica, con su orientación cuando hay una fuente verificable ([`outlets.py`](src/panel_diario/outlets.py), [docs/fonts.md](docs/fonts.md)).
-- **Calidad automatizada**: 119 tests con la red simulada (pytest), tipos estrictos en todas las funciones (mypy), lint y formato (ruff), pre-commit y GitHub Actions en Windows.
+- **Calidad automatizada**: 123 tests con la red simulada (pytest), tipos estrictos en todas las funciones (mypy), lint y formato (ruff), pre-commit y GitHub Actions en Windows.
 
 ## Arquitectura
 
@@ -62,7 +62,7 @@ src/panel_diario/
 ├── config.py         rutas, lectura y escritura de config.json, zona horaria
 ├── estado.py         último dato bueno de cada sección y caché en disco
 ├── asistente.py      lógica del asistente de configuración (y su puente con JS)
-├── outlets.py        catálogo público de medios y orientación de cada fuente
+├── outlets.py        catálogo público de medios: feeds RSS por sección y orientación
 ├── bandeja.py        icono junto al reloj con la temperatura
 ├── win32.py          llamadas a la API de Windows (ctypes)
 ├── fuentes/          una fuente de datos por módulo
@@ -72,7 +72,7 @@ src/panel_diario/
 └── demo.json         datos de demostración (--demo)
 tests/                pytest, red simulada: un fichero por módulo
 scripts/              revisión de privacidad (pre-commit y CI)
-docs/                 referencia de configuración, orientación de los medios y capturas
+docs/                 referencia de configuración, medios del catálogo (feeds y orientación) y capturas
 ```
 
 ## Decisiones de diseño
