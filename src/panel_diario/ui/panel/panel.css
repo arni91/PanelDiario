@@ -94,10 +94,10 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .card h3 { margin: 0 0 8px; font-size: 11px; font-weight: 600; letter-spacing: .06em;
            text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-.punto-equipo { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .partido-prox { font-size: 13px; }
 .partido-prox b { font-size: 14px; display: block; }
 .partido-prox .c { color: var(--muted); font-size: 11px; }
+.equip + .equip { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
 .partido-sec { font-size: 11px; color: var(--muted); margin-top: 6px; border-top: 1px solid var(--line); padding-top: 6px; }
 .partido-sec div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 

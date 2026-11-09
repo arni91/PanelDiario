@@ -1,6 +1,6 @@
 """Asistente de configuración: la lógica que hay detrás de ui/wizard/asistente.html.
 
-Pregunta paso a paso (tiempo, agenda, fútbol, inversión, noticias, IA) y construye config.json.
+Pregunta paso a paso (tiempo, agenda, deportes, bolsa, noticias, IA) y construye config.json.
 Cada paso se puede saltar: lo saltado se queda como estaba. Las funciones que salen a internet
 usan comun.get (los tests la sustituyen). ApiAsistente es el puente con el JavaScript de la ventana.
 """
@@ -16,7 +16,7 @@ from typing import Any
 import webview
 
 from panel_diario.sources import agenda, comun, drawdown, noticias
-from panel_diario.wizard import markets, news
+from panel_diario.wizard import markets, news, sports
 
 log = logging.getLogger("panel")
 
@@ -39,18 +39,6 @@ PAISES_METEOALARM = {
     "GB": "united-kingdom",
 }
 FEED_METEOALARM = "https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-{}"
-
-# Competiciones del plan gratuito de football-data.org
-COMPETICIONES = [
-    {"codigo": "PD", "nombre": "LaLiga"},
-    {"codigo": "PL", "nombre": "Premier League"},
-    {"codigo": "SA", "nombre": "Serie A"},
-    {"codigo": "BL1", "nombre": "Bundesliga"},
-    {"codigo": "FL1", "nombre": "Ligue 1"},
-    {"codigo": "DED", "nombre": "Eredivisie"},
-    {"codigo": "PPL", "nombre": "Primeira Liga"},
-    {"codigo": "CL", "nombre": "Lliga de Campions"},
-]
 
 # ETF UCITS indexados más negociados, con su ticker de Xetra en Yahoo Finance (verificados).
 # El primero sale elegido por defecto en el asistente.
@@ -134,19 +122,6 @@ def buscar_lugar(texto: str) -> list[dict]:
         }
         for x in r.json().get("results", [])
     ]
-
-
-def equipos_de_competicion(clave: str, codigo: str) -> list[dict]:
-    """Equipos de una competición, ordenados por nombre (así nadie tiene que buscar su team_id)."""
-    clave = clave.strip()
-    if not clave:
-        raise ValueError("Primer posa la clau de football-data.org.")
-    r = comun.get(
-        f"https://api.football-data.org/v4/competitions/{codigo}/teams",
-        headers={"X-Auth-Token": clave},
-    )
-    equipos = [{"id": e["id"], "nombre": e.get("shortName") or e.get("name")} for e in r.json().get("teams", [])]
-    return sorted(equipos, key=lambda e: e["nombre"])
 
 
 def validar_ticker(ticker: str) -> dict:
@@ -245,13 +220,9 @@ def construir_config(base: dict, respuestas: dict) -> dict:
         cfg["ubicacion"], cfg["avisos_meteo"] = _ubicacion(lugar)
     if "agenda" in respuestas:
         cfg.setdefault("agenda", {"dias": 7})["ical_urls"] = _ical(respuestas["agenda"].get("ical_urls", []))
-    if "futbol" in respuestas:
-        f = respuestas["futbol"]
-        cfg["futbol"] = {
-            "nombre": f.get("nombre", "").strip(),
-            "football_data_api_key": f.get("football_data_api_key", "").strip(),
-            "team_id": int(f["team_id"]) if f.get("team_id") else None,
-        }
+    if "esports" in respuestas:
+        cfg.update(sports.build(respuestas["esports"]))
+        cfg.pop("futbol", None)  # el formato anterior (football-data.org) queda sustituido
     if "borsa" in respuestas:
         cfg.update(markets.build(respuestas["borsa"]))
     if "drawdown" in respuestas:
@@ -303,7 +274,8 @@ class ApiAsistente:
         return {
             "ciudades": CIUDADES,
             "calendarios": CALENDARIOS,
-            "competiciones": COMPETICIONES,
+            "esports": sports.options(),
+            "esports_actual": sports.current_choices(c),
             "etfs": ETF_HABITUALES,
             "borsa": markets.options(),
             "borsa_actual": markets.current_choices(c),
@@ -313,7 +285,6 @@ class ApiAsistente:
             "actual": {
                 "lugar": (c.get("ubicacion") or {}).get("nombre", ""),
                 "ical_urls": (c.get("agenda") or {}).get("ical_urls", []),
-                "futbol": c.get("futbol") or {},
                 "drawdown": c.get("drawdown") or {},
                 "claude_api_key": (c.get("claude") or {}).get("api_key", ""),
                 "pestanas": [p["nombre"] for p in c.get("pestanas", [])],
@@ -323,8 +294,8 @@ class ApiAsistente:
     def buscar_lugar(self, texto: str) -> dict:
         return self._responder(lambda: buscar_lugar(texto))
 
-    def equipos(self, clave: str, codigo: str) -> dict:
-        return self._responder(lambda: equipos_de_competicion(clave, codigo))
+    def equipos(self, lliga: str) -> dict:
+        return self._responder(lambda: sports.teams(lliga))
 
     def validar_ticker(self, ticker: str) -> dict:
         return self._responder(lambda: validar_ticker(ticker))

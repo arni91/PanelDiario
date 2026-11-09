@@ -68,23 +68,6 @@ def test_buscar_lugar_sin_resultados_o_vacio(monkeypatch: pytest.MonkeyPatch) ->
         asistente.buscar_lugar("  ")
 
 
-def test_equipos_de_una_competicion_ordenados(monkeypatch: pytest.MonkeyPatch) -> None:
-    equipos = {"teams": [{"id": 2, "shortName": "Zeta"}, {"id": 1, "name": "Alfa FC", "shortName": None}]}
-    pedidos = red_falsa(monkeypatch, equipos)
-    assert asistente.equipos_de_competicion("clave-falsa", "PD") == [
-        {"id": 1, "nombre": "Alfa FC"},
-        {"id": 2, "nombre": "Zeta"},
-    ]
-    assert pedidos[0][0].endswith("/competitions/PD/teams")
-    assert pedidos[0][1]["headers"] == {"X-Auth-Token": "clave-falsa"}
-
-
-def test_equipos_sin_clave_no_llama_a_la_api(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(comun, "get", lambda *a, **k: pytest.fail("no debe llamar a la API"))
-    with pytest.raises(ValueError, match="clau"):
-        asistente.equipos_de_competicion(" ", "PD")
-
-
 def test_validar_ticker(monkeypatch: pytest.MonkeyPatch) -> None:
     meta = {"longName": "ETF de ejemplo", "currency": "EUR", "regularMarketPrice": 100.5}
     monkeypatch.setattr(drawdown, "_yahoo_chart", lambda t, r: {"meta": meta})
@@ -128,7 +111,7 @@ def test_pais_sin_meteoalarm_desactiva_los_avisos() -> None:
 
 def test_pasos_saltados_no_cambian_nada() -> None:
     base = plantilla()
-    base["futbol"] = {"nombre": "Mi equipo", "football_data_api_key": "k", "team_id": 7}
+    base["esports"] = {"equips": [{"lliga": "soccer/esp.1", "id": "7", "nom": "Mi equipo"}], "f1": False}
     assert asistente.construir_config(base, {}) == base
 
 
@@ -139,9 +122,9 @@ def test_no_modifica_la_config_de_partida() -> None:
     assert base == original
 
 
-def test_futbol_drawdown_agenda_y_claude() -> None:
+def test_esports_drawdown_agenda_y_claude() -> None:
     respuestas = {
-        "futbol": {"football_data_api_key": " k ", "team_id": "7", "nombre": "Equip"},
+        "esports": {"equips": [{"lliga": "soccer/esp.1", "id": 7, "nom": " Equip "}], "f1": True},
         "drawdown": {
             "ticker": "ejemplo.de",
             "nombre": "ETF",
@@ -154,8 +137,10 @@ def test_futbol_drawdown_agenda_y_claude() -> None:
         "agenda": {"ical_urls": [" https://calendar.example.com/a.ics ", ""]},
         "claude": {"api_key": " clave "},
     }
-    cfg = asistente.construir_config(plantilla(), respuestas)
-    assert cfg["futbol"] == {"nombre": "Equip", "football_data_api_key": "k", "team_id": 7}
+    base = {**plantilla(), "futbol": {"football_data_api_key": "k"}}
+    cfg = asistente.construir_config(base, respuestas)
+    assert cfg["esports"] == {"equips": [{"lliga": "soccer/esp.1", "id": "7", "nom": "Equip"}], "f1": True}
+    assert "futbol" not in cfg  # el formato anterior desaparece
     assert cfg["drawdown"]["ticker"] == "EJEMPLO.DE"
     # Las caídas se guardan siempre negativas y ordenadas de menor a mayor caída
     assert [n["caida"] for n in cfg["drawdown"]["niveles"]] == [-10, -20, -40]

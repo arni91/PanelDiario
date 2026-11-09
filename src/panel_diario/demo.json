@@ -460,36 +460,92 @@
    "desactualizado": false,
    "error": null
   },
-  "futbol": {
-   "nombre": "Equip d'exemple",
-   "proximos": [
+  "esports": {
+   "equips": [
     {
-     "rival": "Rival A",
-     "local": true,
-     "competicion": "Lliga",
-     "fecha": "ds 7/11",
-     "hora": "21:00"
+     "nom": "Equip d'exemple",
+     "esport": "futbol",
+     "proxims": [
+      {
+       "rival": "Rival A",
+       "local": true,
+       "competicio": "LaLiga",
+       "data": "ds 14/11",
+       "hora": "21:00",
+       "ts": 0,
+       "gols_equip": null,
+       "gols_rival": null
+      },
+      {
+       "rival": "Rival B",
+       "local": false,
+       "competicio": "Champions League",
+       "data": "dc 18/11",
+       "hora": "18:45",
+       "ts": 0,
+       "gols_equip": null,
+       "gols_rival": null
+      },
+      {
+       "rival": "Rival C",
+       "local": true,
+       "competicio": "LaLiga",
+       "data": "dg 22/11",
+       "hora": "16:15",
+       "ts": 0,
+       "gols_equip": null,
+       "gols_rival": null
+      }
+     ],
+     "ultim": {
+      "rival": "Rival D",
+      "local": false,
+      "competicio": "LaLiga",
+      "data": "dg 8/11",
+      "hora": "21:00",
+      "ts": 0,
+      "gols_equip": 2,
+      "gols_rival": 1,
+      "resultat": "v"
+     }
     },
     {
-     "rival": "Rival B",
-     "local": false,
-     "competicion": "Lliga de Campions",
-     "fecha": "dc 11/11",
-     "hora": "21:00"
-    },
-    {
-     "rival": "Rival C",
-     "local": true,
-     "competicion": "Lliga",
-     "fecha": "dg 15/11",
-     "hora": "hora per confirmar"
+     "nom": "Equip de bàsquet d'exemple",
+     "esport": "basquet",
+     "proxims": [
+      {
+       "rival": "Rival E",
+       "local": false,
+       "competicio": "NBA",
+       "data": "dj 12/11",
+       "hora": "01:00",
+       "ts": 0,
+       "gols_equip": null,
+       "gols_rival": null
+      }
+     ],
+     "ultim": {
+      "rival": "Rival F",
+      "local": true,
+      "competicio": "NBA",
+      "data": "dl 9/11",
+      "hora": "02:00",
+      "ts": 0,
+      "gols_equip": 98,
+      "gols_rival": 104,
+      "resultat": "d"
+     }
     }
    ],
-   "ultimo": {
-    "rival": "Rival D",
-    "local": false,
-    "goles_rival": 1,
-    "goles_equipo": 2
+   "f1": {
+    "proxim": {
+     "nom": "Gran Premi d'exemple",
+     "data": "dg 22/11"
+    },
+    "ultim": {
+     "nom": "Gran Premi anterior",
+     "guanyador": "Pilot d'exemple"
+    }
    }
   }
  },

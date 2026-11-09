@@ -88,8 +88,6 @@ function pintarTiempo(t) {
 function sinConfigurar(s) {
   const falta = [];
   if (s.agenda && s.agenda.sin_url) falta.push("agenda (adreça iCal)");
-  if (s.futbol && s.futbol.sin_clave) falta.push("futbol (clau de football-data)");
-  else if (s.futbol && s.futbol.sin_equipo) falta.push("futbol (team_id)");
   return falta;
 }
 
@@ -129,30 +127,36 @@ function pintarAgenda(a, error) {
   el.innerHTML = cab(botones) + html;
 }
 
-function pintarFutbol(b) {
-  const el = document.getElementById("futbol");
-  const titulo = `<h3><span class="punto-equipo"></span>${esc((b && b.nombre) || "Futbol")}</h3>`;
-  if (ocultarSi(el, !!(b && (b.sin_clave || b.sin_equipo)))) return;
-  if (!b) { el.innerHTML = titulo + `<div class="nota">Sense dades.</div>`; return; }
-  const p = b.proximos || [];
-  let html = titulo;
-  if (p.length) {
-    const x = p[0];
-    html += `<div class="partido-prox">
-      <b>${x.local ? "vs" : "@"} ${esc(x.rival)}</b>
-      <div>${esc(x.fecha)} · ${esc(x.hora)}</div>
-      <div class="c">${esc(x.competicion)}</div></div>`;
-  } else {
-    html += `<div class="nota">No hi ha propers partits publicats.</div>`;
-  }
-  const sec = [];
-  p.slice(1).forEach(x => sec.push(`<div>${esc(x.fecha)} · ${x.local ? "vs" : "@"} ${esc(x.rival)}</div>`));
-  if (b.ultimo && b.ultimo.goles_equipo !== null && b.ultimo.goles_equipo !== undefined) {
-    const u = b.ultimo;
-    const cls = u.goles_equipo > u.goles_rival ? "v" : u.goles_equipo < u.goles_rival ? "d" : "";
-    sec.push(`<div>Últim: <span class="res ${cls}">${u.goles_equipo}-${u.goles_rival}</span> ${u.local ? "vs" : "@"} ${esc(u.rival)}</div>`);
+// --- Deportes: próximos partidos y último resultado de cada equipo, y la Fórmula 1 ---
+const rivalTxt = (p) => `${p.local ? "vs" : "@"} ${esc(p.rival)}`;
+
+function bloqueEquipo(e) {
+  const [prox, ...resto] = e.proxims || [];
+  let html = `<div class="equip"><b>${esc(e.nom)}</b>`;
+  html += prox
+    ? `<div class="partido-prox"><b>${rivalTxt(prox)}</b><div>${esc(prox.data)} · ${esc(prox.hora)}</div>
+        <div class="c">${esc(prox.competicio)}</div></div>`
+    : `<div class="nota">No hi ha propers partits publicats.</div>`;
+  const sec = resto.map(p => `<div>${esc(p.data)} · ${rivalTxt(p)}</div>`);
+  const u = e.ultim;
+  if (u && u.gols_equip !== null && u.gols_equip !== undefined) {
+    sec.push(`<div>Últim: <span class="res ${u.resultat}">${u.gols_equip}-${u.gols_rival}</span> ${rivalTxt(u)}</div>`);
   }
   if (sec.length) html += `<div class="partido-sec">${sec.join("")}</div>`;
+  return html + `</div>`;
+}
+
+function pintarEsports(b, error) {
+  const el = document.getElementById("esports");
+  if (ocultarSi(el, !b || !!b.sin_configurar)) return;
+  let html = `<h3>🏅 Esports</h3>` + (b.equips || []).map(bloqueEquipo).join("");
+  if (b.f1) {
+    const f = b.f1;
+    html += `<div class="equip"><b>Fórmula 1</b>
+      ${f.proxim ? `<div class="partido-prox"><b>${esc(f.proxim.nom)}</b><div>${esc(f.proxim.data)}</div></div>` : ""}
+      ${f.ultim ? `<div class="partido-sec"><div>Últim: ${esc(f.ultim.nom)} · 🏆 ${esc(f.ultim.guanyador)}</div></div>` : ""}</div>`;
+  }
+  if (error) html += `<div class="dd-aviso">⚠ Dada desactualitzada: ESPN no respon</div>`;
   el.innerHTML = html;
 }
 
@@ -293,7 +297,7 @@ function pintarPie() {
     const lista = caidas.map(c => `${c.fuente} (${c.categoria}): ${c.error}`).join("\n");
     partes.push(`<span class="aviso-f" title="${esc(lista)}">⚠ ${caidas.length} ${caidas.length === 1 ? "font no respon" : "fonts no responen"}</span>`);
   }
-  const nombres = { tiempo: "temps", avisos: "avisos", futbol: "futbol", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", ia: "IA", agenda: "agenda" };
+  const nombres = { tiempo: "temps", avisos: "avisos", esports: "esports", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", ia: "IA", agenda: "agenda" };
   const fallos = Object.keys(err).map(k => nombres[k] || k);
   if (fallos.length) partes.push(`<span class="aviso-f" title="${esc(Object.entries(err).map(([k, v]) => k + ": " + v).join("\n"))}">⚠ sense actualitzar: ${esc(fallos.join(", "))}</span>`);
   pie.innerHTML = (partes.length ? partes.join(" · ") : "Tot en ordre")
@@ -309,7 +313,7 @@ async function cargar() {
   pintarAvisos(s.avisos);
   pintarTiempo(s.tiempo);
   pintarAgenda(s.agenda, D && D.errores && D.errores.agenda);
-  pintarFutbol(s.futbol);
+  pintarEsports(s.esports, D && D.errores && D.errores.esports);
   pintarBorsa(s.borsa, D && D.errores && D.errores.borsa);
   pintarDrawdown(s.drawdown, D && D.errores && D.errores.drawdown);
   pintarTabs();
