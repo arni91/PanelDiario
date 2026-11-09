@@ -156,6 +156,12 @@ def _https_ical(url: str) -> str:
         url = "https://" + url[len("webcal://") :]
     if not url.startswith("https://"):
         raise ValueError("L'adreça del calendari ha de començar per https:// o webcal://")
+    # La dirección pública de Google solo funciona si el calendario es público (casi nunca): 404
+    if "calendar.google.com" in url and "/public/" in url:
+        raise ValueError(
+            "Aquesta és l'adreça pública del calendari. Copia l'«Adreça secreta en format iCal» "
+            "(la que conté private-…), just a sota a la mateixa pantalla de Google Calendar."
+        )
     return url
 
 
