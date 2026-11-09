@@ -12,8 +12,8 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - config.py: rutas (CONFIG, EJEMPLO, DATOS_DIR), leer/guardar config.json, zona horaria.
 - state.py: último dato bueno de cada sección y caché; actualizar() pide las fuentes en paralelo.
 - sources/ (back): una fuente de datos por módulo. comun.py tiene HTTP (comun.get), zona horaria (comun.TZ) y utilidades. Si una fuente falla, lanza excepción y state.py conserva el último dato bueno. Si a una sección le falta su clave, devuelve {"sin_clave"/"sin_url"/"sin_configurar": True} y la interfaz la oculta.
-- catalog/ (datos públicos): outlets.py, catálogo de medios (nombre, idioma y feeds RSS por tipo de pestaña); de ahí salen config.example.json y el asistente. Cada titular muestra solo el nombre del medio.
-- wizard/: asistente.py, lógica del asistente (búsquedas, comprobaciones, construir_config) y ApiAsistente.
+- catalog/ (datos públicos): outlets.py, catálogo de medios (nombre, idioma, grupo y feed RSS de cada sección); de ahí salen config.example.json y el asistente. Cada titular muestra solo el nombre del medio.
+- wizard/: asistente.py (pasos generales, construir_config y ApiAsistente) y un módulo por paso con lógica propia: news.py (medios y secciones).
 - desktop/ (Windows): bandeja.py (icono junto al reloj; recibe las acciones como funciones) y win32.py (todo lo que usa ctypes: monitores, anclar al escritorio, barra de tareas, errores).
 - ui/ (front): una carpeta por ventana con su .html, .css y .js (panel/, pill/ = píldora, wizard/ = asistente); common/ para lo compartido.
 - demo.json: datos para --demo, con sus propias pestañas. probar_fuentes.py: comprueba las fuentes reales de config.json.
@@ -42,8 +42,8 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 
 # Reglas del proyecto
 - Una fuente caída nunca rompe el panel: se muestra el último dato bueno y un aviso en el pie.
-- Textos de la interfaz en catalán. Noticias: las que están en catalán o castellano se dejan tal cual; las de otros idiomas (inglés...) se traducen al catalán; si no se puede, se dejan en el original. Comentarios y documentación en castellano. Código nuevo con nombres en inglés; no renombrar el código existente sin motivo.
-- Fuentes RSS: verificar que responden antes de añadirlas. Las que están en catalán o castellano llevan "idioma": "ca" o "es" (así no pasan por el traductor). El asistente ofrece el catálogo de outlets.py (solo feeds verificados), los seis diarios principales primero; cada lista termina en «Un altre…» (entrada manual que se comprueba antes de guardar).
+- Textos de la interfaz en catalán. Noticias: cada una en su idioma; traducir al catalán es opcional (traduccio.activa, por defecto false).
+- Fuentes RSS: verificar que responden, con fecha y noticias recientes, antes de añadirlas (docs/fonts.md lista las descartadas). El asistente ofrece el catálogo de catalog/outlets.py en dos pasos: medios (por grupo) y secciones; cada lista termina en «Un altre…» (entrada manual que se comprueba antes de guardar).
 - Pestañas de noticias, nombre del equipo y textos de las secciones salen de config.json, no se fijan en el código.
 
 # Privacidad (repositorio público)

@@ -270,9 +270,12 @@ def _mostrar(text: str, desti: str, conservar: set[str]) -> str:
 
 
 def traduir_noticies(salida: dict, cfg: dict) -> None:
-    """Traduce titulares y resúmenes que no están en un idioma que se conserva (modifica `salida`)."""
+    """Traduce titulares y resúmenes que no están en un idioma que se conserva (modifica `salida`).
+
+    Solo si config.json lo pide ("traduccio": {"activa": true}): por defecto cada noticia sale en su idioma.
+    """
     t = cfg.get("traduccio") or {}
-    if not t.get("activa", True):
+    if not t.get("activa", False):
         return
     desti = t.get("idioma", "ca")
     conservar = set(t.get("conservar", ["ca", "es"]))

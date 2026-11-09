@@ -22,7 +22,7 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 | Agenda | Eventos de hoy y de la semana | Calendario iCal (Google, Outlook, iCloud) |
 | Fútbol | Próximos partidos y último resultado de un equipo | football-data.org |
 | ETF | Caída desde el máximo y aportación extra por niveles (en %) | Yahoo Finance |
-| Noticias | Pestañas por ámbito o tema, noticias repetidas agrupadas y el medio de cada titular; otros idiomas se traducen al catalán | RSS, Google Noticias |
+| Noticias | 56 medios para elegir (Catalunya, España, Europa, mundo, temáticos y revistas) y secciones por tema; «Portades» resume las noticias principales de todas las portades. Cada titular en su idioma, con traducción opcional | RSS, Google Noticias |
 | IA (opcional) | Selección y resumen de las noticias más relevantes | API de Claude |
 
 ## Stack
