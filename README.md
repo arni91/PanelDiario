@@ -3,126 +3,79 @@
 [![CI](https://github.com/arni91/PanelDiario/actions/workflows/ci.yml/badge.svg)](https://github.com/arni91/PanelDiario/actions/workflows/ci.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
 ![Windows](https://img.shields.io/badge/plataforma-Windows-0078d4)
-[![uv](https://img.shields.io/badge/deps-uv-de5fe9)](https://docs.astral.sh/uv/)
-[![Ruff](https://img.shields.io/badge/lint-ruff-d7ff64)](https://docs.astral.sh/ruff/)
-[![mypy](https://img.shields.io/badge/tipos-mypy-2a6db2)](https://mypy-lang.org/)
 [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-green)](LICENSE)
 
-**Widget de escritorio para Windows que reúne en un vistazo lo que miro cada mañana**: el tiempo y los avisos de mi ciudad, mi agenda, los partidos de mi equipo, cuánto ha caído un ETF desde su máximo y las noticias de los medios que elijo, cada una con su fuente.
-
-Una píldora en el escritorio muestra la temperatura; un clic despliega el panel. La primera vez, un asistente pregunta qué quieres ver con listas y casillas (siempre con «Un altre…» al final), para escribir lo mínimo; nada personal está en el código.
+Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, el fútbol, la evolución de un ETF y las noticias de los medios que elija cada usuario. Una píldora en el escritorio muestra la temperatura; un clic despliega el panel. La primera vez, un asistente lo configura todo con listas y casillas.
 
 <p align="center">
-  <img src="docs/capturas/panel.png" width="31%" alt="Panel: avisos, tiempo por horas y días, agenda y caídas de un ETF">
-  <img src="docs/capturas/panel-noticias.png" width="31%" alt="Panel: niveles de aportación, fútbol y noticias por pestañas">
-  <img src="docs/capturas/asistente.png" width="34%" alt="Asistente de configuración: paso de noticias">
+  <img src="docs/capturas/panel.png" width="31%" alt="Panel: avisos, tiempo, agenda y ETF">
+  <img src="docs/capturas/panel-noticias.png" width="31%" alt="Panel: fútbol y noticias por pestañas">
+  <img src="docs/capturas/asistente.png" width="34%" alt="Asistente de configuración">
 </p>
 <p align="center"><sub>Capturas con <code>--demo</code> (datos inventados). Interfaz en catalán.</sub></p>
 
-## Qué hace
+## Funciones
 
-| Sección | Detalle | Fuente |
+| Sección | Qué muestra | Fuente de datos |
 |---|---|---|
-| 🌤️ Tiempo y avisos | Ahora, próximas 12 h, 6 días y avisos oficiales de tu zona | Open-Meteo, MeteoAlarm |
-| 📅 Agenda | Eventos de hoy y de la semana; enlaces de videollamada clicables | Google Calendar, Outlook o iCloud (iCal) |
-| ⚽ Fútbol | Próximos partidos y último resultado de tu equipo | football-data.org |
-| 📉 Caídas de un ETF | Caída desde el máximo histórico y cuánto aportar de más (en %) en cada nivel | Yahoo Finance |
-| 📰 Noticias | Pestañas por ámbito, tema o medio; la misma noticia en varios medios se agrupa; cada titular lleva el nombre del medio; catálogo de diarios con sus feeds por sección (Món, Catalunya, Espanya, Mobilitzacions, Tecnologia); otros idiomas → catalán | RSS, Google Noticias |
-| ✨ IA (opcional) | Selecciona las noticias más relevantes y las resume en una línea | API de Claude |
+| Tiempo | Ahora, próximas horas, 6 días y avisos oficiales | Open-Meteo, MeteoAlarm |
+| Agenda | Eventos de hoy y de la semana | Calendario iCal (Google, Outlook, iCloud) |
+| Fútbol | Próximos partidos y último resultado de un equipo | football-data.org |
+| ETF | Caída desde el máximo y aportación extra por niveles (en %) | Yahoo Finance |
+| Noticias | Pestañas por ámbito o tema, noticias repetidas agrupadas y el medio de cada titular; otros idiomas se traducen al catalán | RSS, Google Noticias |
+| IA (opcional) | Selección y resumen de las noticias más relevantes | API de Claude |
 
-## Aspectos técnicos destacados
+## Stack
 
-- **Integración nativa con Windows sin frameworks pesados**: la píldora se ancla a la capa de iconos del escritorio con la API Win32 (`ctypes`: `SetParent` sobre `SHELLDLL_DefView`), sobrevive a Win+D, recuerda su posición en configuraciones multimonitor y tiene esquinas redondeadas con regiones GDI corregidas por escalado DPI ([`win32.py`](src/panel_diario/win32.py)).
-- **Resiliencia**: cada fuente se consulta en paralelo y por separado; si una falla, se muestra su último dato bueno y un aviso en el pie, nunca un panel roto ([`estado.py`](src/panel_diario/estado.py)).
-- **Secretos fuera de los logs**: la dirección iCal es secreta, y las excepciones de `requests` incluyen la URL; la agenda y el traductor las sustituyen por un motivo corto (`HTTP 404`, `ConnectionError`) antes de que lleguen al log, a la caché o a la interfaz, con un test que lo comprueba ([`fuentes/agenda.py`](src/panel_diario/fuentes/agenda.py)).
-- **Privacidad por diseño en un repositorio público**: toda la configuración personal vive en un `config.json` ignorado por git; un hook de pre-commit (y CI) bloquea cualquier commit que contenga claves, tokens o términos de una lista privada ([`scripts/revisar_privacidad.py`](scripts/revisar_privacidad.py)).
-- **Interfaz web dentro de una app de escritorio**: HTML/CSS/JS sin framework en ventanas de [pywebview](https://pywebview.flowrl.com/), comunicadas con Python mediante su puente `js_api`.
-- **Agrupación de noticias**: detecta la misma noticia en varios medios por similitud de palabras clave (Jaccard) y elige la versión del medio preferido ([`fuentes/noticias.py`](src/panel_diario/fuentes/noticias.py)). Cada titular muestra el nombre de cada medio que lo publica.
-- **Calidad automatizada**: 141 tests con la red simulada (pytest), tipos estrictos en todas las funciones (mypy), lint y formato (ruff), pre-commit y GitHub Actions en Windows.
+| Capa | Tecnología |
+|---|---|
+| Lenguajes | Python 3.12 · HTML, CSS y JavaScript (sin framework) |
+| Interfaz de escritorio | [pywebview](https://pywebview.flowrl.com/) (WebView2) · pystray (icono de la bandeja) · API Win32 con `ctypes` |
+| Datos | `requests` · `feedparser` (RSS) · `icalendar` |
+| Entorno y dependencias | [uv](https://docs.astral.sh/uv/) con `uv.lock` |
+| Calidad | pytest (red simulada) · mypy estricto · ruff · pre-commit |
+| CI | GitHub Actions en Windows |
 
 ## Arquitectura
 
-```mermaid
-flowchart LR
-    subgraph fuentes["fuentes/ — un módulo por API"]
-        direction TB
-        tiempo & avisos & noticias & futbol & agenda & drawdown & ia
-    end
-    cfg[(config.json)] --> config[config.py]
-    config --> app
-    fuentes -->|en paralelo| estado["estado.py<br/>último dato bueno + caché"]
-    estado --> app["app.py<br/>ventanas y bucle"]
-    app <-->|js_api| ui["ui/<br/>ficha · panel · asistente"]
-    app --> bandeja[bandeja.py] & win32["win32.py<br/>API de Windows"]
-    ui -.->|respuestas| asistente[asistente.py] -.->|escribe| cfg
-```
-
 ```
 src/panel_diario/
-├── app.py            ventanas de pywebview, puente con JavaScript y bucle de actualización
-├── config.py         rutas, lectura y escritura de config.json, zona horaria
-├── estado.py         último dato bueno de cada sección y caché en disco
-├── asistente.py      lógica del asistente de configuración (y su puente con JS)
-├── outlets.py        catálogo público de medios: feeds RSS por sección
-├── bandeja.py        icono junto al reloj con la temperatura
-├── win32.py          llamadas a la API de Windows (ctypes)
-├── fuentes/          una fuente de datos por módulo
-│   ├── comun.py          HTTP, zona horaria y utilidades de texto compartidas
-│   └── tiempo · avisos · noticias · traduccion · ia · futbol · agenda · drawdown
-├── ui/               ficha.html (píldora) · index.html (panel) · asistente.html
-└── demo.json         datos de demostración (--demo)
-tests/                pytest, red simulada: un fichero por módulo
-scripts/              revisión de privacidad (pre-commit y CI)
-docs/                 referencia de configuración, medios del catálogo (feeds) y capturas
+├── app.py          ventanas, puente Python ↔ JavaScript y bucle de actualización
+├── config.py       lectura y escritura de config.json
+├── estado.py       último dato bueno de cada sección y caché
+├── asistente.py    lógica del asistente de configuración
+├── outlets.py      catálogo de medios con sus feeds RSS
+├── bandeja.py      icono junto al reloj
+├── win32.py        integración con Windows (anclar al escritorio, monitores)
+├── fuentes/        una fuente de datos por módulo, con HTTP común en comun.py
+└── ui/             píldora, panel y asistente (HTML/CSS/JS)
+tests/              un fichero de tests por módulo
+scripts/            revisión de privacidad (pre-commit y CI)
+docs/               referencia de configuración y catálogo de medios
 ```
 
-## Decisiones de diseño
-
-| Decisión | Por qué | Alternativa descartada |
-|---|---|---|
-| pywebview + HTML | Interfaz moderna con CSS y una app ligera (usa el WebView2 de Windows) | Electron: 100+ MB y otro runtime; Tkinter/Qt: más esfuerzo para el mismo resultado visual |
-| Google Calendar por iCal | Solo lectura, sin proyecto en Google Cloud ni pantallas OAuth | API de Google Calendar: más permisos de los necesarios |
-| Niveles del ETF en % | El widget no guarda importes: cada uno aplica el % a su aportación | Importes en euros: dato personal dentro de la configuración |
-| uv + `uv.lock` | Instalación reproducible y descarga de Python incluida | pip + requirements: sin lock real |
-| Traducción en lotes, secuencial y con memoria en disco | Una petición por titular hacía que Google respondiera 429; así son 1-2 peticiones por actualización, cada texto se traduce una sola vez y, si Google bloquea, la pausa se guarda en disco y se dobla con cada bloqueo seguido | Una petición por texto en paralelo |
-| Asistente con listas y «Un altre…» al final | Elegir es más rápido y da menos errores que escribir; lo que se escribe (RSS, iCal, ticker) se comprueba antes de guardarlo | Editar config.json a mano |
-| Errores por fuente, no globales | Un servicio caído no puede dejar el panel en blanco | Un único try global: todo o nada |
+Principios: cada fuente se consulta en paralelo y por separado, y si una falla se muestra su último dato bueno; la configuración personal vive solo en `config.json`, fuera de git; los secretos (como la dirección iCal) nunca llegan al log.
 
 ## Instalación
 
-Requisitos: Windows 10/11 y [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`). No hace falta instalar Python: uv descarga la versión correcta.
+Requisitos: Windows 10/11 y [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`). uv descarga Python.
 
-1. Descarga el proyecto (**Code → Download ZIP** o `git clone`) en una carpeta fuera de OneDrive, por ejemplo `C:\dev\PanelDiario`.
-2. Doble clic en **`instalar.bat`**: instala las dependencias exactas de `uv.lock`, crea los accesos directos (también para arrancar con Windows) y abre el panel. Desde una terminal o un script: `instalar.bat /silencioso` (sin pausas).
-3. La primera vez se abre el **asistente**: elige tu ciudad, calendario, equipo, ETF y los medios de cada pestaña de noticias de listas y casillas (la última opción, «Un altre…», abre una entrada manual). Cada paso se puede saltar.
+1. Descarga el repositorio (**Code → Download ZIP** o `git clone`).
+2. Ejecuta **`instalar.bat`**: instala las dependencias, crea los accesos directos y abre el panel.
+3. Sigue el asistente. Cada paso se puede saltar y cambiar después desde el icono junto al reloj → **Configura…**
 
-Uso: clic en la píldora para desplegar el panel (otro clic, Esc o clic fuera lo recoge); arrástrala para moverla; **Ctrl+Alt+N** también lo abre. Desde el icono junto al reloj: actualizar, **Configura…** (el asistente) y salir.
-
-La referencia completa de `config.json` está en [docs/configuracion.md](docs/configuracion.md).
+Uso: clic en la píldora para abrir el panel, arrastrar para moverla, **Ctrl+Alt+N** para abrirlo. Referencia completa de `config.json`: [docs/configuracion.md](docs/configuracion.md).
 
 ## Desarrollo
 
 ```bash
-uv sync                                      # dependencias + herramientas de desarrollo
-uv run pre-commit install                    # ruff, mypy y privacidad antes de cada commit
-uv run python -m panel_diario --demo         # interfaz con datos inventados, sin internet
-uv run python -m panel_diario --consola      # con el log en la consola
-uv run python -m panel_diario --asistente    # abre el asistente al arrancar
-uv run pytest                                # tests (red simulada)
-uv run ruff check && uv run ruff format --check && uv run mypy
-uv run python -m panel_diario.probar_fuentes # comprueba las fuentes reales de tu config.json
+uv sync                                   # dependencias y herramientas de desarrollo
+uv run pre-commit install                 # comprobaciones antes de cada commit
+uv run python -m panel_diario --demo      # interfaz con datos inventados
+uv run pytest                             # tests
+uv run ruff check && uv run mypy          # lint y tipos
 ```
-
-**Revisión de privacidad**: pon en `.privado/terminos.txt` (fuera de git) lo que nunca debe publicarse —tu ciudad, tu nombre, tus claves—, uno por línea. El hook bloquea el commit si aparece en algún fichero versionado; en CI, sin esa lista, busca solo formas de claves y tokens.
-
-Log en ejecución: `%APPDATA%\PanelDiario\panel.log`.
-
-## Limitaciones conocidas
-
-- Solo Windows: el anclaje al escritorio usa la API Win32.
-- Yahoo Finance, el traductor de Google y Google Noticias son servicios no oficiales: pueden fallar puntualmente (el panel muestra el último dato bueno).
-- Interfaz solo en catalán; las noticias se muestran en catalán o castellano y el resto se traduce al catalán (si el traductor no responde, se deja el original).
 
 ## Licencia
 
-[MIT](LICENSE) · Datos: Open-Meteo, MeteoAlarm, football-data.org, Yahoo Finance, Google Noticias y los medios enlazados en cada titular.
+[MIT](LICENSE)
