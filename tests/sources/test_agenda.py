@@ -93,7 +93,8 @@ def test_el_panel_no_escribe_la_direccion_en_log_ni_cache(
     # Las demás secciones no salen a la red: solo interesa la agenda
     monkeypatch.setattr(state.tiempo, "obtener_tiempo", lambda cfg: {})
     monkeypatch.setattr(state.avisos, "obtener_avisos", lambda cfg: [])
-    monkeypatch.setattr(state.futbol, "obtener_futbol", lambda cfg: {})
+    monkeypatch.setattr(state.sports, "obtener_esports", lambda cfg: {})
+    monkeypatch.setattr(state.markets, "obtener_borsa", lambda cfg: {})
     monkeypatch.setattr(state.noticias, "obtener_noticias", lambda cfg: ({}, []))
     monkeypatch.setattr(state.drawdown, "obtener_drawdown", lambda cfg, ruta: {})
     est = state.Estado()

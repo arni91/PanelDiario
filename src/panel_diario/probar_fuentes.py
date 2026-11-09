@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 from panel_diario.config import cargar_config
-from panel_diario.sources import avisos, drawdown, futbol, noticias, tiempo
+from panel_diario.sources import avisos, drawdown, markets, noticias, sports, tiempo
 
 
 def linea(ok: bool, nombre: str, detalle: str) -> None:
@@ -51,14 +51,21 @@ def main() -> int:
             ),
         ),
         (
-            "Fútbol (football-data.org)",
-            lambda: futbol.obtener_futbol(cfg),
+            "Borsa (Yahoo Finance)",
+            lambda: markets.obtener_borsa(cfg),
             lambda r: (
-                "falta la clave en config.json"
-                if r.get("sin_clave")
-                else "falta team_id en config.json"
-                if r.get("sin_equipo")
-                else f"{len(r['proximos'])} próximos partidos"
+                "sin borsa en config.json"
+                if r.get("sin_configurar")
+                else f"{len(r['indexs'])} índices · {len(r['moviments'])} listas del día"
+            ),
+        ),
+        (
+            "Esports (ESPN)",
+            lambda: sports.obtener_esports(cfg),
+            lambda r: (
+                "sin esports en config.json"
+                if r.get("sin_configurar")
+                else f"{len(r['equips'])} equipos · F1: {'sí' if r['f1'] else 'no'}"
             ),
         ),
     ]

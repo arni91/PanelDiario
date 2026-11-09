@@ -9,7 +9,7 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 
 <p align="center">
   <img src="docs/capturas/panel.png" width="31%" alt="Panel: avisos, tiempo, agenda y bolsa">
-  <img src="docs/capturas/panel-noticias.png" width="31%" alt="Panel: fútbol y noticias por pestañas">
+  <img src="docs/capturas/panel-noticias.png" width="31%" alt="Panel: deportes y noticias por secciones">
   <img src="docs/capturas/asistente.png" width="34%" alt="Asistente de configuración">
 </p>
 <p align="center"><sub>Capturas con <code>--demo</code> (datos inventados). Interfaz en catalán.</sub></p>
@@ -20,7 +20,7 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 |---|---|---|
 | Tiempo | Ahora, próximas horas, 6 días y avisos oficiales | Open-Meteo, MeteoAlarm |
 | Agenda | Eventos de hoy y de la semana | Calendario iCal (Google, Outlook, iCloud) |
-| Fútbol | Próximos partidos y último resultado de un equipo | football-data.org |
+| Deportes | Próximos partidos y último resultado de los equipos elegidos (fútbol, baloncesto, NFL, NHL) y la Fórmula 1 | ESPN |
 | Bolsa | Índices con la variación del día y los valores que más suben, bajan o se negocian | Yahoo Finance |
 | ETF propio (opcional) | Caída desde el máximo y aportación extra por niveles (en %) | Yahoo Finance |
 | Noticias | 56 medios para elegir (Catalunya, España, Europa, mundo, temáticos y revistas) y secciones por tema; «Portades» resume las noticias principales de todas las portades. Cada titular en su idioma, con traducción opcional | RSS, Google Noticias |

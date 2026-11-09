@@ -61,10 +61,9 @@
     "ical_urls": [],
     "dias": 7
   },
-  "futbol": {
-    "nombre": "",
-    "football_data_api_key": "",
-    "team_id": null
+  "esports": {
+    "equips": [],
+    "f1": false
   },
   "claude": {
     "api_key": "",

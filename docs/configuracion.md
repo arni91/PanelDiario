@@ -6,7 +6,7 @@ Lo normal es configurar el panel con el **asistente** (se abre solo la primera v
 
 ## Qué funciona sin claves
 
-Tiempo, avisos meteorológicos, noticias, borsa y el ETF propio funcionan sin ninguna clave. Agenda y fútbol necesitan los datos de abajo. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
+Tiempo, avisos meteorológicos, noticias, deportes, bolsa y el ETF propio funcionan sin ninguna clave. La agenda necesita su dirección iCal. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
 
 ## Ubicación y avisos
 
@@ -21,13 +21,12 @@ En Google Calendar, desde el ordenador: abre Google Calendar → ⚙ Configuraci
 
 **Es privada**: quien la tenga puede ver tu calendario. No la compartas; si se filtra, regenérala en el mismo sitio.
 
-## Fútbol
+## Esports (`esports`)
 
-1. Clave gratuita en [football-data.org](https://www.football-data.org/client/register) → `futbol.football_data_api_key`.
-2. `team_id`: el asistente te deja elegir el equipo de una lista. A mano: con la clave, abre `https://api.football-data.org/v4/competitions/PD/teams` (`PD` LaLiga, `PL` Premier, `SA` Serie A, `BL1` Bundesliga, `FL1` Ligue 1…).
-3. `futbol.nombre`: el nombre que quieres ver.
-
-El plan gratuito incluye las ligas principales y la Champions, pero no las copas nacionales.
+- `equips`: lista de equipos con `lliga` (ruta de ESPN de su competición, p. ej. `soccer/esp.1`), `id` (identificador de ESPN) y `nom`. El asistente los elige de una lista: deporte → competición → equipo. Las competiciones están en [`catalog/sports.py`](../src/panel_diario/catalog/sports.py): fútbol (LaLiga, Liga F, Premier, Serie A, Bundesliga, Ligue 1…), baloncesto (NBA, WNBA), NFL y NHL.
+- En fútbol se muestran todas las competiciones del equipo (liga, copa, Champions…); en los demás deportes, las de su liga. Próximos 3 partidos y el último resultado.
+- `f1`: `true` para ver el próximo gran premio y el ganador del último.
+- Datos de la API pública de ESPN, sin clave (no es un servicio oficial: si no responde, se muestra el último dato bueno). La Euroliga y la ACB no están: ESPN no publica sus partidos.
 
 ## Borsa (`borsa`)
 

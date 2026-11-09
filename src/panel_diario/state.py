@@ -15,7 +15,7 @@ from typing import Any
 
 from panel_diario import VERSION
 from panel_diario.config import CACHE, DATOS_DIR
-from panel_diario.sources import agenda, avisos, comun, drawdown, futbol, ia, markets, noticias, tiempo
+from panel_diario.sources import agenda, avisos, comun, drawdown, ia, markets, noticias, sports, tiempo
 
 log = logging.getLogger("panel")
 
@@ -66,7 +66,7 @@ def actualizar(estado: Estado, cfg: dict, forzar_ia: bool = False) -> None:
             "tiempo": lambda: tiempo.obtener_tiempo(cfg),
             "avisos": lambda: avisos.obtener_avisos(cfg),
             "noticias": lambda: noticias.obtener_noticias(cfg),
-            "futbol": lambda: futbol.obtener_futbol(cfg),
+            "esports": lambda: sports.obtener_esports(cfg),
             "borsa": lambda: markets.obtener_borsa(cfg),
             "drawdown": lambda: drawdown.obtener_drawdown(cfg, DATOS_DIR / "drawdown.json"),
             "agenda": lambda: agenda.obtener_agenda(cfg),
