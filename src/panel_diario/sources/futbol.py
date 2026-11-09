@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from panel_diario.fuentes import comun
+from panel_diario.sources import comun
 
 
 def _hora_local(iso_utc: str) -> datetime:

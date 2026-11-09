@@ -18,7 +18,7 @@ from pathlib import Path
 
 import requests
 
-from panel_diario.fuentes import comun
+from panel_diario.sources import comun
 
 log = logging.getLogger("panel")
 

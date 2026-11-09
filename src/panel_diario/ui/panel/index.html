@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel Diario</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <header>
+    <h1 id="fecha" class="arrastre" title="Arrossega per moure">—</h1>
+    <span class="act arrastre" id="actualizado"></span>
+    <button class="icon-btn" id="btn-ref" title="Actualitza ara">⟳</button>
+    <button class="icon-btn" id="btn-cerrar" title="Tanca (Esc)">✕</button>
+  </header>
+
+  <main>
+    <div id="avisos"></div>
+    <section class="card" id="tiempo"><div class="vacio">Carregant el temps…</div></section>
+    <section class="card" id="agenda"></section>
+
+    <section class="card" id="drawdown"></section>
+    <section class="card" id="futbol"></section>
+
+    <section class="card" id="noticias">
+      <h3>📰 Notícies</h3>
+      <nav class="tabs" id="tabs"></nav>
+      <div class="periodo" id="periodo"></div>
+      <div class="lista" id="lista"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span id="pie" style="display:flex;gap:8px;flex:1">Panel Diario</span>
+  </footer>
+
+<script src="../common/util.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>

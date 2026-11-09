@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from panel_diario.fuentes import comun
+from panel_diario.sources import comun
 
 WMO = {  # descripcions en català (codis WMO d'Open-Meteo)
     0: ("☀️", "Serè"),

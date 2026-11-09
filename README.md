@@ -40,16 +40,15 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 
 ```
 src/panel_diario/
-├── app.py          ventanas, puente Python ↔ JavaScript y bucle de actualización
+├── app.py          arranque, ventanas, puente Python ↔ JavaScript y bucle de actualización
 ├── config.py       lectura y escritura de config.json
-├── estado.py       último dato bueno de cada sección y caché
-├── asistente.py    lógica del asistente de configuración
-├── outlets.py      catálogo de medios con sus feeds RSS
-├── bandeja.py      icono junto al reloj
-├── win32.py        integración con Windows (anclar al escritorio, monitores)
-├── fuentes/        una fuente de datos por módulo, con HTTP común en comun.py
-└── ui/             píldora, panel y asistente (HTML/CSS/JS)
-tests/              un fichero de tests por módulo
+├── state.py        último dato bueno de cada sección y caché
+├── sources/        back: una fuente de datos por módulo (HTTP común en comun.py)
+├── catalog/        datos públicos: catálogo de medios con sus feeds RSS
+├── wizard/         lógica del asistente de configuración
+├── desktop/        integración con Windows: icono de la bandeja y API Win32
+└── ui/             front: una carpeta por ventana (panel, pill, wizard) con HTML, CSS y JS
+tests/              misma estructura que src/
 scripts/            revisión de privacidad (pre-commit y CI)
 docs/               referencia de configuración y catálogo de medios
 ```

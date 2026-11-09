@@ -1,4 +1,4 @@
-"""Tests de la traducción (fuentes/traduccion.py). El traductor se simula: no se usa internet.
+"""Tests de la traducción (sources/traduccion.py). El traductor se simula: no se usa internet.
 
 Regla: las noticias en catalán o castellano se quedan como están; las de otros idiomas
 (inglés, francés...) se traducen al catalán. Si no se puede, se queda el original.
@@ -14,7 +14,7 @@ from typing import Any
 import pytest
 import requests
 
-from panel_diario.fuentes import comun, traduccion
+from panel_diario.sources import comun, traduccion
 
 # texto original -> (idioma que detecta el traductor, traducción al catalán)
 DICCIONARI = {

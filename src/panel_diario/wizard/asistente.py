@@ -1,4 +1,4 @@
-"""Asistente de configuración: la lógica que hay detrás de ui/asistente.html.
+"""Asistente de configuración: la lógica que hay detrás de ui/wizard/asistente.html.
 
 Pregunta paso a paso (tiempo, agenda, fútbol, inversión, noticias, IA) y construye config.json.
 Cada paso se puede saltar: lo saltado se queda como estaba. Las funciones que salen a internet
@@ -16,8 +16,8 @@ from urllib.parse import quote
 
 import webview
 
-from panel_diario import outlets
-from panel_diario.fuentes import agenda, comun, drawdown, noticias
+from panel_diario.catalog import outlets
+from panel_diario.sources import agenda, comun, drawdown, noticias
 
 log = logging.getLogger("panel")
 
@@ -438,7 +438,7 @@ def construir_config(base: dict, respuestas: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Puente con el JavaScript de ui/asistente.html
+# Puente con el JavaScript de ui/wizard/asistente.html
 # ---------------------------------------------------------------------------
 
 

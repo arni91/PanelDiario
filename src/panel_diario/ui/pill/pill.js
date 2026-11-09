@@ -1,55 +1,3 @@
-<!doctype html>
-<html lang="ca">
-<head>
-<meta charset="utf-8">
-<title>Panel Diario - ficha</title>
-<!--
-  Ficha del escritorio en forma de píldora (176x34): icono, temperatura, máx/mín y probabilidad de lluvia.
-  Clic = abrir/cerrar el panel. Mantener pulsado y mover = arrastrar la ficha.
-  Los extremos redondos los recorta Windows (redondear_esquinas en panel.py).
--->
-<style>
-  * { box-sizing: border-box; margin: 0; }
-  /* Fondo negro: los píxeles del borde que recorta Windows quedan negros, igual que el contorno */
-  html, body { height: 100%; overflow: hidden; background: #000; }
-  body {
-    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-    color: #fff; user-select: none; cursor: pointer;
-  }
-  .ficha {
-    height: 100%; border-radius: 17px; position: relative;
-    display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px;
-    /* Oscuro con un ligero degradado, contorno negro y, por dentro, un filo claro muy fino */
-    background: linear-gradient(180deg, #2a3443, #1a212c);
-    box-shadow: inset 0 0 0 1.5px #000, inset 0 0 0 2.5px rgba(255,255,255,.14),
-                inset 0 2.5px 0 rgba(255,255,255,.10);
-    transition: filter .15s ease;
-  }
-  .ficha:hover { filter: brightness(1.18); }
-  .ficha.pulsada { filter: brightness(.92); }
-  .ficha.arrastrando { cursor: grabbing; }
-  .ico { font-size: 16px; line-height: 1; }
-  .temp { font-size: 16px; font-weight: 600; letter-spacing: -.3px; line-height: 1; }
-  .rango { font-size: 11px; opacity: .72; white-space: nowrap; line-height: 1; }
-  /* Probabilidad de lluvia: discreta normalmente, azul y en negrita si es probable (>= 40 %) */
-  .lluvia { font-size: 11px; opacity: .72; white-space: nowrap; line-height: 1; }
-  .lluvia.alta { color: #8cc8ff; opacity: 1; font-weight: 600; }
-  /* Punto de aviso meteorológico */
-  .aviso { position: absolute; top: 5px; right: 9px; width: 6px; height: 6px; border-radius: 50%; display: none; }
-  .aviso.amarillo { display: block; background: #ffd84d; }
-  .aviso.naranja  { display: block; background: #ff9a3c; }
-  .aviso.rojo     { display: block; background: #ff4d4d; }
-</style>
-</head>
-<body>
-  <div class="ficha" id="ficha" title="Clic: obre · Arrossega: mou">
-    <span class="aviso" id="aviso"></span>
-    <span class="ico" id="ico">⛅</span>
-    <span class="temp" id="temp">--°</span>
-    <span class="rango" id="rango"></span>
-    <span class="lluvia" id="lluvia"></span>
-  </div>
-<script>
 const api = () => (window.pywebview && window.pywebview.api) || null;
 const ficha = document.getElementById("ficha");
 
@@ -119,6 +67,3 @@ function iniciar() {
 }
 window.addEventListener("pywebviewready", iniciar);
 if (api() && api().mini) iniciar();
-</script>
-</body>
-</html>

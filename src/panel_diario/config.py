@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from panel_diario.fuentes import comun
+from panel_diario.sources import comun
 
 PAQUETE = Path(__file__).resolve().parent  # carpeta del paquete: ui/ y demo.json
 # config.json vive en la raíz del proyecto (src/panel_diario -> src -> raíz), donde lo edita cada uno.

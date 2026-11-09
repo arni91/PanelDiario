@@ -1,6 +1,6 @@
 # Medios del catálogo: feeds RSS
 
-El catálogo público de medios ([`outlets.py`](../src/panel_diario/outlets.py)) guarda, de cada medio, sus feeds RSS oficiales por sección. De ahí salen la plantilla `config.example.json` y las opciones del asistente.
+El catálogo público de medios ([`catalog/outlets.py`](../src/panel_diario/catalog/outlets.py)) guarda, de cada medio, sus feeds RSS oficiales por sección. De ahí salen la plantilla `config.example.json` y las opciones del asistente.
 
 ## Feeds RSS
 
@@ -64,5 +64,5 @@ Feeds que no existen o no sirven (comprobados el mismo día):
 ## Para añadir o corregir un medio
 
 1. Comprueba que sus feeds responden y tienen noticias recientes (`uv run python -m panel_diario.probar_fuentes` con el medio en tu config.json) y añádelos a `feeds`.
-2. Añádelo a `CATALOG` en `outlets.py`.
+2. Añádelo a `CATALOG` en `catalog/outlets.py`.
 3. Actualiza las tablas de arriba con la fecha de la comprobación.

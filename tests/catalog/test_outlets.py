@@ -3,9 +3,9 @@
 import json
 from pathlib import Path
 
-from panel_diario import outlets
+from panel_diario.catalog import outlets
 
-RAIZ = Path(__file__).resolve().parent.parent
+RAIZ = Path(__file__).resolve().parents[2]
 
 # --- Catálogo ------------------------------------------------------------------
 

@@ -10,8 +10,10 @@ from typing import Any
 
 import pytest
 
-from panel_diario import asistente, config, outlets
-from panel_diario.fuentes import agenda, comun, drawdown
+from panel_diario import config
+from panel_diario.catalog import outlets
+from panel_diario.sources import agenda, comun, drawdown
+from panel_diario.wizard import asistente
 
 GIRONA = {
     "name": "Girona",

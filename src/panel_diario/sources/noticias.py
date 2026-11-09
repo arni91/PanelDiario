@@ -15,8 +15,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import feedparser
 
-from panel_diario.fuentes import comun
-from panel_diario.fuentes.traduccion import traduir_noticies
+from panel_diario.sources import comun
+from panel_diario.sources.traduccion import traduir_noticies
 
 log = logging.getLogger("panel")
 

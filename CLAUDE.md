@@ -2,22 +2,22 @@
 Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiempo; al hacer clic despliega un panel con avisos meteorológicos, agenda (Google Calendar por iCal), caídas de un ETF desde su máximo con niveles de aportación extra en %, partidos de un equipo de fútbol y noticias por pestañas. Un asistente de configuración escribe config.json.
 
 # Stack
-- Python 3.12 + pywebview (3 ventanas: píldora ui/ficha.html, panel ui/index.html y asistente ui/asistente.html) + pystray (icono junto al reloj).
+- Python 3.12 + pywebview (3 ventanas: píldora ui/pill/, panel ui/panel/ y asistente ui/wizard/) + pystray (icono junto al reloj).
 - Interfaz en HTML/CSS/JS sin framework; Python y JS se comunican con el puente js_api de pywebview.
 - Datos: Open-Meteo (tiempo y geocodificación), MeteoAlarm, iCal, Yahoo Finance (no oficial), football-data.org, RSS y Google Noticias. Traducción con el traductor de Google (no oficial).
 - uv (uv.lock), ruff, mypy, pytest, pre-commit y GitHub Actions (windows-latest).
 
 # Estructura (src/panel_diario/)
-- app.py: ventanas, puente con JS (Api, ApiFicha), bucle de actualización y arranque (main).
+- app.py: arranque (main), ventanas, puente con JS (Api, ApiFicha) y bucle de actualización.
 - config.py: rutas (CONFIG, EJEMPLO, DATOS_DIR), leer/guardar config.json, zona horaria.
-- estado.py: último dato bueno de cada sección y caché; actualizar() pide las fuentes en paralelo.
-- outlets.py: catálogo público de medios (nombre, idioma y feeds RSS por tipo de pestaña): de ahí salen config.example.json y el asistente. Cada titular muestra solo el nombre del medio.
-- asistente.py: lógica del asistente (búsquedas, comprobaciones, construir_config) y ApiAsistente.
-- bandeja.py: icono junto al reloj; recibe las acciones como funciones (sin depender de app.py).
-- win32.py: todo lo que usa ctypes (monitores, anclar al escritorio, barra de tareas, errores).
-- fuentes/: una fuente por módulo. comun.py tiene HTTP (comun.get), zona horaria (comun.TZ) y utilidades. Si una fuente falla, lanza excepción y estado.py conserva el último dato bueno. Si a una sección le falta su clave, devuelve {"sin_clave"/"sin_url"/"sin_configurar": True} y la interfaz la oculta.
-- ui/ y demo.json (datos para --demo, con sus propias pestañas).
-- Fuera del paquete: tests/ (un fichero por módulo), scripts/revisar_privacidad.py, docs/ (configuracion.md y capturas/).
+- state.py: último dato bueno de cada sección y caché; actualizar() pide las fuentes en paralelo.
+- sources/ (back): una fuente de datos por módulo. comun.py tiene HTTP (comun.get), zona horaria (comun.TZ) y utilidades. Si una fuente falla, lanza excepción y state.py conserva el último dato bueno. Si a una sección le falta su clave, devuelve {"sin_clave"/"sin_url"/"sin_configurar": True} y la interfaz la oculta.
+- catalog/ (datos públicos): outlets.py, catálogo de medios (nombre, idioma y feeds RSS por tipo de pestaña); de ahí salen config.example.json y el asistente. Cada titular muestra solo el nombre del medio.
+- wizard/: asistente.py, lógica del asistente (búsquedas, comprobaciones, construir_config) y ApiAsistente.
+- desktop/ (Windows): bandeja.py (icono junto al reloj; recibe las acciones como funciones) y win32.py (todo lo que usa ctypes: monitores, anclar al escritorio, barra de tareas, errores).
+- ui/ (front): una carpeta por ventana con su .html, .css y .js (panel/, pill/ = píldora, wizard/ = asistente); common/ para lo compartido.
+- demo.json: datos para --demo, con sus propias pestañas. probar_fuentes.py: comprueba las fuentes reales de config.json.
+- Fuera del paquete: tests/ (replica el árbol de src/: tests/sources/, tests/catalog/, tests/wizard/; test_ui.py comprueba los enlaces de cada página), scripts/revisar_privacidad.py, docs/ (configuracion.md, fonts.md y capturas/).
 - config.json (raíz): toda la configuración personal de quien usa el panel. No va a git. Plantilla pública: config.example.json. Copia anterior: config.json.bak.
 - Datos en ejecución: %APPDATA%\PanelDiario (caché, posición, log).
 
@@ -33,6 +33,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - main está protegida: cada cambio va en su rama (feat/…, fix/…, docs/…) y entra por Pull Request con CI en verde, fusionando con squash.
 - Commits pequeños (Conventional Commits) con ruff, mypy y tests en verde; pre-commit lo comprueba.
 - Un fallo se reproduce primero con un test; un fallo que solo se ve con ventanas reales (pywebview) se prueba arrancando --demo y se anota en "Trampas conocidas".
+- Cada cosa en su carpeta: back en sources/, datos públicos en catalog/, front en ui/<ventana>/ (HTML, CSS y JS separados), Windows en desktop/; tests en la misma ruta bajo tests/.
 - Un módulo por responsabilidad, con cabecera de 1-3 líneas (qué hace y cómo encaja); comentarios del porqué, separando bloques con títulos. Funciones con type hints.
 - Las fuentes externas solo se llaman a través de comun.get, para que los tests las sustituyan en un sitio.
 - Cada cambio visible: sube VERSION en src/panel_diario/__init__.py (se ve abajo del panel; pyproject.toml la lee de ahí).
@@ -54,12 +55,12 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - Commits con el email "noreply" de GitHub. Una clave que llegue a subirse hay que regenerarla: borrarla no basta.
 
 # Trampas conocidas
-- Win32: usar siempre _user32() (copia propia de user32, en win32.py). Declarar tipos en ctypes.windll.user32 rompe pywebview.
+- Win32: usar siempre _user32() (copia propia de user32, en desktop/win32.py). Declarar tipos en ctypes.windll.user32 rompe pywebview.
 - pywebview publica en JS los atributos PÚBLICOS del objeto js_api: una ventana (webview.Window) como atributo público bloquea el puente de TODAS las ventanas. Guardarlas siempre como _ventana.
 - pywebview impone 200x100 px de mínimo: pasar siempre min_size en create_window.
 - Con la píldora anclada al escritorio (SetParent), FindWindowW ya no la encuentra: obtener el hwnd ANTES de anclarla (buscar_ventana).
 - Al abrir el panel desde la píldora, el foco vuelve un instante a ella: por eso se ignora la pérdida de foco durante 1 s. El panel se oculta al perder el foco: al hacer capturas, no hacer clic en otra ventana antes de capturarlo.
-- Un nombre de variable local igual que un módulo de fuentes/ (noticias, ia...) lo tapa: ruff lo avisa (F823/F821).
+- Un nombre de variable local igual que un módulo de sources/ (noticias, ia...) lo tapa: ruff lo avisa (F823/F821).
 - uv: en algunos Windows los hardlinks desde la caché fallan ("operación de nube"); por eso link-mode = "copy" en pyproject.toml.
 - mypy: el Control de aplicaciones de Windows (Smart App Control) puede bloquear sus DLL compiladas; por eso se instala en Python puro (no-binary-package).
 - uv: tras mover o renombrar la carpeta del proyecto, los .exe de .venv\Scripts (mypy, pytest...) fallan con "uv trampoline failed to canonicalize script path": guardan la ruta antigua. Se arregla con `uv sync --reinstall`.

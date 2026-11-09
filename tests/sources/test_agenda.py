@@ -1,4 +1,4 @@
-"""Tests de la agenda (fuentes/agenda.py): enlaces como "lugar" y la dirección iCal secreta fuera de errores y logs."""
+"""Tests de la agenda (sources/agenda.py): enlaces como "lugar" y la dirección iCal secreta fuera de errores y logs."""
 
 import logging
 import types
@@ -7,8 +7,8 @@ from typing import Any
 import pytest
 import requests
 
-from panel_diario import estado
-from panel_diario.fuentes import agenda, comun
+from panel_diario import state
+from panel_diario.sources import agenda, comun
 
 # Dirección inventada con la forma de las de Google: la parte secreta no puede salir en ningún error.
 # Se escribe por partes para que la revisión de privacidad no la tome por una dirección real.
@@ -87,18 +87,18 @@ def test_contenido_que_no_es_ical(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_el_panel_no_escribe_la_direccion_en_log_ni_cache(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture, tmp_path: Any
 ) -> None:
-    """Reproduce el fallo: estado.py guardaba str(ex) del error de requests, con la URL entera."""
+    """Reproduce el fallo: state.py guardaba str(ex) del error de requests, con la URL entera."""
     monkeypatch.setattr(comun, "get", _falla_con(_http_error(404)))
-    monkeypatch.setattr(estado, "CACHE", tmp_path / "cache.json")
+    monkeypatch.setattr(state, "CACHE", tmp_path / "cache.json")
     # Las demás secciones no salen a la red: solo interesa la agenda
-    monkeypatch.setattr(estado.tiempo, "obtener_tiempo", lambda cfg: {})
-    monkeypatch.setattr(estado.avisos, "obtener_avisos", lambda cfg: [])
-    monkeypatch.setattr(estado.futbol, "obtener_futbol", lambda cfg: {})
-    monkeypatch.setattr(estado.noticias, "obtener_noticias", lambda cfg: ({}, []))
-    monkeypatch.setattr(estado.drawdown, "obtener_drawdown", lambda cfg, ruta: {})
-    est = estado.Estado()
+    monkeypatch.setattr(state.tiempo, "obtener_tiempo", lambda cfg: {})
+    monkeypatch.setattr(state.avisos, "obtener_avisos", lambda cfg: [])
+    monkeypatch.setattr(state.futbol, "obtener_futbol", lambda cfg: {})
+    monkeypatch.setattr(state.noticias, "obtener_noticias", lambda cfg: ({}, []))
+    monkeypatch.setattr(state.drawdown, "obtener_drawdown", lambda cfg, ruta: {})
+    est = state.Estado()
     with caplog.at_level(logging.INFO, logger="panel"):
-        estado.actualizar(est, {"agenda": {"ical_urls": [URL]}})
+        state.actualizar(est, {"agenda": {"ical_urls": [URL]}})
     assert "agenda" in est.datos["errores"]
     assert SECRETO not in caplog.text
     assert SECRETO not in str(est.datos["errores"])

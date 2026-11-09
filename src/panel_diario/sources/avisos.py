@@ -9,8 +9,8 @@ from datetime import UTC, datetime, timedelta
 
 import feedparser
 
-from panel_diario.fuentes import comun
-from panel_diario.fuentes.traduccion import traduir_textos
+from panel_diario.sources import comun
+from panel_diario.sources.traduccion import traduir_textos
 
 SEVERIDAD = {"moderate": ("amarillo", 1), "severe": ("naranja", 2), "extreme": ("rojo", 3)}
 

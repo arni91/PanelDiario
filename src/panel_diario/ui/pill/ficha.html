@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<title>Panel Diario - ficha</title>
+<!--
+  Ficha del escritorio en forma de píldora (176x34): icono, temperatura, máx/mín y probabilidad de lluvia.
+  Clic = abrir/cerrar el panel. Mantener pulsado y mover = arrastrar la ficha.
+  Los extremos redondos los recorta Windows (redondear_esquinas en panel.py).
+-->
+<link rel="stylesheet" href="pill.css">
+</head>
+<body>
+  <div class="ficha" id="ficha" title="Clic: obre · Arrossega: mou">
+    <span class="aviso" id="aviso"></span>
+    <span class="ico" id="ico">⛅</span>
+    <span class="temp" id="temp">--°</span>
+    <span class="rango" id="rango"></span>
+    <span class="lluvia" id="lluvia"></span>
+  </div>
+<script src="pill.js"></script>
+</body>
+</html>
