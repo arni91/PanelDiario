@@ -22,7 +22,7 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - Datos en ejecución: %APPDATA%\PanelDiario (caché, posición, log).
 
 # Comandos (en la raíz del proyecto)
-- Instalar o reiniciar tras un cambio: instalar.bat (cierra la versión abierta y arranca la nueva).
+- Instalar o reiniciar tras un cambio: instalar.bat (cierra la versión abierta y arranca la nueva). Sin pausas, desde un script o una terminal: instalar.bat /silencioso
 - Ejecutar: uv run python -m panel_diario [--consola] [--demo] [--asistente]
 - Tests: uv run pytest (red simulada, sin internet)
 - Lint, formato y tipos: uv run ruff check · uv run ruff format · uv run mypy
@@ -63,9 +63,10 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - Un nombre de variable local igual que un módulo de fuentes/ (noticias, ia...) lo tapa: ruff lo avisa (F823/F821).
 - uv: en algunos Windows los hardlinks desde la caché fallan ("operación de nube"); por eso link-mode = "copy" en pyproject.toml.
 - mypy: el Control de aplicaciones de Windows (Smart App Control) puede bloquear sus DLL compiladas; por eso se instala en Python puro (no-binary-package).
+- uv: tras mover o renombrar la carpeta del proyecto, los .exe de .venv\Scripts (mypy, pytest...) fallan con "uv trampoline failed to canonicalize script path": guardan la ruta antigua. Se arregla con `uv sync --reinstall`.
 - instalar.bat usa `uv sync --no-dev --inexact`: sin --inexact borraría las herramientas de desarrollo del .venv.
 - La revisión de privacidad no busca hexadecimal en uv.lock (huellas públicas de PyPI); sus propios ejemplos se escriben por partes. Busca subcadenas: un término puede saltar dentro de otra palabra; entonces se cambia la frase.
 - Los .bat necesitan CRLF (.gitattributes): con LF, cmd.exe puede fallar en los goto. Tras editarlos: git checkout del fichero para recuperar CRLF.
 - Las excepciones de requests llevan la URL completa en su texto: en la agenda (dirección iCal secreta) y el traductor se sustituyen por un motivo corto con `raise ... from None` antes de llegar al log, a cache.json o a la interfaz. Nunca loguear `str(ex)` de una petición con secretos en la URL.
-- Traductor de Google (no oficial): pedir en lotes por translate_a/t (devuelve el idioma detectado de cada texto), de uno en uno y con memoria. Con muchas peticiones responde 429 con una página "Sorry... automated queries" y puede bloquear el cliente durante horas. Las excepciones de requests llevan la URL con los textos: no loguearlas tal cual.
+- Traductor de Google (no oficial): pedir en lotes por translate_a/t (devuelve el idioma detectado de cada texto), de uno en uno y con memoria. Con muchas peticiones responde 429 con una página "Sorry... automated queries" y puede bloquear el cliente durante horas: por eso la pausa tras un 429 persistente se guarda en disco (hora real, no monotónica) y se dobla con cada bloqueo seguido. Las excepciones de requests llevan la URL con los textos: no loguearlas tal cual.
 - astral-sh/setup-uv no publica etiquetas cortas (v10): fijar la versión completa en ci.yml.

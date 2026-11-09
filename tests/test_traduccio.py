@@ -62,7 +62,7 @@ def traductor(monkeypatch: pytest.MonkeyPatch) -> TraductorFals:
     fals = TraductorFals()
     monkeypatch.setattr(comun, "get", fals)
     monkeypatch.setattr(traduccion, "_memoria", traduccion.MemoriaTraduccions())
-    monkeypatch.setattr(traduccion, "_pausa_hasta", 0.0)
+    monkeypatch.setattr(traduccion, "_pausa", traduccion.PausaTraductor())
     return fals
 
 
@@ -258,6 +258,44 @@ def test_429_persistente_deja_el_original_y_hace_una_pausa(
     # Durante la pausa no se vuelve a llamar al traductor
     traduccion.traduir_textos(["AI agents are coming"], "ca")
     assert len(traductor.peticiones) == 4
+
+
+def test_pausa_en_disco_sobrevive_a_un_reinicio(traductor: TraductorFals, tmp_path: Path) -> None:
+    """El fallo real: tras un 429 persistente, cada reinicio del panel volvía a pedir a Google."""
+    ruta = tmp_path / "traductor_pausa.json"
+    traduccion.configurar_pausa(ruta)
+    traductor.fallos = lambda n: _http_error(429)
+    traduccion.traduir_textos(["AI agents are coming"], "ca")
+    pedidas = len(traductor.peticiones)
+    traduccion.configurar_pausa(ruta)  # como si el panel se reiniciara
+    traduccion.traduir_textos(["AI agents are coming"], "ca")
+    assert len(traductor.peticiones) == pedidas
+
+
+def test_bloqueos_seguidos_doblan_la_pausa_hasta_el_maximo(tmp_path: Path) -> None:
+    pausa = traduccion.PausaTraductor(tmp_path / "p.json")
+    duraciones = [pausa.iniciar() for _ in range(9)]
+    assert duraciones[:3] == [300.0, 600.0, 1200.0]
+    assert duraciones[-1] == traduccion.PAUSA_MAXIMA
+    assert pausa.activa()
+
+
+def test_traduccion_buena_vuelve_a_la_pausa_corta(traductor: TraductorFals, monkeypatch: pytest.MonkeyPatch) -> None:
+    pausa = traduccion.PausaTraductor()
+    pausa.iniciar()
+    pausa.iniciar()
+    pausa.hasta = 0.0  # la pausa ya ha pasado
+    monkeypatch.setattr(traduccion, "_pausa", pausa)
+    traduccion.traduir_textos(["AI agents are coming"], "ca")
+    assert pausa.iniciar() == traduccion.PAUSA_TRAS_LIMITE
+
+
+def test_pausa_ilegible_se_ignora(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+    ruta = tmp_path / "p.json"
+    ruta.write_text("{roto", encoding="utf-8")
+    with caplog.at_level(logging.WARNING, logger="panel"):
+        pausa = traduccion.PausaTraductor(ruta)
+    assert not pausa.activa() and "ilegible" in caplog.text
 
 
 def test_error_4xx_no_se_reintenta(traductor: TraductorFals, esperas: list[float]) -> None:
