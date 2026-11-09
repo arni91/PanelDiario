@@ -29,7 +29,20 @@ def test_reparto_de_los_diarios_por_pestana() -> None:
         return [f["nombre"] for f in outlets.sources_for_tab(tab)]
 
     # Los seis diarios principales primero; después, los medios generales
-    assert medios("mon") == ["eldiario.es", "La Vanguardia", "El País", "Europa Press", "BBC Mundo", "DW", "France 24"]
+    assert medios("mon") == [
+        "eldiario.es",
+        "La Vanguardia",
+        "El País",
+        "Europa Press",
+        "BBC Mundo",
+        "DW",
+        "France 24",
+        "VilaWeb",
+        "El Periódico",
+        "The Guardian",
+        "Al Jazeera",
+        "The New York Times",
+    ]
     assert medios("catalunya") == ["eldiario.es", "La Directa", "Ara", "La Vanguardia"]
     assert medios("espanya") == ["El Salto", "eldiario.es", "El País"]
     assert medios("mobilitzacions") == ["El Salto", "La Directa", "El Crític"]
@@ -41,6 +54,14 @@ def test_reparto_de_los_diarios_por_pestana() -> None:
         "Xataka",
         "Ars Technica",
         "MIT Technology Review",
+        "VilaWeb",
+        "El Periódico",
+        "Genbeta",
+        "The Verge",
+        "Wired",
+        "TechCrunch",
+        "Engadget",
+        "Hacker News",
     ]
     assert outlets.sources_for_tab("no-existe") == []
 
@@ -53,10 +74,12 @@ def test_fuente_del_catalogo_lleva_idioma_para_no_pasar_por_el_traductor() -> No
     }
 
 
-def test_la_plantilla_publica_usa_los_feeds_del_catalogo() -> None:
+def test_la_plantilla_publica_solo_usa_feeds_del_catalogo() -> None:
+    """La plantilla es una selección del catálogo (no todo: cada usuario elige en el asistente)."""
     plantilla = json.loads((RAIZ / "config.example.json").read_text(encoding="utf-8"))
     pestana = {"mon": "mundo"}  # en la plantilla, la pestaña Món tiene el id "mundo"
     for tab in outlets.TABS:
-        en_plantilla = plantilla["fuentes"][pestana.get(tab, tab)]
-        for fuente in outlets.sources_for_tab(tab):
-            assert fuente in en_plantilla, (tab, fuente["nombre"])
+        catalogo = outlets.sources_for_tab(tab)
+        for fuente in plantilla["fuentes"][pestana.get(tab, tab)]:
+            if not fuente.get("agregador"):
+                assert fuente in catalogo, (tab, fuente["nombre"])
