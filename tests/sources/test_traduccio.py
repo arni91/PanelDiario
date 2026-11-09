@@ -16,6 +16,9 @@ import requests
 
 from panel_diario.sources import comun, traduccion
 
+# La traducción de noticias solo se hace si config.json la activa
+ACTIVA = {"traduccio": {"activa": True}}
+
 # texto original -> (idioma que detecta el traductor, traducción al catalán)
 DICCIONARI = {
     "AI agents are coming": ("en", "Arriben els agents d'IA"),
@@ -87,7 +90,7 @@ def test_otros_idiomas_al_catalan_catalan_y_castellano_igual(traductor: Traducto
         "cultura": [_noticia("Festa major al parc")],
         "tecnologia": [_noticia("AI agents are coming")],
     }
-    traduccion.traduir_noticies(salida, {})  # sin "traduccio": por defecto, al catalán
+    traduccion.traduir_noticies(salida, ACTIVA)
     assert salida["mundo"][0]["titulo"] == "Terratrèmol al Tibet"  # francés -> catalán
     assert salida["mundo"][1]["titulo"] == "Terremoto en el Tíbet"  # castellano: igual
     assert salida["cultura"][0]["titulo"] == "Festa major al parc"  # catalán: igual
@@ -97,14 +100,21 @@ def test_otros_idiomas_al_catalan_catalan_y_castellano_igual(traductor: Traducto
 
 def test_traduce_tambien_el_resumen(traductor: TraductorFals) -> None:
     salida = {"mundo": [_noticia("AI agents are coming", resumen="Séisme au Tibet")]}
-    traduccion.traduir_noticies(salida, {})
+    traduccion.traduir_noticies(salida, ACTIVA)
     assert salida["mundo"][0]["resumen"] == "Terratrèmol al Tibet"
 
 
 def test_fuente_con_idioma_conocido_no_pasa_por_el_traductor(traductor: TraductorFals) -> None:
     salida = {"cultura": [_noticia("Festa major al parc", idioma="ca", resumen="Dissabte")]}
-    traduccion.traduir_noticies(salida, {})
+    traduccion.traduir_noticies(salida, ACTIVA)
     assert salida["cultura"][0]["titulo"] == "Festa major al parc"
+    assert traductor.peticiones == []
+
+
+def test_sin_traduccio_en_config_cada_noticia_sale_en_su_idioma(traductor: TraductorFals) -> None:
+    salida = {"mundo": [_noticia("AI agents are coming")]}
+    traduccion.traduir_noticies(salida, {})
+    assert salida["mundo"][0]["titulo"] == "AI agents are coming"
     assert traductor.peticiones == []
 
 
@@ -124,7 +134,7 @@ def test_idioma_destino_de_config(traductor: TraductorFals, monkeypatch: pytest.
 
     monkeypatch.setattr(comun, "get", get)
     salida = {"mundo": [_noticia("AI agents are coming")]}
-    traduccion.traduir_noticies(salida, {"traduccio": {"idioma": "es", "conservar": ["es"]}})
+    traduccion.traduir_noticies(salida, {"traduccio": {"activa": True, "idioma": "es", "conservar": ["es"]}})
     assert destinos == ["es"] and salida["mundo"][0]["titulo"] == "Llegan los agentes de IA"
 
 
@@ -134,7 +144,7 @@ def test_idioma_destino_de_config(traductor: TraductorFals, monkeypatch: pytest.
 def test_un_texto_se_pide_una_sola_vez(traductor: TraductorFals) -> None:
     for _ in range(2):
         salida = {"mundo": [_noticia("AI agents are coming"), _noticia("AI agents are coming")]}
-        traduccion.traduir_noticies(salida, {})
+        traduccion.traduir_noticies(salida, ACTIVA)
         assert salida["mundo"][1]["titulo"] == "Arriben els agents d'IA"
     assert traductor.textos_pedidos == ["AI agents are coming"]
 
@@ -223,7 +233,7 @@ def test_429_reproducido_cuarenta_titulares_con_limite_de_tres_peticiones(traduc
     """El fallo real: con una petición por titular, Google responde 429 a partir de pocas peticiones."""
     traductor.fallos = lambda n: _http_error(429) if n > 3 else None
     salida = {"mundo": [_noticia(f"Headline number {i}") for i in range(40)]}
-    traduccion.traduir_noticies(salida, {"traduccio": {"idioma": "ca"}})
+    traduccion.traduir_noticies(salida, {"traduccio": {"activa": True, "idioma": "ca"}})
     assert all(nt["titulo"].startswith("CA ") for nt in salida["mundo"])
     assert len(traductor.peticiones) <= 3
 

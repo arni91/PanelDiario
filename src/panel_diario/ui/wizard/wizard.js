@@ -4,9 +4,9 @@ const respuestas = {};       // solo los pasos completados; los saltados no apar
 const estadoPaso = {};       // id del paso -> "hecho" | "saltado"
 let actual = 0;
 // Datos temporales de cada paso mientras se rellena
-const tmp = { lugares: [], lugar: null, calendario: "google", ticker: null, propios: null, temasPropios: [] };
+const tmp = { lugares: [], lugar: null, calendario: "google", ticker: null, medios: null };
 // Idioma de cada medio del catálogo, en palabras
-const IDIOMAS = { ca: "català", es: "castellà", en: "anglès (es tradueix)" };
+const IDIOMAS = { ca: "català", es: "castellà", en: "anglès", fr: "francès" };
 
 const api = () => window.pywebview.api;
 const $ = (id) => document.getElementById(id);
@@ -173,59 +173,84 @@ const PASOS = [
     id: "noticias",
     pintar: () => {
       prepararNoticias();
-      return `<div class="paso"><h2>📰 Les teves notícies</h2>
-      <p>Marca els mitjans de cada pestanya: una pestanya sense cap mitjà no surt. Cada titular porta el nom del mitjà.
-      ${INICIO.actual.pestanas.length ? `<br>Substituirà les pestanyes actuals (<b>${esc(INICIO.actual.pestanas.join(", "))}</b>).` : ""}</p>
-      ${INICIO.catalogo.map(t => `<div class="grupo">${esc(t.nombre)}</div>
-        <div class="opciones">${t.medios.map(m => `
-          <label class="opcion"><input type="checkbox" data-cat="${t.id}" value="${esc(m.url)}" ${tmp.catalogo[t.id].has(m.url) ? "checked" : ""}>
-            <b>${esc(m.nombre)}</b><small>${esc(m.seccion)} · ${esc(IDIOMAS[m.idioma] || m.idioma)}</small></label>`).join("")}
-          <div id="propios-${t.id}" class="opciones" style="margin-top:0"></div>
-          <div class="opcion" data-otro-medio="${t.id}"><b>Un altre…</b><small>un mitjà amb la seva adreça RSS</small></div>
-          <div class="fila oculto" id="form-${t.id}">
-            <input type="text" id="nom-${t.id}" placeholder="Nom del mitjà" style="flex:.6">
-            <input type="text" id="rss-${t.id}" placeholder="https://…/feed">
-            <button class="btn" data-anadir="${t.id}">Comprova i afegeix</button></div>
+      return `<div class="paso"><h2>📰 Els teus mitjans</h2>
+      <p>Marca els mitjans que vulguis llegir. N'hi ha de tots els colors: tria'n de diferents per contrastar.
+      Cada titular porta el nom del mitjà.</p>
+      ${INICIO.grupos_medios.map(g => `<div class="grupo">${esc(g.nombre)}</div>
+        <div class="opciones">${g.medios.map(m => `
+          <label class="opcion"><input type="checkbox" data-medio value="${esc(m.nombre)}" ${tmp.medios.has(m.nombre) ? "checked" : ""}>
+            <b>${esc(m.nombre)}</b><small>${esc(IDIOMAS[m.idioma] || m.idioma)} · ${esc(m.seccions.length === INICIO.seccions.length ? "totes les seccions" : m.seccions.map(nomSeccio).join(", "))}</small></label>`).join("")}
         </div>`).join("")}
-      <div class="grupo">Google Notícies</div>
-      <label>Idioma de les cerques</label>
-      <div class="chips"><span class="chip on" data-idioma="ca">Català</span><span class="chip" data-idioma="es">Castellano</span></div>
-      <label>Àmbits</label><div class="chips">${INICIO.ambitos.map(a => `<span class="chip" data-ambito="${a.id}">${esc(a.nombre)}</span>`).join("")}</div>
-      <label>Temes</label><div class="chips">${INICIO.temas.map(t => `<span class="chip" data-tema="${t.id}">${esc(t.nombre)}</span>`).join("")}
-        <span class="chip" id="otro-tema">Un altre…</span></div>
-      <div class="fila oculto" id="form-tema" style="margin-top:6px"><input type="text" id="tema-texto" placeholder="Paraules del tema (p. ex. energia solar)">
-        <button class="btn" id="btn-tema">Afegeix</button></div>
-      <div class="opciones" id="temas-propios"></div>
+      <div class="grupo">Un altre mitjà</div>
+      <div class="opciones">
+        <div id="propios" class="opciones" style="margin-top:0"></div>
+        <div class="opcion" id="otro-medio"><b>Un altre…</b><small>un mitjà amb la seva adreça RSS (surt a Portades)</small></div>
+        <div class="fila oculto" id="form-medio">
+          <input type="text" id="nom-medio" placeholder="Nom del mitjà" style="flex:.6">
+          <input type="text" id="rss-medio" placeholder="https://…/feed">
+          <button class="btn" id="btn-medio">Comprova i afegeix</button></div>
+      </div>
       <div class="mensaje" id="mensaje"></div></div>`;
     },
     alMostrar: () => {
-      document.querySelectorAll("[data-cat]").forEach(el => el.onchange = () => {
-        tmp.catalogo[el.dataset.cat][el.checked ? "add" : "delete"](el.value);
+      document.querySelectorAll("[data-medio]").forEach(el => el.onchange = () => {
+        tmp.medios[el.checked ? "add" : "delete"](el.value);
       });
-      document.querySelectorAll("[data-otro-medio]").forEach(el => el.onclick = () => {
-        $("form-" + el.dataset.otroMedio).classList.remove("oculto");
-        $("nom-" + el.dataset.otroMedio).focus();
+      $("otro-medio").onclick = () => { $("form-medio").classList.remove("oculto"); $("nom-medio").focus(); };
+      $("btn-medio").onclick = anadirPropio;
+      pintarPropios();
+    },
+    recoger: () => {
+      if (!tmp.medios.size && !tmp.propios.length) {
+        mensaje("Tria almenys un mitjà (o salta aquest pas).", "error");
+        return null;
+      }
+      return { medios: [...tmp.medios], propios: tmp.propios };
+    },
+  },
+  {
+    id: "seccions",
+    pintar: () => {
+      prepararNoticias();
+      return `<div class="paso"><h2>🗂️ Les seccions del panell</h2>
+      <p>Cada secció és una pestanya amb les notícies d'aquell tema dels teus mitjans.
+      <b>Portades</b> és el resum per llegir en diagonal: les notícies principals de totes les portades,
+      primer les que surten a més mitjans. Si en vols més, clica la notícia o ves a les altres seccions.</p>
+      <div class="opciones">${INICIO.seccions.map(s => `
+        <label class="opcion"><input type="checkbox" data-seccio value="${s.id}" ${tmp.seccions.has(s.id) ? "checked" : ""}>
+          <b>${esc(s.nombre)}</b><small>${esc(cobertura(s.id))}</small></label>`).join("")}
+        <label class="opcion"><input type="checkbox" id="plans" ${tmp.plans ? "checked" : ""}>
+          <b>Plans a la teva ciutat</b><small>concerts, exposicions i festivals (Google Notícies)</small></label>
+      </div>
+      <label>Temes propis</label>
+      <div class="opciones">
+        <div id="temas-propios" class="opciones" style="margin-top:0"></div>
+        <div class="opcion" id="otro-tema"><b>Un altre…</b><small>unes paraules que Google Notícies busca als titulars</small></div>
+        <div class="fila oculto" id="form-tema"><input type="text" id="tema-texto" placeholder="Paraules del tema (p. ex. energia solar)">
+          <button class="btn" id="btn-tema">Afegeix</button></div>
+      </div>
+      <label>Idioma</label>
+      <div class="opciones"><label class="opcion"><input type="checkbox" id="traduir" ${tmp.traduir ? "checked" : ""}>
+        <b>Tradueix al català</b><small>les notícies en anglès, francès…; si no, cada notícia surt en el seu idioma</small></label></div>
+      <div class="mensaje" id="mensaje"></div></div>`;
+    },
+    alMostrar: () => {
+      document.querySelectorAll("[data-seccio]").forEach(el => el.onchange = () => {
+        tmp.seccions[el.checked ? "add" : "delete"](el.value);
       });
-      document.querySelectorAll("[data-anadir]").forEach(el => el.onclick = () => anadirPropio(el.dataset.anadir));
-      document.querySelectorAll("[data-idioma]").forEach(el => el.onclick = () => {
-        document.querySelectorAll("[data-idioma]").forEach(x => x.classList.toggle("on", x === el));
-      });
-      document.querySelectorAll("[data-ambito],[data-tema]").forEach(el => el.onclick = () => el.classList.toggle("on"));
+      $("plans").onchange = () => { tmp.plans = $("plans").checked; };
+      $("traduir").onchange = () => { tmp.traduir = $("traduir").checked; };
       $("otro-tema").onclick = () => { $("form-tema").classList.remove("oculto"); $("tema-texto").focus(); };
       $("btn-tema").onclick = anadirTema;
       $("tema-texto").onkeydown = (e) => { if (e.key === "Enter") anadirTema(); };
-      INICIO.catalogo.forEach(t => pintarPropios(t.id));
       pintarTemasPropios();
     },
     recoger: () => {
-      const on = (attr) => [...document.querySelectorAll(`[data-${attr}].on`)].map(el => el.dataset[attr]);
-      const catalogo = Object.fromEntries(Object.entries(tmp.catalogo).map(([tab, urls]) => [tab, [...urls]]));
-      const r = { idioma: on("idioma")[0] || "ca", catalogo, propios: tmp.propios, ambitos: on("ambito"),
-                  temas: on("tema"), temas_propios: tmp.temasPropios };
-      const algo = Object.values(catalogo).some(l => l.length) || Object.values(tmp.propios).some(l => l.length)
-        || r.ambitos.length || r.temas.length || r.temas_propios.length;
-      if (!algo) { mensaje("Tria almenys un mitjà, un àmbit o un tema (o salta aquest pas).", "error"); return null; }
-      return r;
+      if (!tmp.seccions.size && !tmp.plans && !tmp.temes.length) {
+        mensaje("Tria almenys una secció (o salta aquest pas).", "error");
+        return null;
+      }
+      return { seccions: [...tmp.seccions], plans: tmp.plans, temes: tmp.temes, traduir: tmp.traduir };
     },
   },
   {
@@ -244,7 +269,7 @@ const PASOS = [
   {
     id: "final", sinSaltar: true,
     pintar: () => {
-      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", drawdown: "📉 ETF", noticias: "📰 Notícies", claude: "✨ IA" };
+      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", drawdown: "📉 ETF", noticias: "📰 Mitjans", seccions: "🗂️ Seccions", claude: "✨ IA" };
       return `<div class="paso"><h2>Tot a punt</h2><p>Això és el que es desarà:</p>
       <div class="resumen">${Object.entries(nombres).map(([id, n]) =>
         `<div>${n}: ${estadoPaso[id] === "hecho" ? "<b>configurat</b>" : "es queda com estava"}</div>`).join("")}</div>
@@ -297,32 +322,47 @@ async function comprobarTicker() {
 }
 
 // La primera vez que se pinta el paso: lo marcado y los medios propios salen de config.json
+// --- Noticias: lo elegido se guarda en tmp para no perderlo al ir y volver entre pasos ---
 function prepararNoticias() {
-  if (tmp.propios) return;
+  if (tmp.medios) return;
   const act = INICIO.noticias_actuales;
-  tmp.catalogo = Object.fromEntries(INICIO.catalogo.map(t => [t.id, new Set(act.catalogo[t.id] || [])]));
-  tmp.propios = Object.fromEntries(INICIO.catalogo.map(t => [t.id, [...(act.propios[t.id] || [])]]));
+  tmp.medios = new Set(act.medios);
+  tmp.propios = [...act.propios];
+  tmp.seccions = new Set(act.seccions);
+  tmp.plans = act.plans;
+  tmp.temes = [...act.temes];
+  tmp.traduir = act.traduir;
 }
 
-// "Un altre…" en una pestaña: se comprueba el RSS antes de añadirlo
-async function anadirPropio(tab) {
-  const nombre = $("nom-" + tab).value.trim(), url = $("rss-" + tab).value.trim();
+const nomSeccio = (id) => (INICIO.seccions.find(s => s.id === id) || { nombre: id }).nombre.toLowerCase();
+
+// Cuántos de los medios elegidos publican una sección
+function cobertura(seccio) {
+  const n = INICIO.grupos_medios.flatMap(g => g.medios)
+    .filter(m => tmp.medios.has(m.nombre) && m.seccions.includes(seccio)).length
+    + (seccio === "portades" ? tmp.propios.length : 0);
+  return n ? `${n} dels teus mitjans` : "cap dels teus mitjans la publica";
+}
+
+// "Un altre…" medio: se comprueba el RSS antes de añadirlo
+async function anadirPropio() {
+  const nombre = $("nom-medio").value.trim(), url = $("rss-medio").value.trim();
   if (!nombre) { mensaje("Posa un nom al mitjà.", "error"); return; }
   const r = await llamar("verificar_rss", url);
   if (!r) return;
-  tmp.propios[tab].push({ nombre, url });
-  $("nom-" + tab).value = ""; $("rss-" + tab).value = "";
-  $("form-" + tab).classList.add("oculto");
+  tmp.propios.push({ nombre, url });
+  $("nom-medio").value = ""; $("rss-medio").value = "";
+  $("form-medio").classList.add("oculto");
   mensaje(`✓ ${nombre}: ${r.titulares} titulars (p. ex. «${r.ejemplo}»)`, "ok");
-  pintarPropios(tab);
+  pintarPropios();
 }
 
-function pintarPropios(tab) {
-  $("propios-" + tab).innerHTML = tmp.propios[tab].map((m, i) => `
+function pintarPropios() {
+  $("propios").innerHTML = tmp.propios.map((m, i) => `
     <div class="opcion on"><b>${esc(m.nombre)}</b><small style="flex:1">${esc(m.url)}</small>
-      <button class="btn" data-quitar="${tab}:${i}">Treu</button></div>`).join("");
-  $("propios-" + tab).querySelectorAll("[data-quitar]").forEach(el => el.onclick = () => {
-    tmp.propios[tab].splice(Number(el.dataset.quitar.split(":")[1]), 1); pintarPropios(tab);
+      <button class="btn" data-quitar="${i}">Treu</button></div>`).join("");
+  $("propios").querySelectorAll("[data-quitar]").forEach(el => el.onclick = () => {
+    tmp.propios.splice(Number(el.dataset.quitar), 1); pintarPropios();
   });
 }
 
@@ -330,18 +370,18 @@ function pintarPropios(tab) {
 function anadirTema() {
   const texto = $("tema-texto").value.trim();
   if (!texto) { mensaje("Escriu les paraules del tema.", "error"); return; }
-  tmp.temasPropios.push(texto);
+  tmp.temes.push(texto);
   $("tema-texto").value = "";
   mensaje("");
   pintarTemasPropios();
 }
 
 function pintarTemasPropios() {
-  $("temas-propios").innerHTML = tmp.temasPropios.map((t, i) => `
+  $("temas-propios").innerHTML = tmp.temes.map((t, i) => `
     <div class="opcion on"><b>${esc(t)}</b><small style="flex:1">tema propi (Google Notícies)</small>
       <button class="btn" data-quitar-tema="${i}">Treu</button></div>`).join("");
   document.querySelectorAll("[data-quitar-tema]").forEach(el => el.onclick = () => {
-    tmp.temasPropios.splice(Number(el.dataset.quitarTema), 1); pintarTemasPropios();
+    tmp.temes.splice(Number(el.dataset.quitarTema), 1); pintarTemasPropios();
   });
 }
 

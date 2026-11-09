@@ -16,17 +16,31 @@
   "avisos_meteo": {
     "activo": true,
     "feed": "https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-spain",
-    "zonas": ["Girona"],
+    "zonas": [
+      "Girona"
+    ],
     "zonas_excluir": []
   },
   "drawdown": {
     "nombre": "",
     "ticker": "",
     "niveles": [
-      {"caida": -10, "extra_pct": 50},
-      {"caida": -20, "extra_pct": 100},
-      {"caida": -30, "extra_pct": 200},
-      {"caida": -40, "toda_la_reserva": true}
+      {
+        "caida": -10,
+        "extra_pct": 50
+      },
+      {
+        "caida": -20,
+        "extra_pct": 100
+      },
+      {
+        "caida": -30,
+        "extra_pct": 200
+      },
+      {
+        "caida": -40,
+        "toda_la_reserva": true
+      }
     ],
     "actualizar_minutos": 30,
     "recalcular_dias": 7
@@ -46,61 +60,621 @@
     "cada_horas": 3
   },
   "pestanas": [
-    {"id": "mundo", "nombre": "Món"},
-    {"id": "catalunya", "nombre": "Catalunya"},
-    {"id": "espanya", "nombre": "Espanya"},
-    {"id": "mobilitzacions", "nombre": "Mobilitzacions"},
-    {"id": "tecnologia", "nombre": "Tecnologia"},
-    {"id": "cultura", "nombre": "Cultura", "filtro_periodo": true}
+    {
+      "id": "portades",
+      "nombre": "Portades"
+    },
+    {
+      "id": "politica",
+      "nombre": "Política"
+    },
+    {
+      "id": "economia",
+      "nombre": "Economia"
+    },
+    {
+      "id": "internacional",
+      "nombre": "Internacional"
+    },
+    {
+      "id": "cultura",
+      "nombre": "Cultura"
+    },
+    {
+      "id": "tecnologia",
+      "nombre": "Tecnologia"
+    },
+    {
+      "id": "ciencia",
+      "nombre": "Ciència"
+    },
+    {
+      "id": "esports",
+      "nombre": "Esports"
+    },
+    {
+      "id": "plans",
+      "nombre": "Plans a Girona",
+      "filtro_periodo": true
+    }
   ],
   "fuentes": {
-    "mundo": [
-      {"nombre": "El País", "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/internacional/portada", "idioma": "es"},
-      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/internacional/", "idioma": "es"},
-      {"nombre": "La Vanguardia", "url": "https://www.lavanguardia.com/rss/internacional.xml", "idioma": "es"},
-      {"nombre": "Europa Press", "url": "https://www.europapress.es/rss/rss.aspx?ch=69", "idioma": "es"},
-      {"nombre": "BBC Mundo", "url": "https://feeds.bbci.co.uk/mundo/rss.xml", "idioma": "es"},
-      {"nombre": "DW", "url": "https://rss.dw.com/rdf/rss-sp-all", "idioma": "es"},
-      {"nombre": "France 24", "url": "https://www.france24.com/es/rss", "idioma": "es"}
+    "portades": [
+      {
+        "nombre": "Ara",
+        "url": "https://www.ara.cat/rss/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "VilaWeb",
+        "url": "https://www.vilaweb.cat/feed/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/home.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/ca/rss/rss_portada.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Mundo",
+        "url": "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/portada/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "eldiario.es",
+        "url": "https://www.eldiario.es/rss/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Confidencial",
+        "url": "https://rss.elconfidencial.com/espana/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/news/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/international/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/rss/une.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "The New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+        "idioma": "en"
+      }
     ],
-    "catalunya": [
-      {"nombre": "Ara", "url": "https://www.ara.cat/rss/", "idioma": "ca"},
-      {"nombre": "La Vanguardia", "url": "https://www.lavanguardia.com/rss/local/catalunya.xml", "idioma": "es"},
-      {"nombre": "La Directa", "url": "https://directa.cat/feed/", "idioma": "ca"},
-      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/catalunya/", "idioma": "es"},
-      {"nombre": "Google Noticias", "url": "https://news.google.com/rss/search?q=Generalitat%20OR%20Parlament%20OR%20Govern%20when%3A1", "agregador": true}
+    "politica": [
+      {
+        "nombre": "Ara",
+        "url": "https://www.ara.cat/rss/politica/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/politica.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/es/rss/politica/rss.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/espana/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Mundo",
+        "url": "https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/espana/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "eldiario.es",
+        "url": "https://www.eldiario.es/rss/politica/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/news/politics/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/politics/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/politique/rss_full.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "The New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
+        "idioma": "en"
+      }
     ],
-    "espanya": [
-      {"nombre": "El País", "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/espana/portada", "idioma": "es"},
-      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/politica/", "idioma": "es"},
-      {"nombre": "El Salto", "url": "https://www.elsaltodiario.com/politica/feed", "idioma": "es"}
+    "economia": [
+      {
+        "nombre": "Ara",
+        "url": "https://www.ara.cat/rss/economia/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "VilaWeb",
+        "url": "https://www.vilaweb.cat/categoria/economia/feed/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/economia.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/es/rss/economia/rss.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/economia/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Mundo",
+        "url": "https://e00-elmundo.uecdn.es/elmundo/rss/economia.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/economia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "eldiario.es",
+        "url": "https://www.eldiario.es/rss/economia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Confidencial",
+        "url": "https://rss.elconfidencial.com/economia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/business/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/economie/rss_full.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "The New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Cinco Días",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/cincodias.elpais.com/portada",
+        "idioma": "es"
+      }
     ],
-    "mobilitzacions": [
-      {"nombre": "El Salto", "url": "https://www.elsaltodiario.com/general/feed", "idioma": "es"},
-      {"nombre": "La Directa", "url": "https://directa.cat/feed/", "idioma": "ca"},
-      {"nombre": "El Crític", "url": "https://www.elcritic.cat/feed", "idioma": "ca"}
-    ],
-    "tecnologia": [
-      {"nombre": "El País", "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/tecnologia/portada", "idioma": "es"},
-      {"nombre": "eldiario.es", "url": "https://www.eldiario.es/rss/tecnologia/", "idioma": "es"},
-      {"nombre": "La Vanguardia", "url": "https://www.lavanguardia.com/rss/tecnologia.xml", "idioma": "es"},
-      {"nombre": "El Salto", "url": "https://www.elsaltodiario.com/tecnologia/feed", "idioma": "es"},
-      {"nombre": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index", "idioma": "en"},
-      {"nombre": "MIT Technology Review", "url": "https://www.technologyreview.com/feed/", "idioma": "en"},
-      {"nombre": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "idioma": "es"}
+    "internacional": [
+      {
+        "nombre": "Ara",
+        "url": "https://www.ara.cat/rss/internacional/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "VilaWeb",
+        "url": "https://www.vilaweb.cat/categoria/mon/feed/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/internacional.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/es/rss/internacional/rss.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/internacional/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Mundo",
+        "url": "https://e00-elmundo.uecdn.es/elmundo/rss/internacional.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/internacional/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "eldiario.es",
+        "url": "https://www.eldiario.es/rss/internacional/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Confidencial",
+        "url": "https://rss.elconfidencial.com/mundo/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/world/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/international/rss_full.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "The New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+        "idioma": "en"
+      }
     ],
     "cultura": [
-      {"nombre": "Google Noticias", "url": "https://news.google.com/rss/search?q=Girona%20%28concert%20OR%20exposici%C3%B3%20OR%20festival%29&hl=ca&gl=ES&ceid=ES:ca", "tema": "Girona", "agregador": true, "horas_max": 720}
+      {
+        "nombre": "Ara",
+        "url": "https://www.ara.cat/rss/cultura/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "VilaWeb",
+        "url": "https://www.vilaweb.cat/categoria/cultura/feed/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/cultura.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/es/rss/cultura/rss.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/cultura/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Mundo",
+        "url": "https://e00-elmundo.uecdn.es/elmundo/rss/cultura.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/cultura/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "eldiario.es",
+        "url": "https://www.eldiario.es/rss/cultura/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Confidencial",
+        "url": "https://rss.elconfidencial.com/cultura/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/culture/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/culture/rss_full.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "The New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml",
+        "idioma": "en"
+      }
+    ],
+    "tecnologia": [
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/tecnologia.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/es/rss/tecnologia/rss.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/tecnologia/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/tecnologia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "eldiario.es",
+        "url": "https://www.eldiario.es/rss/tecnologia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Confidencial",
+        "url": "https://rss.elconfidencial.com/tecnologia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/technology/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/pixels/rss_full.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "The New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Xataka",
+        "url": "https://www.xataka.com/feedburner.xml",
+        "idioma": "es"
+      }
+    ],
+    "ciencia": [
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/ciencia.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/es/rss/ciencia/rss.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/ciencia/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Mundo",
+        "url": "https://e00-elmundo.uecdn.es/elmundo/rss/ciencia.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/ciencia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "eldiario.es",
+        "url": "https://www.eldiario.es/rss/ciencia/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/science/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/sciences/rss_full.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "The New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/Science.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Nature",
+        "url": "https://www.nature.com/nature.rss",
+        "idioma": "en"
+      }
+    ],
+    "esports": [
+      {
+        "nombre": "Ara",
+        "url": "https://www.ara.cat/rss/esports/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "VilaWeb",
+        "url": "https://www.vilaweb.cat/categoria/esports/feed/",
+        "idioma": "ca"
+      },
+      {
+        "nombre": "La Vanguardia",
+        "url": "https://www.lavanguardia.com/rss/deportes.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Periódico",
+        "url": "https://www.elperiodico.com/es/rss/deportes/rss.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El País",
+        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/deportes/portada",
+        "idioma": "es"
+      },
+      {
+        "nombre": "ABC",
+        "url": "https://www.abc.es/rss/2.0/deportes/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "El Confidencial",
+        "url": "https://rss.elconfidencial.com/deportes/",
+        "idioma": "es"
+      },
+      {
+        "nombre": "BBC News",
+        "url": "https://feeds.bbci.co.uk/sport/rss.xml",
+        "idioma": "en"
+      },
+      {
+        "nombre": "The Guardian",
+        "url": "https://www.theguardian.com/sport/rss",
+        "idioma": "en"
+      },
+      {
+        "nombre": "Le Monde",
+        "url": "https://www.lemonde.fr/sport/rss_full.xml",
+        "idioma": "fr"
+      },
+      {
+        "nombre": "Mundo Deportivo",
+        "url": "https://www.mundodeportivo.com/rss/home.xml",
+        "idioma": "es"
+      },
+      {
+        "nombre": "Marca",
+        "url": "https://e00-marca.uecdn.es/rss/portada.xml",
+        "idioma": "es"
+      }
+    ],
+    "plans": [
+      {
+        "nombre": "Google Noticias",
+        "url": "https://news.google.com/rss/search?q=Girona%20%28concert%20OR%20exposici%C3%B3%20OR%20festival%20OR%20teatre%29&hl=ca&gl=ES&ceid=ES:ca",
+        "agregador": true,
+        "tema": "Girona",
+        "horas_max": 720
+      }
     ]
   },
-  "titulares_por_categoria": {"mundo": 12, "catalunya": 12, "espanya": 12, "mobilitzacions": 12, "tecnologia": 12, "cultura": 20},
-  "max_per_font": {"mundo": 3, "catalunya": 4, "espanya": 4, "mobilitzacions": 5, "tecnologia": 3, "cultura": 4},
+  "titulares_por_categoria": {
+    "portades": 20,
+    "politica": 12,
+    "economia": 12,
+    "internacional": 12,
+    "cultura": 12,
+    "tecnologia": 12,
+    "ciencia": 12,
+    "esports": 12,
+    "plans": 20
+  },
+  "max_per_font": {
+    "portades": 4,
+    "politica": 4,
+    "economia": 4,
+    "internacional": 4,
+    "cultura": 4,
+    "tecnologia": 4,
+    "ciencia": 4,
+    "esports": 4,
+    "plans": 4
+  },
   "medios_excluidos": [],
-  "prioridad_medios": ["Europa Press", "EFE", "RTVE", "BBC", "DW", "France 24", "Ara", "MIT Technology Review", "Ars Technica", "Xataka"],
+  "prioridad_medios": [
+    "Europa Press",
+    "BBC News",
+    "BBC Mundo",
+    "DW",
+    "France 24",
+    "20minutos",
+    "Ara",
+    "Xataka"
+  ],
   "paraules_excloses": {},
   "traduccio": {
-    "activa": true,
+    "activa": false,
     "idioma": "ca",
-    "conservar": ["ca", "es"]
-  }
+    "conservar": [
+      "ca",
+      "es"
+    ]
+  },
+  "medios_triats": [
+    "Ara",
+    "VilaWeb",
+    "La Vanguardia",
+    "El Periódico",
+    "El País",
+    "El Mundo",
+    "ABC",
+    "eldiario.es",
+    "El Confidencial",
+    "BBC News",
+    "The Guardian",
+    "Le Monde",
+    "The New York Times",
+    "Cinco Días",
+    "Xataka",
+    "Nature",
+    "Mundo Deportivo",
+    "Marca"
+  ]
 }

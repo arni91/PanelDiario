@@ -157,7 +157,70 @@
    }
   ],
   "noticias": {
-   "mundo": [
+   "portades": [
+    {
+     "titulo": "[Demo] Cimera internacional sobre el clima amb acords de mínims",
+     "enlace": "https://example.com/93594222",
+     "medio": "Mitjà A",
+     "ts": 1792732288.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà B",
+      "Mitjà C"
+     ],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] El Parlament aprova una llei d'exemple",
+     "enlace": "https://example.com/19826129",
+     "medio": "Mitjà A",
+     "ts": 1792735888.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà C"
+     ],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Nou model d'IA obert per a programadors",
+     "enlace": "https://example.com/99827918",
+     "medio": "Mitjà B",
+     "ts": 1792707088.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà D"
+     ],
+     "enlaces": []
+    }
+   ],
+   "politica": [
+    {
+     "titulo": "[Demo] El Parlament aprova una llei d'exemple",
+     "enlace": "https://example.com/19826129",
+     "medio": "Mitjà A",
+     "ts": 1792735888.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà C"
+     ],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Nova línia de tren regional en estudi",
+     "enlace": "https://example.com/45020326",
+     "medio": "Mitjà C",
+     "ts": 1792714288.3972666,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [],
+     "enlaces": []
+    }
+   ],
+   "internacional": [
     {
      "titulo": "[Demo] Cimera internacional sobre el clima amb acords de mínims",
      "enlace": "https://example.com/93594222",
@@ -176,30 +239,6 @@
      "enlace": "https://example.com/68193921",
      "medio": "Mitjà B",
      "ts": 1792721488.3972666,
-     "resumen": "",
-     "tema": "",
-     "otros_medios": [],
-     "enlaces": []
-    }
-   ],
-   "catalunya": [
-    {
-     "titulo": "[Demo] El Parlament aprova una llei d'exemple",
-     "enlace": "https://example.com/19826129",
-     "medio": "Mitjà A",
-     "ts": 1792735888.3972666,
-     "resumen": "",
-     "tema": "",
-     "otros_medios": [
-      "Mitjà C"
-     ],
-     "enlaces": []
-    },
-    {
-     "titulo": "[Demo] Nova línia de tren regional en estudi",
-     "enlace": "https://example.com/45020326",
-     "medio": "Mitjà C",
-     "ts": 1792714288.3972666,
      "resumen": "",
      "tema": "",
      "otros_medios": [],
@@ -230,7 +269,7 @@
      "enlaces": []
     }
    ],
-   "cultura": [
+   "plans": [
     {
      "titulo": "[Demo] Festival de música a l'aire lliure aquest cap de setmana",
      "enlace": "https://example.com/57615904",
@@ -382,20 +421,24 @@
  },
  "pestanas": [
   {
-   "id": "mundo",
-   "nombre": "Món"
+   "id": "portades",
+   "nombre": "Portades"
   },
   {
-   "id": "catalunya",
-   "nombre": "Catalunya"
+   "id": "politica",
+   "nombre": "Política"
+  },
+  {
+   "id": "internacional",
+   "nombre": "Internacional"
   },
   {
    "id": "tecnologia",
    "nombre": "Tecnologia"
   },
   {
-   "id": "cultura",
-   "nombre": "Cultura",
+   "id": "plans",
+   "nombre": "Plans a la ciutat",
    "filtro_periodo": true
   }
  ]

@@ -12,12 +12,11 @@ import logging
 import webbrowser
 from collections.abc import Callable
 from typing import Any
-from urllib.parse import quote
 
 import webview
 
-from panel_diario.catalog import outlets
 from panel_diario.sources import agenda, comun, drawdown, noticias
+from panel_diario.wizard import news
 
 log = logging.getLogger("panel")
 
@@ -99,39 +98,6 @@ CALENDARIOS = [
         "nombre": "Un altre…",
         "ayuda": "Qualsevol calendari que doni una adreça iCal (acostuma a acabar en .ics o començar per webcal://).",
     },
-]
-
-# Ámbitos que salen de Google Noticias según el país y la región del lugar elegido (los medios
-# concretos de cada pestaña salen del catálogo de outlets.py)
-AMBITOS = [
-    {"id": "estat", "nombre": "El teu país"},
-    {"id": "local", "nombre": "La teva comunitat"},
-]
-
-# Temas: búsqueda de Google Noticias en cada idioma. "{ciudad}" se cambia por la del lugar.
-# Tecnologia no está: es una pestaña del catálogo, con los feeds de cada diario.
-TEMAS: list[dict[str, Any]] = [
-    {
-        "id": "cultura",
-        "nombre": "Cultura",
-        "local": True,  # planes en tu ciudad: mira un mes atrás, con botones semana / mes
-        "consulta": {
-            "ca": "{ciudad} (concert OR exposició OR festival OR teatre)",
-            "es": "{ciudad} (concierto OR exposición OR festival OR teatro)",
-        },
-    },
-    {
-        "id": "ia",
-        "nombre": "IA i robòtica",
-        "consulta": {"ca": '"intel·ligència artificial" OR robòtica', "es": '"inteligencia artificial" OR robótica'},
-    },
-    {
-        "id": "ciencia",
-        "nombre": "Ciència",
-        "consulta": {"ca": "ciència OR investigació científica", "es": "ciencia OR investigación científica"},
-    },
-    {"id": "esports", "nombre": "Esports", "consulta": {"ca": "esports", "es": "deportes"}},
-    {"id": "economia", "nombre": "Economia", "consulta": {"ca": "economia OR mercats", "es": "economía OR mercados"}},
 ]
 
 # ---------------------------------------------------------------------------
@@ -230,20 +196,6 @@ def verificar_ical(url: str) -> dict:
         ) from None
 
 
-def fuente_google_noticias(consulta: str, idioma: str, pais: str, tema: str = "") -> dict:
-    """Fuente RSS de una búsqueda de Google Noticias (sirve para temas y medios sin RSS propio)."""
-    url = f"https://news.google.com/rss/search?q={quote(consulta)}&hl={idioma}&gl={pais}&ceid={pais}:{idioma}"
-    fuente = {"nombre": "Google Noticias", "url": url, "agregador": True}
-    if tema:
-        fuente["tema"] = tema
-    return fuente
-
-
-# ---------------------------------------------------------------------------
-# Construir config.json a partir de las respuestas
-# ---------------------------------------------------------------------------
-
-
 def _ubicacion(lugar: dict) -> tuple[dict, dict]:
     """(ubicacion, avisos_meteo) del lugar elegido. Sin MeteoAlarm en ese país, avisos desactivados."""
     ubicacion = {
@@ -283,128 +235,6 @@ def _ical(urls: list[str]) -> list[str]:
 
 
 # Pestañas de config.json que corresponden a una pestaña del catálogo con otro id
-_ID_CATALOGO = {"mundo": "mon"}
-
-
-def noticias_actuales(cfg: dict) -> dict:
-    """Lo que ya hay en config.json, para marcar el catálogo en el asistente.
-
-    -> {"catalogo": {pestaña: [urls del catálogo]}, "propios": {pestaña: [{"nombre", "url"}]}}
-    """
-    catalogo: dict[str, list[str]] = {}
-    propios: dict[str, list[dict]] = {}
-    for id_cfg, lista in (cfg.get("fuentes") or {}).items():
-        tab = _ID_CATALOGO.get(id_cfg, id_cfg)
-        if tab not in outlets.TABS:
-            continue
-        urls_tab = {f["url"] for f in outlets.sources_for_tab(tab)}
-        for f in lista:
-            if f["url"] in urls_tab:
-                catalogo.setdefault(tab, []).append(f["url"])
-            elif not f.get("agregador"):
-                propios.setdefault(tab, []).append({"nombre": f["nombre"], "url": f["url"]})
-    return {"catalogo": catalogo, "propios": propios}
-
-
-def catalogo_por_pestana(cfg: dict) -> list[dict]:
-    """Opciones del paso de noticias: cada pestaña del catálogo con sus medios e idioma."""
-    return [
-        {
-            "id": tab,
-            "nombre": nombre,
-            "medios": [
-                {
-                    "nombre": o.name,
-                    "seccion": f.section,
-                    "url": f.url,
-                    "idioma": o.language,
-                }
-                for o in outlets.CATALOG
-                for f in o.feeds
-                if f.tab == tab
-            ],
-        }
-        for tab, nombre in outlets.TABS.items()
-    ]
-
-
-def _fuente_propia(m: dict) -> dict:
-    nombre, url = (m.get("nombre") or "").strip(), (m.get("url") or "").strip()
-    if not nombre or not url.startswith("https://"):
-        raise ValueError("Cada mitjà propi necessita un nom i una adreça RSS que comenci per https://")
-    return {"nombre": nombre, "url": url}
-
-
-def _pestanas_catalogo(resp: dict) -> tuple[list[dict], dict[str, list[dict]]]:
-    """Pestañas del catálogo (Món, Catalunya...) con los medios marcados y los propios ("Un altre…")."""
-    pestanas: list[dict] = []
-    fuentes: dict[str, list[dict]] = {}
-    for tab, nombre in outlets.TABS.items():
-        disponibles = outlets.sources_for_tab(tab)
-        marcadas = set(resp.get("catalogo", {}).get(tab, []))
-        if marcadas - {f["url"] for f in disponibles}:
-            raise ValueError(f"Un mitjà triat a «{nombre}» no és al catàleg.")
-        elegidas = [f for f in disponibles if f["url"] in marcadas] + [
-            _fuente_propia(m) for m in resp.get("propios", {}).get(tab, [])
-        ]
-        if elegidas:
-            pestanas.append({"id": tab, "nombre": nombre})
-            fuentes[tab] = elegidas
-    return pestanas, fuentes
-
-
-def _noticias(resp: dict, lugar: dict | None) -> dict:
-    """Pestañas y fuentes de noticias: catálogo por pestaña, ámbitos y temas de Google Noticias."""
-    idioma = resp.get("idioma", "es")
-    pais = (lugar or {}).get("codigo_pais") or "ES"
-    ciudad = (lugar or {}).get("nombre") or ""
-    region = (lugar or {}).get("region") or ""
-    pestanas, fuentes = _pestanas_catalogo(resp)
-
-    for ambito in resp.get("ambitos", []):
-        if ambito == "estat":
-            # Portada de Google Noticias del país: las noticias generales más destacadas
-            pestanas.append({"id": "estat", "nombre": (lugar or {}).get("pais") or "El teu país"})
-            url = f"https://news.google.com/rss?hl={idioma}&gl={pais}&ceid={pais}:{idioma}"
-            fuentes["estat"] = [{"nombre": "Google Noticias", "url": url, "agregador": True}]
-        elif ambito == "local" and region:
-            pestanas.append({"id": "local", "nombre": region})
-            fuentes["local"] = [fuente_google_noticias(f'"{region}" when:1d', idioma, pais)]
-
-    for tema in TEMAS:
-        if tema["id"] not in resp.get("temas", []):
-            continue
-        consulta = tema["consulta"].get(idioma, tema["consulta"]["es"])
-        if tema.get("local"):
-            if not ciudad:
-                continue  # sin ciudad no hay planes locales que buscar
-            consulta = consulta.format(ciudad=ciudad)
-        fuente = fuente_google_noticias(consulta, idioma, pais, tema=tema["nombre"])
-        pestana = {"id": tema["id"], "nombre": tema["nombre"]}
-        if tema.get("local"):
-            pestana["filtro_periodo"] = True
-            fuente["horas_max"] = 720
-        pestanas.append(pestana)
-        fuentes[tema["id"]] = [fuente]
-
-    # "Un altre…" tema: unas palabras, y Google Noticias busca titulares que las contengan
-    for i, texto in enumerate(t.strip() for t in resp.get("temas_propios", [])):
-        if not texto:
-            raise ValueError("Escriu les paraules del tema (p. ex. «energia solar») o treu-lo.")
-        tab = f"tema{i + 1}"
-        pestanas.append({"id": tab, "nombre": texto[:1].upper() + texto[1:]})
-        fuentes[tab] = [fuente_google_noticias(texto, idioma, pais, tema=texto)]
-
-    if not pestanas:
-        raise ValueError("Tria almenys un mitjà, un àmbit o un tema (o salta aquest pas).")
-    return {
-        "pestanas": pestanas,
-        "fuentes": fuentes,
-        "titulares_por_categoria": {p["id"]: 20 if p.get("filtro_periodo") else 12 for p in pestanas},
-        "max_per_font": {p["id"]: 6 for p in pestanas},
-    }
-
-
 def construir_config(base: dict, respuestas: dict) -> dict:
     """config.json nuevo: `base` (la config actual) con los pasos que el usuario ha completado.
 
@@ -429,8 +259,13 @@ def construir_config(base: dict, respuestas: dict) -> dict:
         cfg["drawdown"].update(ticker=d.get("ticker", "").strip().upper(), nombre=d.get("nombre", "").strip())
         if d.get("niveles"):
             cfg["drawdown"]["niveles"] = _niveles(d["niveles"])
-    if "noticias" in respuestas:
-        cfg.update(_noticias(respuestas["noticias"], lugar))
+    if "noticias" in respuestas or "seccions" in respuestas:
+        # Un paso saltado conserva lo que ya había (los medios o las secciones actuales)
+        actual = news.current_choices(cfg)
+        medios = respuestas.get("noticias") or {k: actual[k] for k in ("medios", "propios")}
+        seccions = respuestas.get("seccions") or {k: actual[k] for k in ("seccions", "plans", "temes", "traduir")}
+        ciudad = (lugar or cfg.get("ubicacion") or {}).get("nombre", "")
+        cfg.update(news.build(medios, seccions, ciudad))
     if "claude" in respuestas:
         cfg.setdefault("claude", {"modelo": "claude-haiku-5-5", "cada_horas": 3})
         cfg["claude"]["api_key"] = respuestas["claude"].get("api_key", "").strip()
@@ -469,10 +304,9 @@ class ApiAsistente:
             "calendarios": CALENDARIOS,
             "competiciones": COMPETICIONES,
             "etfs": ETF_HABITUALES,
-            "catalogo": catalogo_por_pestana(c),
-            "noticias_actuales": noticias_actuales(c),
-            "ambitos": AMBITOS,
-            "temas": [{"id": t["id"], "nombre": t["nombre"]} for t in TEMAS],
+            "grupos_medios": news.outlet_groups(),
+            "seccions": news.sections(),
+            "noticias_actuales": news.current_choices(c),
             "actual": {
                 "lugar": (c.get("ubicacion") or {}).get("nombre", ""),
                 "ical_urls": (c.get("agenda") or {}).get("ical_urls", []),

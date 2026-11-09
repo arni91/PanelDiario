@@ -11,7 +11,6 @@ from typing import Any
 import pytest
 
 from panel_diario import config
-from panel_diario.catalog import outlets
 from panel_diario.sources import agenda, comun, drawdown
 from panel_diario.wizard import asistente
 
@@ -190,83 +189,26 @@ def test_verificar_ical_que_falla_explica_sin_la_direccion(monkeypatch: pytest.M
     assert r["ok"] is False and "HTTP 404" in r["error"] and "secret-xyz" not in r["error"]
 
 
-# --- Noticias: catálogo por pestaña, "Un altre…" y Google Noticias ---------------------
+# --- Noticias (detalle en test_news.py) ---------------------------------------------
 
 
-def test_catalogo_por_pestana_con_los_seis_diarios_primero_e_idioma() -> None:
-    catalogo = {t["id"]: t for t in asistente.catalogo_por_pestana({})}
-    assert list(catalogo) == ["mon", "catalunya", "espanya", "mobilitzacions", "tecnologia"]
-    mon = catalogo["mon"]["medios"]
-    assert [m["nombre"] for m in mon[:3]] == ["eldiario.es", "La Vanguardia", "El País"]
-    assert mon[2] == {
-        "nombre": "El País",
-        "seccion": "Internacional",
-        "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/internacional/portada",
-        "idioma": "es",
-    }
+def test_noticias_con_sus_dos_pasos_y_la_ciudad_ya_configurada() -> None:
+    respuestas = {"noticias": {"medios": ["Ara"]}, "seccions": {"seccions": ["portades"], "plans": True}}
+    cfg = asistente.construir_config({"ubicacion": {"nombre": "Girona"}}, respuestas)
+    assert [p["nombre"] for p in cfg["pestanas"]] == ["Portades", "Plans a Girona"]
 
 
-def test_noticias_actuales_marca_lo_que_ya_hay_en_config() -> None:
-    cfg = {
-        "fuentes": {
-            "mundo": [  # id antiguo de la pestaña Món
-                {"nombre": "El País", "url": outlets.sources_for_tab("mon")[2]["url"]},
-                {"nombre": "Revista", "url": "https://revista.example.com/feed"},
-                {"nombre": "Google Noticias", "url": "https://news.google.com/rss", "agregador": True},
-            ],
-            "cultura": [{"nombre": "Teatre", "url": "https://teatre.example.com/feed"}],  # no es del catálogo
-        }
-    }
-    actuales = asistente.noticias_actuales(cfg)
-    assert actuales["catalogo"] == {"mon": [outlets.sources_for_tab("mon")[2]["url"]]}
-    assert actuales["propios"] == {"mon": [{"nombre": "Revista", "url": "https://revista.example.com/feed"}]}
+def test_saltar_el_paso_de_medios_conserva_los_que_habia() -> None:
+    base = asistente.construir_config({}, {"noticias": {"medios": ["Ara", "Marca"]}})
+    cfg = asistente.construir_config(base, {"seccions": {"seccions": ["portades", "esports"]}})
+    assert [f["nombre"] for f in cfg["fuentes"]["esports"]] == ["Ara", "Marca"]
 
 
-def test_noticias_crea_una_pestana_por_eleccion() -> None:
-    espanya = [f["url"] for f in outlets.sources_for_tab("espanya")]
-    respuestas = {
-        "ubicacion": LUGAR,
-        "noticias": {
-            "idioma": "es",
-            "catalogo": {"espanya": espanya[:2], "mon": []},
-            "propios": {"tecnologia": [{"nombre": " Revista ", "url": "https://ejemplo.com/feed"}]},
-            "ambitos": ["local"],
-            "temas": ["cultura", "ia"],
-            "temas_propios": ["energia solar"],
-        },
-    }
-    cfg = asistente.construir_config(plantilla(), respuestas)
-    ids = [p["id"] for p in cfg["pestanas"]]
-    assert ids == ["espanya", "tecnologia", "local", "cultura", "ia", "tema1"]  # Món sin medios: no sale
-    assert set(cfg["fuentes"]) == set(ids)  # cada pestaña tiene sus fuentes
-    assert [f["url"] for f in cfg["fuentes"]["espanya"]] == espanya[:2]
-    assert cfg["fuentes"]["espanya"][0]["idioma"] == "es"  # del catálogo: no pasa por el traductor
-    assert cfg["fuentes"]["tecnologia"] == [{"nombre": "Revista", "url": "https://ejemplo.com/feed"}]
-    assert next(p for p in cfg["pestanas"] if p["id"] == "local")["nombre"] == "Catalunya"  # la región del lugar
-    cultura = cfg["fuentes"]["cultura"][0]
-    assert cultura["agregador"] is True and "Girona" in cultura["url"] and "hl=es" in cultura["url"]
-    assert next(p for p in cfg["pestanas"] if p["id"] == "cultura")["filtro_periodo"] is True
-    tema = cfg["fuentes"]["tema1"][0]
-    assert cfg["pestanas"][-1]["nombre"] == "Energia solar" and "energia%20solar" in tema["url"]
-
-
-def test_noticias_sin_ninguna_eleccion_es_un_error() -> None:
-    with pytest.raises(ValueError, match="almenys"):
-        asistente.construir_config(plantilla(), {"noticias": {"idioma": "es", "catalogo": {}, "temas": []}})
-
-
-@pytest.mark.parametrize(
-    "noticias",
-    [
-        {"catalogo": {"mon": ["https://no-es-del-catalogo.example.com/rss"]}},
-        {"propios": {"mon": [{"nombre": "", "url": "https://x.example.com/feed"}]}},
-        {"propios": {"mon": [{"nombre": "X", "url": "http://x.example.com/feed"}]}},
-        {"temas_propios": ["   "]},
-    ],
-)
-def test_noticias_con_elecciones_no_validas_se_explican(noticias: dict) -> None:
-    with pytest.raises(ValueError):
-        asistente.construir_config(plantilla(), {"noticias": {"idioma": "ca", **noticias}})
+def test_saltar_el_paso_de_secciones_conserva_las_que_habia() -> None:
+    base = asistente.construir_config({}, {"noticias": {"medios": ["Ara"]}, "seccions": {"seccions": ["cultura"]}})
+    cfg = asistente.construir_config(base, {"noticias": {"medios": ["El País"]}})
+    assert [p["id"] for p in cfg["pestanas"]] == ["cultura"]
+    assert cfg["fuentes"]["cultura"][0]["nombre"] == "El País"
 
 
 def test_inicio_ofrece_listas_con_un_altre_al_final() -> None:
@@ -274,13 +216,8 @@ def test_inicio_ofrece_listas_con_un_altre_al_final() -> None:
     assert len(inicio["ciudades"]) >= 10
     assert inicio["calendarios"][-1]["nombre"] == "Un altre…"
     assert all(c["ayuda"] for c in inicio["calendarios"])
-    assert inicio["noticias_actuales"]["catalogo"]["espanya"]  # la plantilla ya trae los seis diarios
-
-
-def test_fuente_google_noticias_codifica_la_busqueda() -> None:
-    f = asistente.fuente_google_noticias("robots & IA", "ca", "ES", tema="IA")
-    assert f["url"] == "https://news.google.com/rss/search?q=robots%20%26%20IA&hl=ca&gl=ES&ceid=ES:ca"
-    assert f["tema"] == "IA"
+    assert inicio["grupos_medios"] and inicio["seccions"][0]["id"] == "portades"
+    assert inicio["noticias_actuales"]["medios"]  # la plantilla ya trae medios del catálogo
 
 
 # --- Guardar ---

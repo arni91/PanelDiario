@@ -37,13 +37,16 @@ El plan gratuito incluye las ligas principales y la Champions, pero no las copas
 
 ## Noticias
 
+El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`) y las secciones. Cada sección (`portades`, `politica`, `economia`, `internacional`, `cultura`, `tecnologia`, `ciencia`, `esports`) es una pestaña con el feed de esa sección de cada medio elegido; el catálogo está en [fonts.md](fonts.md).
+
+- `medios_triats`: los medios del catálogo elegidos en el asistente (aunque no publiquen ninguna de las secciones elegidas).
 - `pestanas`: lista de pestañas con `id`, `nombre` y, para ver noticias de hasta un mes atrás con los botones "Aquesta setmana / Aquest mes", `"filtro_periodo": true`.
 - `fuentes`: para cada `id` de pestaña, la lista de medios con `nombre` y `url` del RSS. Opcional: `idioma` (`"ca"`, `"es"`…: evita pasar por el traductor), `horas_max` (antigüedad máxima), `tema` (etiqueta), `requereix` (solo titulares con alguna de esas palabras).
-- Los feeds verificados de los diarios del catálogo (por pestaña: Món, Catalunya, Espanya, Mobilitzacions, Tecnologia) están en [fonts.md](fonts.md).
+- `plans`: pestaña opcional con planes en tu ciudad (Google Noticias). `tema1`, `tema2`…: temas propios, también de Google Noticias.
 - Un tema o un medio sin RSS: Google Noticias como fuente con `"agregador": true`, p. ej. `https://news.google.com/rss/search?q=robotica&hl=es&gl=ES&ceid=ES:es` o `...?q=site:ejemplo.com`.
 - La misma noticia publicada por varios medios se muestra una vez, con la versión del primer medio de `prioridad_medios`, y "també a …" con los demás.
 - `medios_excluidos`: medios que no quieres ver. `paraules_excloses`: por pestaña, descarta titulares con esas palabras.
-- `traduccio`: `activa`, `idioma` al que se traduce (por defecto `"ca"`) y `conservar`, los idiomas que se dejan tal cual (por defecto `["ca", "es"]`). El traductor detecta el idioma de cada titular que no lo tenga declarado en su fuente. Las traducciones se guardan en `%APPDATA%\PanelDiario\traduccions.json`; si el traductor responde 429 (demasiadas peticiones), se reintenta con espera y se hace una pausa (5 minutos, que se dobla con cada bloqueo seguido hasta 6 horas y vuelve a 5 minutos tras una traducción buena). La pausa se guarda en `traductor_pausa.json`, así que reiniciar el panel no la salta. Mientras tanto se muestra el texto original.
+- `traduccio`: `activa` (por defecto `false`: cada noticia sale en su idioma), `idioma` al que se traduce (por defecto `"ca"`) y `conservar`, los idiomas que se dejan tal cual (por defecto `["ca", "es"]`). El traductor detecta el idioma de cada titular que no lo tenga declarado en su fuente. Las traducciones se guardan en `%APPDATA%\PanelDiario\traduccions.json`; si el traductor responde 429 (demasiadas peticiones), se reintenta con espera y se hace una pausa (5 minutos, que se dobla con cada bloqueo seguido hasta 6 horas y vuelve a 5 minutos tras una traducción buena). La pausa se guarda en `traductor_pausa.json`, así que reiniciar el panel no la salta. Mientras tanto se muestra el texto original.
 - Comprueba tus fuentes con **probar_fuentes.bat**.
 
 ## Otros
