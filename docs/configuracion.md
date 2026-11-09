@@ -13,9 +13,11 @@ Tiempo, avisos meteorológicos, noticias y caídas del ETF funcionan sin ninguna
 - `ubicacion`: `nombre` de tu ciudad, coordenadas (`lat`, `lon`) y `zona_horaria` (formato IANA, p. ej. `Europe/Madrid`).
 - `avisos_meteo.zonas`: parte del nombre de tu zona tal como la publica MeteoAlarm (normalmente el de tu provincia). `zonas_excluir` descarta zonas que contengan esos textos. El `feed` termina en el país (`...-spain`, `...-france`…).
 
-## Agenda (Google Calendar)
+## Agenda (Google Calendar, Outlook, iCloud)
 
-En el ordenador, abre Google Calendar → ⚙ Configuración → en la izquierda, tu calendario → "Integrar el calendario" → copia la **"Dirección secreta en formato iCal"** (acaba en `.ics`). Pégala en `agenda.ical_urls`; puedes poner varias.
+El asistente explica dónde está la dirección en cada calendario y la comprueba antes de guardarla. Se acepta `https://` y `webcal://` (iCloud), que se guarda como `https://`. La dirección es secreta: nunca se escribe en el log ni en los avisos del panel.
+
+En Google Calendar, desde el ordenador: abre Google Calendar → ⚙ Configuración → en la izquierda, tu calendario → "Integrar el calendario" → copia la **"Dirección secreta en formato iCal"** (acaba en `.ics`). Pégala en `agenda.ical_urls`; puedes poner varias.
 
 **Es privada**: quien la tenga puede ver tu calendario. No la compartas; si se filtra, regenérala en el mismo sitio.
 

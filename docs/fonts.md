@@ -26,6 +26,18 @@ Comprobados el 9 de noviembre de 2026: cada uno responde, es RSS válido y tení
 | Tecnologia | La Vanguardia | Tecnología | `https://www.lavanguardia.com/rss/tecnologia.xml` |
 | Tecnologia | El Salto | Tecnología | `https://www.elsaltodiario.com/tecnologia/feed` |
 
+Medios generales del catálogo (también comprobados el 9-11-2026), después de los diarios principales:
+
+| Pestaña | Medio | Idioma | Feed |
+|---|---|---|---|
+| Món | Europa Press | castellano | `https://www.europapress.es/rss/rss.aspx?ch=69` |
+| Món | BBC Mundo | castellano | `https://feeds.bbci.co.uk/mundo/rss.xml` |
+| Món | DW | castellano | `https://rss.dw.com/rdf/rss-sp-all` |
+| Món | France 24 | castellano | `https://www.france24.com/es/rss` |
+| Tecnologia | Xataka | castellano | `https://www.xataka.com/feedburner.xml` |
+| Tecnologia | Ars Technica | inglés (se traduce) | `https://feeds.arstechnica.com/arstechnica/index` |
+| Tecnologia | MIT Technology Review | inglés (se traduce) | `https://www.technologyreview.com/feed/` |
+
 Feeds que no existen (comprobados el mismo día):
 
 - **El País, Política**: no hay feed solo de política (las rutas `section/politica` y `section/espana/subsection/politica` dan 404 o vienen vacías). En su lugar va la sección España, que es sobre todo política.
@@ -65,6 +77,7 @@ Comprobados el 9 de noviembre de 2026.
 | La Vanguardia | `centreesquerra` | [MBFC: Left-Center](https://mediabiasfactcheck.com/la-vanguardia/) (actualizada el 09-02-2026) | — |
 | El País | `centreesquerra` | [MBFC: Left-Center](https://mediabiasfactcheck.com/el-pais/) (actualizada el 03-01-2025) | — |
 | El Crític | — | Sin ficha en MBFC | — |
+| Europa Press, BBC Mundo, DW, France 24, Xataka, Ars Technica, MIT Technology Review | — | Aún no comprobados en MBFC | — |
 
 ### Fuentes consultadas y descartadas
 
