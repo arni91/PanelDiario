@@ -112,29 +112,3 @@ def test_neteja_resums_de_wordpress() -> None:
     text = "Concert a la sala. L'entrada Concert va aparèixer primer a Revista A."
     assert noticias.netejar_resum(text) == "Concert a la sala."
     assert noticias.netejar_resum("Text normal") == "Text normal"
-
-
-def test_cada_titular_lleva_la_etiqueta_de_cada_medio_que_lo_publica(monkeypatch: pytest.MonkeyPatch) -> None:
-    titular = [("Acuerdo europeo sobre migración aprobado hoy", 1)]
-    # Google Noticias: "Titular - Medio"; un medio del catálogo y otro que no está
-    google = rss([("Acuerdo europeo sobre migración aprobado hoy - EL PAÍS", 1), ("Otra cosa distinta - Diario X", 1)])
-    preparar(monkeypatch, {"eld": rss(titular), "gn": google})
-    cfg = {
-        "prioridad_medios": ["eldiario.es"],
-        "fuentes": {
-            "mon": [
-                {"nombre": "eldiario.es", "url": "eld", "eix_nacional": "no_independentista"},
-                {"nombre": "Google Noticias", "url": "gn", "agregador": True},
-            ]
-        },
-    }
-    salida, _ = noticias.obtener_noticias(cfg)
-    agrupada = next(n for n in salida["mon"] if n["medio"] == "eldiario.es")
-    assert agrupada["etiquetes"] == [
-        {"medio": "eldiario.es", "ideologia": "centreesquerra", "eix_nacional": "no_independentista"},
-        {"medio": "EL PAÍS", "ideologia": "centreesquerra", "eix_nacional": ""},  # de Google, en el catálogo
-    ]
-    fuera = next(n for n in salida["mon"] if n["medio"] == "Diario X")
-    assert fuera["etiquetes"] == [
-        {"medio": "Diario X", "ideologia": "", "eix_nacional": ""}
-    ]  # no está: sin orientación

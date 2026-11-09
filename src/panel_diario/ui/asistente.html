@@ -102,8 +102,6 @@ let actual = 0;
 const tmp = { lugares: [], lugar: null, calendario: "google", ticker: null, propios: null, temasPropios: [] };
 // Idioma de cada medio del catálogo, en palabras
 const IDIOMAS = { ca: "català", es: "castellà", en: "anglès (es tradueix)" };
-// Orientación de un medio en texto: "centreesquerra · no independentista" ("" si no se conoce)
-const orientacio = (m) => [m.ideologia, m.eix_nacional].filter(Boolean).map(v => v.replace(/_/g, " ")).join(" · ");
 
 const api = () => window.pywebview.api;
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -272,13 +270,12 @@ const PASOS = [
     pintar: () => {
       prepararNoticias();
       return `<div class="paso"><h2>📰 Les teves notícies</h2>
-      <p>Marca els mitjans de cada pestanya: una pestanya sense cap mitjà no surt. Cada titular porta el nom del mitjà
-      i la seva orientació (<a data-url="https://github.com/arni91/PanelDiario/blob/main/docs/fonts.md">d'on surt</a>).
+      <p>Marca els mitjans de cada pestanya: una pestanya sense cap mitjà no surt. Cada titular porta el nom del mitjà.
       ${INICIO.actual.pestanas.length ? `<br>Substituirà les pestanyes actuals (<b>${esc(INICIO.actual.pestanas.join(", "))}</b>).` : ""}</p>
       ${INICIO.catalogo.map(t => `<div class="grupo">${esc(t.nombre)}</div>
         <div class="opciones">${t.medios.map(m => `
           <label class="opcion"><input type="checkbox" data-cat="${t.id}" value="${esc(m.url)}" ${tmp.catalogo[t.id].has(m.url) ? "checked" : ""}>
-            <b>${esc(m.nombre)}</b><small>${esc(m.seccion)} · ${esc(IDIOMAS[m.idioma] || m.idioma)}${orientacio(m) ? " · " + esc(orientacio(m)) : ""}</small></label>`).join("")}
+            <b>${esc(m.nombre)}</b><small>${esc(m.seccion)} · ${esc(IDIOMAS[m.idioma] || m.idioma)}</small></label>`).join("")}
           <div id="propios-${t.id}" class="opciones" style="margin-top:0"></div>
           <div class="opcion" data-otro-medio="${t.id}"><b>Un altre…</b><small>un mitjà amb la seva adreça RSS</small></div>
           <div class="fila oculto" id="form-${t.id}">
@@ -328,26 +325,6 @@ const PASOS = [
     },
   },
   {
-    id: "orientacions",
-    pintar: () => {
-      const o = INICIO.orientacions;
-      const opciones = (valores, actual) => [`<option value="">— sense etiqueta —</option>`,
-        ...valores.map(v => `<option value="${v}" ${v === actual ? "selected" : ""}>${esc(v.replace(/_/g, " "))}</option>`)].join("");
-      return `<div class="paso"><h2>🏷️ Orientació dels mitjans</h2>
-      <p>Cada titular porta una etiqueta discreta amb el mitjà i la seva orientació. Els valors per defecte surten
-      de Media Bias/Fact Check; on no n'hi ha, queden en blanc. Canvia els que vulguis: s'apliquen als mitjans que tens com a font.</p>
-      <div class="niveles orientacions">${o.mitjans.map((m, i) => `
-        <b style="grid-column: 1 / -1; margin-top: 6px">${esc(m.nombre)}</b>
-        <select data-orient="${i}" data-camp="ideologia">${opciones(o.ideologia, m.ideologia)}</select>
-        <select data-orient="${i}" data-camp="eix_nacional">${opciones(o.eix_nacional, m.eix_nacional)}</select>`).join("")}
-      </div><div class="mensaje" id="mensaje"></div></div>`;
-    },
-    recoger: () => INICIO.orientacions.mitjans.map((m, i) => {
-      const valor = (camp) => document.querySelector(`[data-orient="${i}"][data-camp="${camp}"]`).value;
-      return { nombre: m.nombre, ideologia: valor("ideologia"), eix_nacional: valor("eix_nacional") };
-    }),
-  },
-  {
     id: "claude",
     pintar: () => `<div class="paso"><h2>✨ Filtre amb IA (opcional)</h2>
       <p>Amb una clau de l'API de Claude, el panell tria les notícies més rellevants i n'escriu un resum d'una línia.
@@ -363,7 +340,7 @@ const PASOS = [
   {
     id: "final", sinSaltar: true,
     pintar: () => {
-      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", drawdown: "📉 ETF", noticias: "📰 Notícies", orientacions: "🏷️ Orientació", claude: "✨ IA" };
+      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", drawdown: "📉 ETF", noticias: "📰 Notícies", claude: "✨ IA" };
       return `<div class="paso"><h2>Tot a punt</h2><p>Això és el que es desarà:</p>
       <div class="resumen">${Object.entries(nombres).map(([id, n]) =>
         `<div>${n}: ${estadoPaso[id] === "hecho" ? "<b>configurat</b>" : "es queda com estava"}</div>`).join("")}</div>

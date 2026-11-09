@@ -62,9 +62,3 @@ def test_zona_horaria_desconocida_explica_el_error(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(comun, "TZ", comun.TZ)
     with pytest.raises(config.ConfigError, match="Marte/Olimpo"):
         config.aplicar_zona_horaria({"ubicacion": {"zona_horaria": "Marte/Olimpo"}})
-
-
-def test_orientacion_no_valida_se_ignora_al_cargar(tmp_path: Path) -> None:
-    ruta = tmp_path / "config.json"
-    ruta.write_text('{"fuentes": {"mon": [{"nombre": "X", "url": "u", "ideologia": "rara"}]}}', encoding="utf-8")
-    assert config.cargar_config(ruta)["fuentes"]["mon"][0] == {"nombre": "X", "url": "u"}  # arranca igual

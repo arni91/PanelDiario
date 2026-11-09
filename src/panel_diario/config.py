@@ -11,7 +11,6 @@ import os
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from panel_diario import outlets
 from panel_diario.fuentes import comun
 
 PAQUETE = Path(__file__).resolve().parent  # carpeta del paquete: ui/ y demo.json
@@ -44,7 +43,6 @@ def cargar_config(ruta: Path = CONFIG) -> dict:
         ) from ex
     if not isinstance(cfg, dict):
         raise ConfigError("config.json ha de ser un objecte JSON ({ ... }).")
-    outlets.clean_leanings(cfg)  # una orientación mal escrita se avisa en el log y se ignora
     return cfg
 
 
