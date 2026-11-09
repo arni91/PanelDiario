@@ -38,6 +38,12 @@ def test_fuentes_de_una_seccion_en_el_orden_del_catalogo_y_con_idioma() -> None:
     ]
 
 
+def test_medio_sin_rss_se_lee_por_google_noticias_como_agregador() -> None:
+    (fuente,) = outlets.sources_for("cultura", ["Time Out Barcelona"])
+    assert fuente["agregador"] is True
+    assert fuente["url"].startswith("https://news.google.com/rss/search?q=site%3Atimeout.cat")
+
+
 def test_medio_sin_esa_seccion_o_seccion_desconocida() -> None:
     assert outlets.sources_for("esports", ["Politico Europe"]) == []
     assert outlets.sources_for("no-existe", ["Ara"]) == []

@@ -36,12 +36,17 @@ SECTIONS: dict[str, str] = {
 
 @dataclass(frozen=True)
 class Outlet:
-    """Un medio: idioma de sus titulares, grupo y feed RSS de cada sección que publica."""
+    """Un medio: idioma de sus titulares, grupo y feed RSS de cada sección que publica.
+
+    `google_news`: el medio no publica RSS y sus feeds son búsquedas de Google Noticias
+    (site:dominio); el panel las lee como agregador y saca el nombre del medio de cada titular.
+    """
 
     name: str
     language: str
     group: str
     feeds: dict[str, str]
+    google_news: bool = False
 
 
 CATALOG: tuple[Outlet, ...] = (
@@ -348,6 +353,13 @@ CATALOG: tuple[Outlet, ...] = (
     Outlet("Marca", "es", "tematics", {"esports": "https://e00-marca.uecdn.es/rss/portada.xml"}),
     Outlet("AS", "es", "tematics", {"esports": "https://feeds.as.com/mrss-s/pages/as/site/as.com/portada/"}),
     # --- Revistes ---
+    Outlet(
+        "Time Out Barcelona",
+        "ca",
+        "revistes",
+        {"cultura": "https://news.google.com/rss/search?q=site%3Atimeout.cat&hl=ca&gl=ES&ceid=ES:ca"},
+        google_news=True,
+    ),
     Outlet("Jot Down", "es", "revistes", {"cultura": "https://www.jotdown.es/feed/"}),
     Outlet("Sàpiens", "ca", "revistes", {"cultura": "https://www.sapiens.cat/uploads/feeds/feed_sapiens_ca.xml"}),
     Outlet("The Atlantic", "en", "revistes", {"portades": "https://www.theatlantic.com/feed/all/"}),
@@ -366,6 +378,7 @@ def sources_for(section: str, names: Iterable[str]) -> list[dict]:
     elegidos = set(names)
     return [
         {"nombre": o.name, "url": o.feeds[section], "idioma": o.language}
+        | ({"agregador": True} if o.google_news else {})
         for o in CATALOG
         if o.name in elegidos and section in o.feeds
     ]
