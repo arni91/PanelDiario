@@ -169,7 +169,24 @@
       "Mitjà B",
       "Mitjà C"
      ],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà A",
+       "ideologia": "centreesquerra",
+       "eix_nacional": ""
+      },
+      {
+       "medio": "Mitjà B",
+       "ideologia": "centre",
+       "eix_nacional": ""
+      },
+      {
+       "medio": "Mitjà C",
+       "ideologia": "esquerra",
+       "eix_nacional": "sobiranista"
+      }
+     ]
     },
     {
      "titulo": "[Demo] Eleccions en un país europeu d'exemple",
@@ -179,7 +196,14 @@
      "resumen": "",
      "tema": "",
      "otros_medios": [],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà B",
+       "ideologia": "centre",
+       "eix_nacional": ""
+      }
+     ]
     }
    ],
    "catalunya": [
@@ -193,7 +217,19 @@
      "otros_medios": [
       "Mitjà C"
      ],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà A",
+       "ideologia": "centreesquerra",
+       "eix_nacional": ""
+      },
+      {
+       "medio": "Mitjà C",
+       "ideologia": "esquerra",
+       "eix_nacional": "sobiranista"
+      }
+     ]
     },
     {
      "titulo": "[Demo] Nova línia de tren regional en estudi",
@@ -203,7 +239,14 @@
      "resumen": "",
      "tema": "",
      "otros_medios": [],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà C",
+       "ideologia": "esquerra",
+       "eix_nacional": "sobiranista"
+      }
+     ]
     }
    ],
    "tecnologia": [
@@ -215,7 +258,14 @@
      "resumen": "",
      "tema": "",
      "otros_medios": [],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà D",
+       "ideologia": "",
+       "eix_nacional": ""
+      }
+     ]
     },
     {
      "titulo": "[Demo] Nou model d'IA obert per a programadors",
@@ -227,7 +277,19 @@
      "otros_medios": [
       "Mitjà D"
      ],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà B",
+       "ideologia": "centre",
+       "eix_nacional": ""
+      },
+      {
+       "medio": "Mitjà D",
+       "ideologia": "",
+       "eix_nacional": ""
+      }
+     ]
     }
    ],
    "cultura": [
@@ -239,7 +301,14 @@
      "resumen": "Tres dies de concerts gratuïts al parc. Dissabte i diumenge a partir de les 18 h.",
      "tema": "Música",
      "otros_medios": [],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà E",
+       "ideologia": "centredreta",
+       "eix_nacional": "no_independentista"
+      }
+     ]
     },
     {
      "titulo": "[Demo] Exposició de fotografia contemporània al museu de la ciutat",
@@ -249,7 +318,14 @@
      "resumen": "Fins al mes que ve, de dimarts a diumenge.",
      "tema": "Exposicions",
      "otros_medios": [],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà E",
+       "ideologia": "centredreta",
+       "eix_nacional": "no_independentista"
+      }
+     ]
     },
     {
      "titulo": "[Demo] Cicle de cinema a la fresca",
@@ -259,7 +335,14 @@
      "resumen": "",
      "tema": "Cinema",
      "otros_medios": [],
-     "enlaces": []
+     "enlaces": [],
+     "etiquetes": [
+      {
+       "medio": "Mitjà F",
+       "ideologia": "",
+       "eix_nacional": ""
+      }
+     ]
     }
    ]
   },

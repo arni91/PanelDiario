@@ -246,6 +246,26 @@ const PASOS = [
     },
   },
   {
+    id: "orientacions",
+    pintar: () => {
+      const o = INICIO.orientacions;
+      const opciones = (valores, actual) => [`<option value="">— sense etiqueta —</option>`,
+        ...valores.map(v => `<option value="${v}" ${v === actual ? "selected" : ""}>${esc(v.replace(/_/g, " "))}</option>`)].join("");
+      return `<div class="paso"><h2>🏷️ Orientació dels mitjans</h2>
+      <p>Cada titular porta una etiqueta discreta amb el mitjà i la seva orientació. Els valors per defecte surten
+      de Media Bias/Fact Check; on no n'hi ha, queden en blanc. Canvia els que vulguis: s'apliquen als mitjans que tens com a font.</p>
+      <div class="niveles orientacions">${o.mitjans.map((m, i) => `
+        <b style="grid-column: 1 / -1; margin-top: 6px">${esc(m.nombre)}</b>
+        <select data-orient="${i}" data-camp="ideologia">${opciones(o.ideologia, m.ideologia)}</select>
+        <select data-orient="${i}" data-camp="eix_nacional">${opciones(o.eix_nacional, m.eix_nacional)}</select>`).join("")}
+      </div><div class="mensaje" id="mensaje"></div></div>`;
+    },
+    recoger: () => INICIO.orientacions.mitjans.map((m, i) => {
+      const valor = (camp) => document.querySelector(`[data-orient="${i}"][data-camp="${camp}"]`).value;
+      return { nombre: m.nombre, ideologia: valor("ideologia"), eix_nacional: valor("eix_nacional") };
+    }),
+  },
+  {
     id: "claude",
     pintar: () => `<div class="paso"><h2>✨ Filtre amb IA (opcional)</h2>
       <p>Amb una clau de l'API de Claude, el panell tria les notícies més rellevants i n'escriu un resum d'una línia.
@@ -261,7 +281,7 @@ const PASOS = [
   {
     id: "final", sinSaltar: true,
     pintar: () => {
-      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", drawdown: "📉 ETF", noticias: "📰 Notícies", claude: "✨ IA" };
+      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", futbol: "⚽ Futbol", drawdown: "📉 ETF", noticias: "📰 Notícies", orientacions: "🏷️ Orientació", claude: "✨ IA" };
       return `<div class="paso"><h2>Tot a punt</h2><p>Això és el que es desarà:</p>
       <div class="resumen">${Object.entries(nombres).map(([id, n]) =>
         `<div>${n}: ${estadoPaso[id] === "hecho" ? "<b>configurat</b>" : "es queda com estava"}</div>`).join("")}</div>
