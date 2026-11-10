@@ -545,6 +545,16 @@
      "nom": "Gran Premi anterior",
      "guanyador": "Pilot d'exemple"
     }
+   },
+   "motogp": {
+    "proxim": {
+     "nom": "Gran Premi de motos d'exemple",
+     "data": "dg 29/11"
+    },
+    "ultim": {
+     "nom": "Gran Premi de motos anterior",
+     "guanyador": "Pilot de motos d'exemple"
+    }
    }
   }
  },

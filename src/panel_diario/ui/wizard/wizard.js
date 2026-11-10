@@ -98,40 +98,34 @@ const PASOS = [
     pintar: () => {
       if (!tmp.equips) {
         tmp.equips = [...INICIO.esports_actual.equips];
-        tmp.f1 = INICIO.esports_actual.f1;
+        tmp.motor = { f1: INICIO.esports_actual.f1, motogp: INICIO.esports_actual.motogp };
         tmp.esport = "futbol";
-        tmp.lliga = null;
+        tmp.equiposPorEsport = {};  // equipos ya cargados de cada deporte (no se piden dos veces)
       }
       return `<div class="paso"><h2>🏅 Els teus esports</h2>
-      <p>Marca els equips que vols seguir: el panell mostra els seus propers partits i l'últim resultat.
-      Pots triar-ne tants com vulguis, de diferents esports. En futbol hi surten totes les competicions de l'equip
-      (lliga, copa, Champions…).</p>
-      <div class="grupo">1. Esport</div>
-      <div class="chips">${INICIO.esports.esports.map(e => `<span class="chip ${tmp.esport === e.id ? "on" : ""}" data-esport="${e.id}">${esc(e.nombre)}</span>`).join("")}</div>
-      <div class="grupo">2. Competició</div>
-      <div class="chips" id="lligues"></div>
-      <div class="grupo">3. Equips</div>
-      <div id="equips-lliga" class="nota">Tria una competició per veure'n els equips.</div>
-      <div class="grupo">Equips que segueixes</div>
+      <p>Tria un esport i marca els equips que vols seguir: el panell mostra els seus propers partits i l'últim resultat.
+      Pots triar-ne tants com vulguis, de diferents esports. En futbol hi surten tots els partits de l'equip
+      (lliga, copa, Champions…). A la Fórmula 1 i el MotoGP se segueix el campionat sencer.
+      Si el teu equip no hi és, tria <b>Un altre…</b> i escriu-ne el nom.</p>
+      <label>Esport</label><div class="fila"><select id="esport">
+        ${INICIO.esports.esports.map(e => `<option value="${esc(e.id)}" ${tmp.esport === e.id ? "selected" : ""}>${esc(e.nombre)}</option>`).join("")}
+        <option value="${ALTRE}" ${tmp.esport === ALTRE ? "selected" : ""}>Un altre…</option>
+      </select></div>
+      <div id="cos-esport"></div>
+      <div class="grupo">El que segueixes</div>
       <div class="opciones" id="equips"></div>
-      <div class="grupo">Motor</div>
-      <div class="opciones"><label class="opcion"><input type="checkbox" id="f1" ${tmp.f1 ? "checked" : ""}>
-        <b>Fórmula 1</b><small>la propera cursa i qui va guanyar l'última</small></label></div>
       <div class="mensaje" id="mensaje"></div></div>`;
     },
     alMostrar: () => {
-      document.querySelectorAll("[data-esport]").forEach(el => el.onclick = () => {
-        tmp.esport = el.dataset.esport; tmp.lliga = null;
-        document.querySelectorAll("[data-esport]").forEach(x => x.classList.toggle("on", x === el));
-        pintarLligues();
-      });
-      $("f1").onchange = () => { tmp.f1 = $("f1").checked; };
-      pintarLligues();
+      $("esport").onchange = () => { tmp.esport = $("esport").value; pintarEsport(); };
+      pintarEsport();
       pintarEquipos();
     },
     recoger: () => {
-      if (!tmp.equips.length && !tmp.f1) { mensaje("Marca almenys un equip o la Fórmula 1 (o salta aquest pas).", "error"); return null; }
-      return { equips: tmp.equips, f1: tmp.f1 };
+      if (!tmp.equips.length && !tmp.motor.f1 && !tmp.motor.motogp) {
+        mensaje("Marca almenys un equip o un campionat de motor (o salta aquest pas).", "error"); return null;
+      }
+      return { equips: tmp.equips, f1: tmp.motor.f1, motogp: tmp.motor.motogp };
     },
   },
   {
@@ -206,8 +200,9 @@ const PASOS = [
       prepararNoticias();
       return `<div class="paso"><h2>📰 Els teus mitjans</h2>
       <p>Marca els mitjans que vulguis llegir. N'hi ha de tots els colors: tria'n de diferents per contrastar.
-      Cada titular porta el nom del mitjà.</p>
-      ${INICIO.grupos_medios.map(g => `<div class="grupo">${esc(g.nombre)}</div>
+      Cada titular porta el nom del mitjà. A <b>Actualitat</b> hi ha els diaris generals; a <b>Per temes</b>, els especialitzats.</p>
+      ${INICIO.grupos_medios.map((g, i) => `${i === 0 || INICIO.grupos_medios[i - 1].bloc !== g.bloc ? `<h3 class="bloc">${esc(g.bloc)}</h3>` : ""}
+        <div class="grupo">${esc(g.nombre)}</div>
         <div class="opciones">${g.medios.map(m => `
           <label class="opcion"><input type="checkbox" data-medio value="${esc(m.nombre)}" ${tmp.medios.has(m.nombre) ? "checked" : ""}>
             <b>${esc(m.nombre)}</b><small>${esc(IDIOMAS[m.idioma] || m.idioma)} · ${esc(m.seccions.length === INICIO.seccions.length ? "totes les seccions" : m.seccions.map(nomSeccio).join(", "))}</small></label>`).join("")}
@@ -317,47 +312,115 @@ function pintarLugares() {
   });
 }
 
-// --- Deportes: esport → competición → equipos (casillas); los marcados se siguen ---
-const sigue = (lliga, id) => tmp.equips.some(e => e.lliga === lliga && e.id === id);
-const nomLliga = (path) => (INICIO.esports.lligues.find(l => l.path === path) || { nom: path }).nom;
+// --- Deportes: desplegable de deportes → todos sus equipos (con buscador) o su campeonato de motor ---
+// Mismo equipo = mismo calendario en ESPN: en fútbol basta el id (juega liga, copa y Champions);
+// en los demás deportes, el id dentro de su liga (un id de la NBA y uno de la WNBA pueden coincidir).
+const claveEquipo = (e) => e.lliga.startsWith("soccer/") ? `soccer/${e.id}` : `${e.lliga}/${e.id}`;
+const sigue = (e) => tmp.equips.some(x => claveEquipo(x) === claveEquipo(e));
+// Competición de un equipo elegido: la del catálogo o, en los de «Un altre…», la que dio el buscador
+const nomLliga = (e) => (INICIO.esports.lligues.find(l => l.path === e.lliga) || { nom: e.competicio || e.lliga }).nom;
+const ALTRE = "altre";  // la opción «Un altre…» del desplegable
+const deporte = (id) => INICIO.esports.esports.find(e => e.id === id) || { id: ALTRE, tipus: ALTRE };
+// Para buscar sin acentos ni mayúsculas ("atletico" encuentra "Atlético")
+const sinAcentos = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-function pintarLligues() {
-  $("lligues").innerHTML = INICIO.esports.lligues.filter(l => l.esport === tmp.esport).map(l =>
-    `<span class="chip ${tmp.lliga === l.path ? "on" : ""}" data-lliga="${l.path}">${esc(l.nom)}</span>`).join("");
-  document.querySelectorAll("[data-lliga]").forEach(el => el.onclick = () => {
-    tmp.lliga = el.dataset.lliga;
-    document.querySelectorAll("[data-lliga]").forEach(x => x.classList.toggle("on", x === el));
-    cargarEquipos();
-  });
-  if (!tmp.lliga) $("equips-lliga").innerHTML = `<div class="nota">Tria una competició per veure'n els equips.</div>`;
+function pintarEsport() {
+  const d = deporte(tmp.esport);
+  if (d.tipus === ALTRE) {
+    $("cos-esport").innerHTML = `<div class="fila" style="margin-top:8px">
+        <input type="text" id="buscar-altre" placeholder="Nom de l'equip o el club (per exemple, Celtic)">
+        <button class="btn" id="btn-altre">Cerca</button></div>
+      <div id="llista-equips" class="nota">Escriu el nom de l'equip de qualsevol esport i prem «Cerca».
+        Només hi surten els equips amb partits publicats.</div>`;
+    $("btn-altre").onclick = buscarAltre;
+    $("buscar-altre").onkeydown = (ev) => { if (ev.key === "Enter") buscarAltre(); };
+    if (tmp.equiposPorEsport[ALTRE]) casillasEquipos(tmp.equiposPorEsport[ALTRE]);
+    return;
+  }
+  if (d.tipus === "motor") {
+    $("cos-esport").innerHTML = `<div class="opciones"><label class="opcion">
+      <input type="checkbox" id="motor" ${tmp.motor[d.id] ? "checked" : ""}>
+      <b>Seguir el campionat de ${esc(d.nombre)}</b><small>la propera cursa i qui va guanyar l'última</small></label></div>`;
+    $("motor").onchange = () => { tmp.motor[d.id] = $("motor").checked; pintarEquipos(); };
+    return;
+  }
+  $("cos-esport").innerHTML = `<div class="fila" style="margin-top:8px">
+      <input type="text" id="buscar-equip" placeholder="Cerca l'equip (per exemple, Barcelona)"></div>
+    <div id="llista-equips" class="nota">Carregant els equips de ${esc(d.nombre)}…</div>`;
+  $("buscar-equip").oninput = pintarListaEquipos;
+  cargarEquipos(d.id);
 }
 
-async function cargarEquipos() {
-  const lliga = tmp.lliga;
-  $("equips-lliga").innerHTML = `<div class="nota">Carregant els equips de ${esc(nomLliga(lliga))}…</div>`;
-  const equipos = await llamar("equipos", lliga);
-  if (!equipos || lliga !== tmp.lliga) return;  // otra competición elegida mientras tanto
-  $("equips-lliga").innerHTML = `<div class="rejilla">${equipos.map(e => `
-    <label class="opcion"><input type="checkbox" data-equip="${esc(e.id)}" data-nom="${esc(e.nom)}" ${sigue(lliga, e.id) ? "checked" : ""}>
-      <b>${esc(e.nom)}</b></label>`).join("")}</div>`;
+async function cargarEquipos(esport) {
+  if (!tmp.equiposPorEsport[esport]) {
+    const equipos = await llamar("equipos", esport);
+    if (!equipos) return;
+    tmp.equiposPorEsport[esport] = equipos;
+  }
+  if (esport === tmp.esport) pintarListaEquipos();  // si mientras tanto se ha elegido otro, no se pinta
+}
+
+// «Un altre…»: busca el nombre en ESPN; Python ya descarta los equipos sin partidos publicados
+async function buscarAltre() {
+  const texto = $("buscar-altre").value.trim();
+  $("llista-equips").className = "nota";
+  $("llista-equips").textContent = "Buscant equips i comprovant que tenen partits…";
+  const equipos = await llamar("buscar_equipo", texto);
+  if (!equipos) { $("llista-equips").textContent = ""; return; }
+  tmp.equiposPorEsport[ALTRE] = equipos;
+  if (tmp.esport === ALTRE) casillasEquipos(equipos);
+}
+
+function pintarListaEquipos() {
+  const texto = sinAcentos($("buscar-equip").value.trim());
+  casillasEquipos(tmp.equiposPorEsport[tmp.esport].filter(e => sinAcentos(e.nom).includes(texto)));
+}
+
+// Una casilla por equipo, con su competición; marcarla lo añade a «El que segueixes»
+function casillasEquipos(equipos) {
+  if (!equipos.length) {
+    $("llista-equips").className = "nota";
+    $("llista-equips").textContent = "No he trobat cap equip amb partits publicats amb aquest nom.";
+    return;
+  }
+  $("llista-equips").className = "";
+  $("llista-equips").innerHTML = `<div class="rejilla llarga">${equipos.map((e, i) => `
+    <label class="opcion"><input type="checkbox" data-equip="${i}" ${sigue(e) ? "checked" : ""}>
+      <b>${esc(e.nom)}</b><small>${esc(e.competicio)}</small></label>`).join("")}</div>`;
   document.querySelectorAll("[data-equip]").forEach(el => el.onchange = () => {
-    if (el.checked) { if (!sigue(lliga, el.dataset.equip)) tmp.equips.push({ lliga, id: el.dataset.equip, nom: el.dataset.nom }); }
-    else tmp.equips = tmp.equips.filter(e => !(e.lliga === lliga && e.id === el.dataset.equip));
+    const e = equipos[Number(el.dataset.equip)];
+    if (el.checked) { if (!sigue(e)) tmp.equips.push({ lliga: e.lliga, id: e.id, nom: e.nom, competicio: e.competicio }); }
+    else tmp.equips = tmp.equips.filter(x => claveEquipo(x) !== claveEquipo(e));
     pintarEquipos();
   });
 }
 
+// Lo que se sigue: los equipos y los campeonatos de motor marcados, cada uno con su botón «Treu»
 function pintarEquipos() {
-  $("equips").innerHTML = tmp.equips.length ? tmp.equips.map((e, i) => `
-    <div class="opcion on"><b>${esc(e.nom)}</b><small style="flex:1">${esc(nomLliga(e.lliga))}</small>
-      <button class="btn" data-quitar-equip="${i}">Treu</button></div>`).join("")
-    : `<div class="nota">Encara no en segueixes cap.</div>`;
+  const motor = INICIO.esports.esports.filter(d => d.tipus === "motor" && tmp.motor[d.id]);
+  const filas = tmp.equips.map((e, i) => `
+    <div class="opcion on"><b>${esc(e.nom)}</b><small style="flex:1">${esc(nomLliga(e))}</small>
+      <button class="btn" data-quitar-equip="${i}">Treu</button></div>`).concat(motor.map(d => `
+    <div class="opcion on"><b>${esc(d.nombre)}</b><small style="flex:1">campionat sencer</small>
+      <button class="btn" data-quitar-motor="${esc(d.id)}">Treu</button></div>`));
+  $("equips").innerHTML = filas.length ? filas.join("") : `<div class="nota">Encara no en segueixes cap.</div>`;
   document.querySelectorAll("[data-quitar-equip]").forEach(el => el.onclick = () => {
-    const [quitado] = tmp.equips.splice(Number(el.dataset.quitarEquip), 1);
-    const casilla = document.querySelector(`[data-equip="${CSS.escape(quitado.id)}"]`);
-    if (casilla && quitado.lliga === tmp.lliga) casilla.checked = false;
-    pintarEquipos();
+    tmp.equips.splice(Number(el.dataset.quitarEquip), 1);
+    refrescarCasillas();
   });
+  document.querySelectorAll("[data-quitar-motor]").forEach(el => el.onclick = () => {
+    tmp.motor[el.dataset.quitarMotor] = false;
+    refrescarCasillas();
+  });
+}
+
+// Tras quitar algo de «El que segueixes», la lista de debajo del desplegable se desmarca también
+function refrescarCasillas() {
+  const tipus = deporte(tmp.esport).tipus;
+  if (tipus === "motor") pintarEsport();
+  else if (tipus === ALTRE) { if (tmp.equiposPorEsport[ALTRE]) casillasEquipos(tmp.equiposPorEsport[ALTRE]); }
+  else if (tmp.equiposPorEsport[tmp.esport]) pintarListaEquipos();
+  pintarEquipos();
 }
 
 // El ticker elegido: el de la lista o, con "Un altre…", el que se ha escrito

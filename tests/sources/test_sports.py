@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 import requests
 
-from panel_diario.sources import comun, sports
+from panel_diario.sources import comun, motogp, sports
 
 AHORA = datetime.now(UTC)
 
@@ -123,6 +123,14 @@ def test_formula1_proximo_gp_y_ganador_del_ultimo(espn: EspnFalso) -> None:
     assert f1["ultim"] == {"nom": "GP passat", "guanyador": "Pilot A"}
 
 
+def test_motogp_sale_de_su_propia_fuente(espn: EspnFalso, monkeypatch: pytest.MonkeyPatch) -> None:
+    datos = {"proxim": {"nom": "GP Moto", "data": "dg 22/11"}, "ultim": None}
+    monkeypatch.setattr(motogp, "obtener_motogp", lambda: datos)
+    r = sports.obtener_esports({"esports": {"motogp": True}})
+    assert r == {"equips": [], "f1": None, "motogp": datos}
+    assert espn.urls == []  # sin equipos ni F1, ESPN no se llama
+
+
 def test_sin_configurar() -> None:
     assert sports.obtener_esports({}) == {"sin_configurar": True}
 
@@ -133,7 +141,18 @@ def test_un_equipo_caido_no_tapa_lo_demas(espn: EspnFalso) -> None:
     assert r["equips"] == [] and r["f1"]["proxim"]
 
 
-def test_si_cae_todo_se_lanza_para_conservar_el_ultimo_dato(espn: EspnFalso) -> None:
+def _motogp_caido() -> dict:
+    raise requests.ConnectionError("sin conexión")
+
+
+def test_motogp_caido_no_tapa_lo_demas(espn: EspnFalso, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(motogp, "obtener_motogp", _motogp_caido)
+    r = sports.obtener_esports({"esports": {"f1": True, "motogp": True}})
+    assert r["f1"]["proxim"] and r["motogp"] is None
+
+
+def test_si_cae_todo_se_lanza_para_conservar_el_ultimo_dato(espn: EspnFalso, monkeypatch: pytest.MonkeyPatch) -> None:
     espn.caidos = {"espn.com"}
-    with pytest.raises(RuntimeError, match="ESPN"):
-        sports.obtener_esports({"esports": {"equips": [BARCA], "f1": True}})
+    monkeypatch.setattr(motogp, "obtener_motogp", _motogp_caido)
+    with pytest.raises(RuntimeError, match="esports"):
+        sports.obtener_esports({"esports": {"equips": [BARCA], "f1": True, "motogp": True}})

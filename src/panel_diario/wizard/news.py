@@ -36,18 +36,19 @@ def google_news_source(query: str, topic: str = "") -> dict:
 
 
 def outlet_groups() -> list[dict]:
-    """Medios del catálogo por grupo, con su idioma y las secciones que publican."""
+    """Medios del catálogo por grupo (con el bloque de cada grupo), su idioma y las secciones que publican."""
     return [
         {
             "id": group,
-            "nombre": label,
+            "nombre": g.name,
+            "bloc": outlets.BLOCKS[g.block],
             "medios": [
                 {"nombre": o.name, "idioma": o.language, "seccions": list(o.feeds)}
                 for o in outlets.CATALOG
                 if o.group == group
             ],
         }
-        for group, label in outlets.GROUPS.items()
+        for group, g in outlets.GROUPS.items()
     ]
 
 

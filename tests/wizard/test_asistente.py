@@ -138,7 +138,11 @@ def test_esports_drawdown_y_agenda() -> None:
     }
     base = {**plantilla(), "futbol": {"football_data_api_key": "k"}}
     cfg = asistente.construir_config(base, respuestas)
-    assert cfg["esports"] == {"equips": [{"lliga": "soccer/esp.1", "id": "7", "nom": "Equip"}], "f1": True}
+    assert cfg["esports"] == {
+        "equips": [{"lliga": "soccer/esp.1", "id": "7", "nom": "Equip"}],
+        "f1": True,
+        "motogp": False,
+    }
     assert "futbol" not in cfg  # el formato anterior desaparece
     assert cfg["drawdown"]["ticker"] == "EJEMPLO.DE"
     # Las caídas se guardan siempre negativas y ordenadas de menor a mayor caída

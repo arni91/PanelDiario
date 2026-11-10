@@ -91,6 +91,13 @@ def test_grupos_con_todos_los_medios_del_catalogo() -> None:
     assert ara["idioma"] == "ca" and "portades" in ara["seccions"]
 
 
+def test_cada_grupo_lleva_su_bloque_y_los_bloques_no_se_mezclan() -> None:
+    bloques = [g["bloc"] for g in news.outlet_groups()]
+    assert bloques[0] == "Actualitat" and bloques[-1] == "Per temes"
+    # Cada bloque sale seguido (el asistente pone su título una sola vez) y en su orden
+    assert [b for i, b in enumerate(bloques) if i == 0 or bloques[i - 1] != b] == list(outlets.BLOCKS.values())
+
+
 def test_lo_configurado_se_recupera_tal_cual() -> None:
     respuesta = {"medios": ["Ara", "El País"], "propios": [{"nombre": "Diari X", "url": "https://diarix.example/feed"}]}
     secciones = {"seccions": ["portades", "cultura"], "plans": True, "temes": ["energia solar"], "traduir": True}
