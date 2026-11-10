@@ -23,10 +23,11 @@ En Google Calendar, desde el ordenador: abre Google Calendar → ⚙ Configuraci
 
 ## Esports (`esports`)
 
-- `equips`: lista de equipos con `lliga` (ruta de ESPN de su competición, p. ej. `soccer/esp.1`), `id` (identificador de ESPN) y `nom`. El asistente los elige de una lista: deporte → competición → equipo. Las competiciones están en [`catalog/sports.py`](../src/panel_diario/catalog/sports.py): fútbol (LaLiga, Liga F, Premier, Serie A, Bundesliga, Ligue 1…), baloncesto (NBA, WNBA), NFL y NHL.
-- En fútbol se muestran todas las competiciones del equipo (liga, copa, Champions…); en los demás deportes, las de su liga. Próximos 3 partidos y el último resultado.
-- `f1`: `true` para ver el próximo gran premio y el ganador del último.
-- Datos de la API pública de ESPN, sin clave (no es un servicio oficial: si no responde, se muestra el último dato bueno). La Euroliga y la ACB no están: ESPN no publica sus partidos.
+- `equips`: lista de equipos con `lliga` (ruta de ESPN de su competición, p. ej. `soccer/esp.1`), `id` (identificador de ESPN) y `nom`. En el asistente se elige el deporte en un desplegable y debajo salen **todos sus equipos** en una lista con buscador, sin elegir competición: se marca el equipo y ya está. La lista junta los equipos de todas las competiciones del deporte de [`catalog/sports.py`](../src/panel_diario/catalog/sports.py): fútbol (LaLiga, Hypermotion, Liga F, Premier, Serie A, Bundesliga, Ligue 1, Portugal, Países Bajos, Argentina, Brasil, México, MLS, Champions y Copa del Rey), baloncesto (NBA, WNBA), fútbol americano (NFL), hockey sobre hielo (NHL) y béisbol (MLB). Un equipo que juega varias competiciones sale una vez y se guarda con la primera de la lista (su liga).
+- En fútbol se muestran todas las competiciones del equipo (liga, copa, Champions…); en los demás deportes, las de su liga. Próximos 3 partidos y el último resultado. Fuera de temporada (béisbol en invierno, por ejemplo) no hay partidos publicados.
+- `f1` y `motogp`: `true` para seguir el campeonato: el próximo gran premio y el ganador del último.
+- Equipos y F1: API pública de ESPN. MotoGP: API pública de resultados de motogp.com (ESPN no la tiene). Las dos son sin clave y no oficiales: si no responden, se muestra el último dato bueno.
+- Descartados (comprobado el 10-11-2026): Euroliga y ACB (ESPN no publica sus partidos), voleibol (solo la liga universitaria de EE. UU.), rugbi (da los equipos, pero el calendario sale vacío), balonmano y tenis (no hay datos; el tenis, además, es de jugadores).
 
 ## Borsa (`borsa`)
 

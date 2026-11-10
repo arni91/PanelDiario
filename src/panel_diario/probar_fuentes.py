@@ -17,6 +17,10 @@ def linea(ok: bool, nombre: str, detalle: str) -> None:
     print(f"  [{marca}] {nombre:<38} {detalle}")
 
 
+def _si(valor: object) -> str:
+    return "sí" if valor else "no"
+
+
 def main() -> int:
     """Prueba cada RSS y cada API con la config real y resume cuántas fallan (código 1 si alguna)."""
     cfg = cargar_config()
@@ -60,12 +64,12 @@ def main() -> int:
             ),
         ),
         (
-            "Esports (ESPN)",
+            "Esports (ESPN y MotoGP)",
             lambda: sports.obtener_esports(cfg),
             lambda r: (
                 "sin esports en config.json"
                 if r.get("sin_configurar")
-                else f"{len(r['equips'])} equipos · F1: {'sí' if r['f1'] else 'no'}"
+                else f"{len(r['equips'])} equipos · F1: {_si(r['f1'])} · MotoGP: {_si(r['motogp'])}"
             ),
         ),
     ]

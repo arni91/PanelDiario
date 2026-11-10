@@ -58,7 +58,7 @@ def _etiqueta_dia(d: date, hoy: date) -> str:
         return "Avui"
     if d == hoy + timedelta(days=1):
         return "Demà"
-    return f"{comun.DIAS[d.weekday()]} {d.day}/{d.month}"
+    return comun.dia_curt(d)
 
 
 def obtener_agenda(cfg: dict) -> dict:

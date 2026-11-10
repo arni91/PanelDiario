@@ -1,7 +1,8 @@
-"""Deportes: próximos partidos y último resultado de los equipos elegidos, y la Fórmula 1.
+"""Deportes: próximos partidos y último resultado de los equipos elegidos, la Fórmula 1 y MotoGP.
 
-Datos de la API pública de ESPN (no oficial, sin clave). Un equipo que falla se omite con un
-aviso en el log; si falla todo, se lanza la excepción y state.py conserva el último dato bueno.
+Datos de la API pública de ESPN (no oficial, sin clave); MotoGP sale de sources/motogp.py. Un bloque
+que falla se omite con un aviso en el log; si falla todo, se lanza la excepción y state.py conserva
+el último dato bueno.
 """
 
 from __future__ import annotations
@@ -10,13 +11,12 @@ import logging
 from datetime import datetime
 
 from panel_diario.catalog import sports
-from panel_diario.sources import comun
+from panel_diario.sources import comun, motogp
 
 log = logging.getLogger("panel")
 
 ESPN = "https://site.api.espn.com/apis/site/v2/sports/"
 NEXT_GAMES = 3
-WEEKDAYS = ("dl", "dt", "dc", "dj", "dv", "ds", "dg")
 # ESPN pone el país delante del nombre de la liga ("Spanish LALIGA"): se quita
 NATIONALITIES = ("Spanish ", "English ", "Italian ", "German ", "French ", "Portuguese ", "Dutch ", "Argentine ")
 
@@ -35,10 +35,6 @@ def _espn(path: str, params: dict | None = None) -> dict:
 def _local_time(iso: str) -> datetime:
     """Fecha de ESPN ("2026-11-22T13:00Z", en UTC) en la zona horaria del panel."""
     return datetime.fromisoformat(iso.replace("Z", "+00:00")).astimezone(comun.TZ)
-
-
-def _date(dt: datetime) -> str:
-    return f"{WEEKDAYS[dt.weekday()]} {dt.day}/{dt.month}"
 
 
 def _score(competitor: dict) -> int | None:
@@ -62,7 +58,7 @@ def _game(event: dict, team_id: str, league_name: str) -> dict:
         "rival": rival["team"].get("shortDisplayName") or rival["team"]["displayName"],
         "local": ours.get("homeAway") == "home",
         "competicio": competition_name(event, league_name),
-        "data": _date(dt),
+        "data": comun.dia_curt(dt),
         "hora": dt.strftime("%H:%M"),
         "ts": dt.timestamp(),
         "gols_equip": _score(ours),
@@ -116,7 +112,7 @@ def formula1() -> dict:
     out: dict = {"proxim": None, "ultim": None}
     if upcoming:
         dt = _local_time(upcoming[0]["endDate"])
-        out["proxim"] = {"nom": upcoming[0]["label"], "data": _date(dt)}
+        out["proxim"] = {"nom": upcoming[0]["label"], "data": comun.dia_curt(dt)}
     for e in data.get("events", []):
         race = e["competitions"][-1]  # la última sesión del fin de semana es la carrera
         if race.get("status", {}).get("type", {}).get("completed"):
@@ -127,12 +123,12 @@ def formula1() -> dict:
 
 
 def obtener_esports(cfg: dict) -> dict:
-    """Sección de deportes del panel. Sin equipos ni F1 en config.json, {"sin_configurar": True}."""
+    """Sección de deportes del panel. Sin equipos ni motor en config.json, {"sin_configurar": True}."""
     e = cfg.get("esports") or {}
-    teams, f1 = e.get("equips", []), bool(e.get("f1"))
-    if not teams and not f1:
+    teams, f1, moto = e.get("equips", []), bool(e.get("f1")), bool(e.get("motogp"))
+    if not teams and not f1 and not moto:
         return {"sin_configurar": True}
-    out: dict = {"equips": [], "f1": None}
+    out: dict = {"equips": [], "f1": None, "motogp": None}
     errors: list[Exception] = []
     for team in teams:
         try:
@@ -146,6 +142,12 @@ def obtener_esports(cfg: dict) -> dict:
         except Exception as ex:  # noqa: BLE001
             log.warning("Esports: F1 sin datos (%s)", type(ex).__name__)
             errors.append(ex)
-    if errors and not out["equips"] and not out["f1"]:
-        raise RuntimeError("ESPN no respon") from errors[-1]
+    if moto:
+        try:
+            out["motogp"] = motogp.obtener_motogp()
+        except Exception as ex:  # noqa: BLE001
+            log.warning("Esports: MotoGP sin datos (%s)", type(ex).__name__)
+            errors.append(ex)
+    if errors and not out["equips"] and not out["f1"] and not out["motogp"]:
+        raise RuntimeError("Les fonts d'esports no responen") from errors[-1]
     return out

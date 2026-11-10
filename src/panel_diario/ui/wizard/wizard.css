@@ -51,6 +51,9 @@ textarea { min-height: 70px; resize: vertical; }
 label.opcion { font-size: 14px; color: var(--text); margin: 0; }
 /* Equipos de una competición: casillas en dos columnas */
 .rejilla { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+/* Todos los equipos de un deporte (centenares en fútbol): se desplazan dentro de su caja */
+.rejilla.llarga { max-height: 280px; overflow-y: auto; padding-right: 4px; }
+.rejilla .opcion small { margin-left: auto; text-align: right; }
 .grupo { margin: 14px 0 4px; font-size: 13px; font-weight: 600; }
 .oculto { display: none !important; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }

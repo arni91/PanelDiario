@@ -63,7 +63,8 @@
   },
   "esports": {
     "equips": [],
-    "f1": false
+    "f1": false,
+    "motogp": false
   },
   "pestanas": [
     {

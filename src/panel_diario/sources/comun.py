@@ -7,7 +7,7 @@ sustituir comun.get por una respuesta falsa en un solo sitio y ninguna fuente sa
 from __future__ import annotations
 
 import unicodedata
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -29,6 +29,11 @@ DIAS = ["dl", "dt", "dc", "dj", "dv", "ds", "dg"]
 
 def ahora_local() -> datetime:
     return datetime.now(TZ)
+
+
+def dia_curt(d: date) -> str:
+    """Día corto en catalán: "dg 22/11"."""
+    return f"{DIAS[d.weekday()]} {d.day}/{d.month}"
 
 
 def get(

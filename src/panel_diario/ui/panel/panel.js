@@ -127,7 +127,7 @@ function pintarAgenda(a, error) {
   el.innerHTML = cab(botones) + html;
 }
 
-// --- Deportes: próximos partidos y último resultado de cada equipo, y la Fórmula 1 ---
+// --- Deportes: próximos partidos y último resultado de cada equipo, y los campeonatos de motor ---
 const rivalTxt = (p) => `${p.local ? "vs" : "@"} ${esc(p.rival)}`;
 
 function bloqueEquipo(e) {
@@ -146,17 +146,20 @@ function bloqueEquipo(e) {
   return html + `</div>`;
 }
 
+// F1 y MotoGP: próxima carrera y ganador de la última
+function bloqueMotor(nombre, m) {
+  return `<div class="equip"><b>${nombre}</b>
+    ${m.proxim ? `<div class="partido-prox"><b>${esc(m.proxim.nom)}</b><div>${esc(m.proxim.data)}</div></div>` : ""}
+    ${m.ultim ? `<div class="partido-sec"><div>Últim: ${esc(m.ultim.nom)} · 🏆 ${esc(m.ultim.guanyador)}</div></div>` : ""}</div>`;
+}
+
 function pintarEsports(b, error) {
   const el = document.getElementById("esports");
   if (ocultarSi(el, !b || !!b.sin_configurar)) return;
   let html = `<h3>🏅 Esports</h3>` + (b.equips || []).map(bloqueEquipo).join("");
-  if (b.f1) {
-    const f = b.f1;
-    html += `<div class="equip"><b>Fórmula 1</b>
-      ${f.proxim ? `<div class="partido-prox"><b>${esc(f.proxim.nom)}</b><div>${esc(f.proxim.data)}</div></div>` : ""}
-      ${f.ultim ? `<div class="partido-sec"><div>Últim: ${esc(f.ultim.nom)} · 🏆 ${esc(f.ultim.guanyador)}</div></div>` : ""}</div>`;
-  }
-  if (error) html += `<div class="dd-aviso">⚠ Dada desactualitzada: ESPN no respon</div>`;
+  if (b.f1) html += bloqueMotor("Fórmula 1", b.f1);
+  if (b.motogp) html += bloqueMotor("MotoGP", b.motogp);
+  if (error) html += `<div class="dd-aviso">⚠ Dada desactualitzada: la font d'esports no respon</div>`;
   el.innerHTML = html;
 }
 

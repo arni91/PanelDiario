@@ -43,7 +43,7 @@ def test_la_plantilla_publica_se_puede_cargar() -> None:
     # Cada pestaña tiene sus fuentes, no hay ninguna clave rellenada ni gustos personales
     assert {p["id"] for p in cfg["pestanas"]} == set(cfg["fuentes"])
     assert cfg["agenda"]["ical_urls"] == []
-    assert cfg["esports"] == {"equips": [], "f1": False}
+    assert cfg["esports"] == {"equips": [], "f1": False, "motogp": False}
 
 
 def test_zona_horaria_de_config(monkeypatch: pytest.MonkeyPatch) -> None:
