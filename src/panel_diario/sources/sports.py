@@ -82,7 +82,7 @@ def team_games(team: dict) -> dict:
         # En fútbol, el calendario sin parámetros trae lo jugado; con fixture=true, lo que falta
         events += _espn(path, {"fixture": "true"}).get("events", [])
     league = sports.find_league(team["lliga"])
-    league_name = league.name if league else ""
+    league_name = league.name if league else team.get("competicio", "")  # los de «Un altre…» la llevan guardada
     played: list[dict] = []
     upcoming: list[dict] = []
     seen: set[str] = set()

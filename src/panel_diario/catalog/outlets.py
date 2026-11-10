@@ -1,8 +1,9 @@
 """Catálogo público de medios: grupos, secciones y feeds RSS verificados.
 
-El asistente ofrece los medios por grupo (Catalunya, Espanya, Europa...) y las secciones
-(Portades, Política, Economia...). Cada sección del panel junta el feed de esa sección de cada
-medio elegido; "portades" es la portada de cada medio. Feeds comprobados el 9-11-2026 (responden,
+El asistente ofrece los medios en dos bloques: Actualitat (generalistas, por zona: Catalunya,
+Espanya, Europa, Món) y Per temes (Economia, Tecnologia, Ciència, Esports, Cultura); después, las
+secciones (Portades, Política, Economia...). Cada sección del panel junta el feed de esa sección de cada
+medio elegido; "portades" es la portada de cada medio. Feeds comprobados el 9 y el 10-11-2026 (responden,
 tienen fecha y noticias recientes); los descartados están en docs/fonts.md.
 """
 
@@ -11,14 +12,30 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-# Grupos en que el asistente ofrece los medios
-GROUPS: dict[str, str] = {
-    "catalunya": "Catalunya",
-    "espanya": "Espanya",
-    "europa": "Europa",
-    "mon": "Món",
-    "tematics": "Economia, tecnologia, ciència i esports",
-    "revistes": "Revistes",
+# Bloques del asistente: los diarios generalistas por zona y los medios especializados por tema
+BLOCKS: dict[str, str] = {
+    "actualitat": "Actualitat",
+    "temes": "Per temes",
+}
+
+
+@dataclass(frozen=True)
+class Group:
+    name: str
+    block: str
+
+
+# Grupos en que el asistente ofrece los medios, en este orden
+GROUPS: dict[str, Group] = {
+    "catalunya": Group("Catalunya", "actualitat"),
+    "espanya": Group("Espanya", "actualitat"),
+    "europa": Group("Europa", "actualitat"),
+    "mon": Group("Món", "actualitat"),
+    "economia": Group("Economia", "temes"),
+    "tecnologia": Group("Tecnologia", "temes"),
+    "ciencia": Group("Ciència", "temes"),
+    "esports": Group("Esports", "temes"),
+    "cultura": Group("Cultura i revistes", "temes"),
 }
 
 # Secciones del panel, en el orden en que salen las pestañas
@@ -331,40 +348,62 @@ CATALOG: tuple[Outlet, ...] = (
     Outlet("France 24", "es", "mon", {"portades": "https://www.france24.com/es/rss"}),
     Outlet("The Economist", "en", "mon", {"portades": "https://www.economist.com/the-world-this-week/rss.xml"}),
     Outlet("Clarín", "es", "mon", {"portades": "https://www.clarin.com/rss/lo-ultimo/"}),
-    # --- Mitjans temàtics: economia, tecnologia, ciència i esports ---
+    # --- Economia ---
     Outlet(
         "Cinco Días",
         "es",
-        "tematics",
+        "economia",
         {"economia": "https://feeds.elpais.com/mrss-s/pages/ep/site/cincodias.elpais.com/portada"},
     ),
-    Outlet("Xataka", "es", "tematics", {"tecnologia": "https://www.xataka.com/feedburner.xml"}),
-    Outlet("Genbeta", "es", "tematics", {"tecnologia": "https://www.genbeta.com/feedburner.xml"}),
-    Outlet("The Verge", "en", "tematics", {"tecnologia": "https://www.theverge.com/rss/index.xml"}),
-    Outlet("Wired", "en", "tematics", {"tecnologia": "https://www.wired.com/feed/rss"}),
-    Outlet("Ars Technica", "en", "tematics", {"tecnologia": "https://feeds.arstechnica.com/arstechnica/index"}),
-    Outlet("TechCrunch", "en", "tematics", {"tecnologia": "https://techcrunch.com/feed/"}),
-    Outlet("Engadget", "en", "tematics", {"tecnologia": "https://www.engadget.com/rss.xml"}),
-    Outlet("MIT Technology Review", "en", "tematics", {"tecnologia": "https://www.technologyreview.com/feed/"}),
-    Outlet("Hacker News", "en", "tematics", {"tecnologia": "https://hnrss.org/frontpage"}),
-    Outlet("Nature", "en", "tematics", {"ciencia": "https://www.nature.com/nature.rss"}),
-    Outlet("Muy Interesante", "es", "tematics", {"ciencia": "https://www.muyinteresante.com/feed/"}),
-    Outlet("Mundo Deportivo", "es", "tematics", {"esports": "https://www.mundodeportivo.com/rss/home.xml"}),
-    Outlet("Marca", "es", "tematics", {"esports": "https://e00-marca.uecdn.es/rss/portada.xml"}),
-    Outlet("AS", "es", "tematics", {"esports": "https://feeds.as.com/mrss-s/pages/as/site/as.com/portada/"}),
-    # --- Revistes ---
+    Outlet("Economía Digital", "es", "economia", {"economia": "https://www.economiadigital.es/feed/"}),
+    Outlet("Investing.com", "es", "economia", {"economia": "https://es.investing.com/rss/news.rss"}),
+    Outlet("Financial Times", "en", "economia", {"economia": "https://www.ft.com/rss/home"}),
+    Outlet("Bloomberg", "en", "economia", {"economia": "https://feeds.bloomberg.com/markets/news.rss"}),
+    Outlet(
+        "The Wall Street Journal",
+        "en",
+        "economia",
+        {"economia": "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain"},
+    ),
+    # --- Tecnologia ---
+    Outlet("Xataka", "es", "tecnologia", {"tecnologia": "https://www.xataka.com/feedburner.xml"}),
+    Outlet("Genbeta", "es", "tecnologia", {"tecnologia": "https://www.genbeta.com/feedburner.xml"}),
+    Outlet("The Verge", "en", "tecnologia", {"tecnologia": "https://www.theverge.com/rss/index.xml"}),
+    Outlet("Wired", "en", "tecnologia", {"tecnologia": "https://www.wired.com/feed/rss"}),
+    Outlet("Ars Technica", "en", "tecnologia", {"tecnologia": "https://feeds.arstechnica.com/arstechnica/index"}),
+    Outlet("TechCrunch", "en", "tecnologia", {"tecnologia": "https://techcrunch.com/feed/"}),
+    Outlet("Engadget", "en", "tecnologia", {"tecnologia": "https://www.engadget.com/rss.xml"}),
+    Outlet("MIT Technology Review", "en", "tecnologia", {"tecnologia": "https://www.technologyreview.com/feed/"}),
+    Outlet("Hacker News", "en", "tecnologia", {"tecnologia": "https://hnrss.org/frontpage"}),
+    # --- Ciència ---
+    Outlet("Nature", "en", "ciencia", {"ciencia": "https://www.nature.com/nature.rss"}),
+    Outlet("Muy Interesante", "es", "ciencia", {"ciencia": "https://www.muyinteresante.com/feed/"}),
+    Outlet("ScienceDaily", "en", "ciencia", {"ciencia": "https://www.sciencedaily.com/rss/all.xml"}),
+    Outlet(
+        "Scientific American",
+        "en",
+        "ciencia",
+        {"ciencia": "https://www.scientificamerican.com/platform/syndication/rss/"},
+    ),
+    Outlet("Quanta Magazine", "en", "ciencia", {"ciencia": "https://www.quantamagazine.org/feed/"}),
+    # --- Esports ---
+    Outlet("Mundo Deportivo", "es", "esports", {"esports": "https://www.mundodeportivo.com/rss/home.xml"}),
+    Outlet("Marca", "es", "esports", {"esports": "https://e00-marca.uecdn.es/rss/portada.xml"}),
+    Outlet("AS", "es", "esports", {"esports": "https://feeds.as.com/mrss-s/pages/as/site/as.com/portada/"}),
+    Outlet("Motorsport.com", "en", "esports", {"esports": "https://www.motorsport.com/rss/all/news/"}),
+    # --- Cultura i revistes ---
     Outlet(
         "Time Out Barcelona",
         "ca",
-        "revistes",
+        "cultura",
         {"cultura": "https://news.google.com/rss/search?q=site%3Atimeout.cat&hl=ca&gl=ES&ceid=ES:ca"},
         google_news=True,
     ),
-    Outlet("Jot Down", "es", "revistes", {"cultura": "https://www.jotdown.es/feed/"}),
-    Outlet("Sàpiens", "ca", "revistes", {"cultura": "https://www.sapiens.cat/uploads/feeds/feed_sapiens_ca.xml"}),
-    Outlet("The Atlantic", "en", "revistes", {"portades": "https://www.theatlantic.com/feed/all/"}),
-    Outlet("The New Yorker", "en", "revistes", {"cultura": "https://www.newyorker.com/feed/everything"}),
-    Outlet("Rolling Stone", "en", "revistes", {"cultura": "https://www.rollingstone.com/feed/"}),
+    Outlet("Jot Down", "es", "cultura", {"cultura": "https://www.jotdown.es/feed/"}),
+    Outlet("Sàpiens", "ca", "cultura", {"cultura": "https://www.sapiens.cat/uploads/feeds/feed_sapiens_ca.xml"}),
+    Outlet("The Atlantic", "en", "cultura", {"portades": "https://www.theatlantic.com/feed/all/"}),
+    Outlet("The New Yorker", "en", "cultura", {"cultura": "https://www.newyorker.com/feed/everything"}),
+    Outlet("Rolling Stone", "en", "cultura", {"cultura": "https://www.rollingstone.com/feed/"}),
 )
 
 

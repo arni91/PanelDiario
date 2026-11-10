@@ -299,6 +299,9 @@ class ApiAsistente:
     def equipos(self, esport: str) -> dict:
         return self._responder(lambda: sports.teams(esport))
 
+    def buscar_equipo(self, texto: str) -> dict:
+        return self._responder(lambda: sports.search_teams(texto))
+
     def validar_ticker(self, ticker: str) -> dict:
         return self._responder(lambda: validar_ticker(ticker))
 

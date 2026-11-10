@@ -55,6 +55,8 @@ label.opcion { font-size: 14px; color: var(--text); margin: 0; }
 .rejilla.llarga { max-height: 280px; overflow-y: auto; padding-right: 4px; }
 .rejilla .opcion small { margin-left: auto; text-align: right; }
 .grupo { margin: 14px 0 4px; font-size: 13px; font-weight: 600; }
+/* Bloques del paso de medios (Actualitat, Per temes): por encima de los grupos */
+h3.bloc { margin: 22px 0 0; padding-bottom: 4px; font-size: 15px; color: var(--accent); border-bottom: 1px solid var(--line); }
 .oculto { display: none !important; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }

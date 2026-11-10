@@ -83,6 +83,70 @@ def test_deporte_sin_equipos_no_sale_a_internet(esport: str) -> None:
         sports.teams(esport)
 
 
+# --- «Un altre…»: buscar cualquier equipo por su nombre ---
+
+
+def _buscador(*equipos: dict) -> dict:
+    otros = {"type": "article", "contents": [{"displayName": "Una notícia"}]}
+    return {"results": [otros, {"type": "team", "contents": list(equipos)}]}
+
+
+CELTIC = {
+    "uid": "s:600~t:256",
+    "displayName": "Celtic",
+    "sport": "soccer",
+    "defaultLeagueSlug": "sco.1",
+    "subtitle": "SPFL",
+}
+LEINSTER = {"uid": "s:300~t:25924", "displayName": "Leinster", "sport": "rugby", "defaultLeagueSlug": "270557"}
+SIN_LIGA = {"uid": "s:200~t:2252", "displayName": "Equip de criquet", "sport": "cricket"}
+
+
+def test_buscar_solo_ofrece_equipos_con_partidos(monkeypatch: pytest.MonkeyPatch) -> None:
+    def get(url: str, params: dict | None = None, **k: Any) -> types.SimpleNamespace:
+        if url == sports.SEARCH_URL:
+            assert params is not None and params["query"] == "celtic"
+            datos: dict = _buscador(CELTIC, LEINSTER, SIN_LIGA)
+        elif "teams/256/" in url:  # el Celtic tiene calendario; el Leinster, vacío
+            partido = {
+                "id": "1",
+                "date": "2026-11-22T15:00Z",
+                "competitions": [
+                    {
+                        "status": {"type": {"completed": False}},
+                        "competitors": [
+                            {"team": {"id": "256", "displayName": "Celtic"}},
+                            {"team": {"id": "9", "displayName": "Rival"}},
+                        ],
+                    }
+                ],
+            }
+            datos = {"events": [partido]}
+        else:
+            datos = {"events": []}
+        return types.SimpleNamespace(json=lambda: datos)
+
+    monkeypatch.setattr(comun, "get", get)
+    assert sports.search_teams(" celtic ") == [
+        {"id": "256", "nom": "Celtic", "lliga": "soccer/sco.1", "competicio": "SPFL"}
+    ]
+
+
+def test_buscar_con_pocas_letras_no_sale_a_internet() -> None:
+    with pytest.raises(ValueError, match="3 lletres"):
+        sports.search_teams("ab")
+
+
+def test_un_equipo_de_un_altre_guarda_su_competicion() -> None:
+    celtic = {"lliga": "soccer/sco.1", "id": "256", "nom": "Celtic", "competicio": "SPFL"}
+    assert sports.build({"equips": [celtic]})["esports"]["equips"] == [celtic]
+    # Los del catálogo no la necesitan: su competición ya está en catalog/sports.py
+    assert "competicio" not in sports.build({"equips": [{**EQUIPO, "competicio": "LaLiga"}]})["esports"]["equips"][0]
+
+
+# --- Lo que se guarda ---
+
+
 def test_lo_guardado_se_recupera() -> None:
     respuesta = {"equips": [EQUIPO], "f1": True, "motogp": True}
     assert sports.current_choices(sports.build(respuesta)) == respuesta
@@ -100,8 +164,10 @@ def test_sin_deportes_en_config() -> None:
     "respuesta",
     [
         {"equips": [], "f1": False, "motogp": False},
-        {"equips": [{**EQUIPO, "lliga": "cricket/ipl"}]},
+        {"equips": [{**EQUIPO, "lliga": "../../otra-web"}]},
+        {"equips": [{**EQUIPO, "lliga": "soccer"}]},
         {"equips": [{**EQUIPO, "id": ""}]},
+        {"equips": [{**EQUIPO, "id": "83?x=1"}]},
         {"equips": [{**EQUIPO, "nom": " "}]},
     ],
 )

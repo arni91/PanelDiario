@@ -1,12 +1,14 @@
 # Catálogo de medios
 
-El catálogo ([`catalog/outlets.py`](../src/panel_diario/catalog/outlets.py)) guarda, de cada medio, su idioma, su grupo y el feed RSS de cada sección que publica. El asistente ofrece los medios por grupo y después las secciones; cada sección del panel junta el feed de esa sección de cada medio elegido. **Portades** es la portada de cada medio: el panel agrupa la misma noticia publicada por varios medios y pone primero las que salen en más.
+El catálogo ([`catalog/outlets.py`](../src/panel_diario/catalog/outlets.py)) guarda, de cada medio, su idioma, su grupo y el feed RSS de cada sección que publica. El asistente ofrece los medios en dos bloques, **Actualitat** (diarios generalistas por zona: Catalunya, Espanya, Europa, Món) y **Per temes** (medios especializados: Economia, Tecnologia, Ciència, Esports, Cultura i revistes), y después las secciones; cada sección del panel junta el feed de esa sección de cada medio elegido. **Portades** es la portada de cada medio: el panel agrupa la misma noticia publicada por varios medios y pone primero las que salen en más.
 
 La selección busca variedad: medios de distintos países, idiomas y líneas editoriales, generalistas, temáticos y revistas. El panel no etiqueta ninguna orientación: cada titular lleva solo el nombre del medio.
 
 ## Medios y secciones
 
-Comprobados el 9 de noviembre de 2026: cada feed responde, es RSS válido, sus noticias llevan fecha y la más reciente es de los últimos 3 días (14 en Cultura, Ciència y revistas, que publican menos).
+Comprobados el 9 de noviembre de 2026 (los añadidos a Economia, Ciència y Esports, el 10): cada feed responde, es RSS válido, sus noticias llevan fecha y la más reciente es de los últimos 3 días (14 en Cultura, Ciència y revistas, que publican menos).
+
+## Actualitat
 
 ### Catalunya
 
@@ -64,11 +66,23 @@ Comprobados el 9 de noviembre de 2026: cada feed responde, es RSS válido, sus n
 | The Economist | anglès | Portades |
 | Clarín | castellà | Portades |
 
-### Economia, tecnologia, ciència i esports
+## Per temes
+
+### Economia
 
 | Mitjà | Idioma | Seccions |
 |---|---|---|
 | Cinco Días | castellà | Economia |
+| Economía Digital | castellà | Economia |
+| Investing.com | castellà | Economia |
+| Financial Times | anglès | Economia |
+| Bloomberg | anglès | Economia |
+| The Wall Street Journal | anglès | Economia (el feed de mercados de Dow Jones; los antiguos están abandonados) |
+
+### Tecnologia
+
+| Mitjà | Idioma | Seccions |
+|---|---|---|
 | Xataka | castellà | Tecnologia |
 | Genbeta | castellà | Tecnologia |
 | The Verge | anglès | Tecnologia |
@@ -78,13 +92,27 @@ Comprobados el 9 de noviembre de 2026: cada feed responde, es RSS válido, sus n
 | Engadget | anglès | Tecnologia |
 | MIT Technology Review | anglès | Tecnologia |
 | Hacker News | anglès | Tecnologia |
+
+### Ciència
+
+| Mitjà | Idioma | Seccions |
+|---|---|---|
 | Nature | anglès | Ciència |
 | Muy Interesante | castellà | Ciència |
+| ScienceDaily | anglès | Ciència |
+| Scientific American | anglès | Ciència |
+| Quanta Magazine | anglès | Ciència |
+
+### Esports
+
+| Mitjà | Idioma | Seccions |
+|---|---|---|
 | Mundo Deportivo | castellà | Esports |
 | Marca | castellà | Esports |
 | AS | castellà | Esports |
+| Motorsport.com | anglès | Esports |
 
-### Revistes
+### Cultura i revistes
 
 | Mitjà | Idioma | Seccions |
 |---|---|---|
@@ -99,10 +127,10 @@ Comprobados el 9 de noviembre de 2026: cada feed responde, es RSS válido, sus n
 
 Comprobados el mismo día; se pueden añadir con «Un altre…» si se encuentra un feed que funcione.
 
-- **Sin RSS que funcione**: Público, El Temps, CTXT, Agencia SINC, National Geographic España (403), elEconomista (403), New Scientist (406).
+- **Sin RSS que funcione**: Público, El Temps, CTXT, Agencia SINC, National Geographic España (403), elEconomista (403), New Scientist (406), Via Empresa (404), Relevo (404), ESPN (no devuelve noticias).
 - **De pago o bloqueados**: The Telegraph (402), La Razón respondía 503 a sus antiguas direcciones (se usan las de `?outputType=xml`).
-- **Abandonados** (la última noticia tiene meses o años): RTVE, CNN, The Wall Street Journal, Corriere della Sera.
-- **Poco actualizados o vacíos**: Der Spiegel International, Expansión, Sport, L'Esportiu, las secciones de ciencia de El Confidencial y Ara, deportes de El Mundo y The New York Times, política de VilaWeb y El Nacional.
+- **Abandonados** (la última noticia tiene meses o años): RTVE, CNN, los feeds antiguos de The Wall Street Journal, Corriere della Sera.
+- **Poco actualizados o vacíos**: Der Spiegel International, Expansión (casi una semana sin noticias), Sport (sus noticias no llevan fecha), L'Esportiu, las secciones de ciencia de El Confidencial y Ara, deportes de El Mundo y The New York Times, política de VilaWeb y El Nacional.
 
 ## Para añadir o corregir un medio
 

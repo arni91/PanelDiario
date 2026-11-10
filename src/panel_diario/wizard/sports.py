@@ -2,21 +2,29 @@
 
 En un deporte de equipos salen todos los equipos de sus competiciones (catalog/sports.py) en una
 sola lista, sin elegir competición: se marca el equipo y ya está. Los de motor (F1, MotoGP) se
-siguen enteros. config.json guarda en "esports" los equipos, "f1" y "motogp".
+siguen enteros. Con «Un altre…» se escribe el nombre de cualquier equipo y se busca en ESPN: solo
+salen los que tienen partidos publicados. config.json guarda en "esports" los equipos, "f1" y "motogp".
 """
 
 from __future__ import annotations
 
 import logging
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 from panel_diario.catalog import sports
 from panel_diario.sources import comun
+from panel_diario.sources import sports as espn
 
 log = logging.getLogger("panel")
 
 TEAMS_URL = "https://site.api.espn.com/apis/site/v2/sports/{path}/teams"
+SEARCH_URL = "https://site.web.api.espn.com/apis/search/v2"
 MAX_PARALLEL = 6  # peticiones a la vez a ESPN, para no saturarla
+MAX_FOUND = 8  # resultados del buscador que se comprueban
+MIN_SEARCH = 3  # letras mínimas para buscar
+# Competición de ESPN tal como va en la URL ("soccer/sco.1", "rugby/270557"): se valida antes de guardarla
+LEAGUE_PATH = re.compile(r"^[a-z-]+/[a-z0-9._-]+$")
 
 
 def options() -> dict:
@@ -60,6 +68,53 @@ def teams(sport: str) -> list[dict]:
     return sorted(unique.values(), key=lambda t: comun.normalizar(t["nom"]))
 
 
+# ---------------------------------------------------------------------------
+# «Un altre…»: cualquier equipo de ESPN, buscado por su nombre
+# ---------------------------------------------------------------------------
+
+
+def _found_team(result: dict) -> dict | None:
+    """Un resultado del buscador como equipo de config.json; None si le falta la competición o el id."""
+    team_id = re.search(r"~t:(\d+)$", result.get("uid", ""))
+    path = f"{result.get('sport')}/{result.get('defaultLeagueSlug')}"
+    if not team_id or not LEAGUE_PATH.match(path) or not result.get("displayName"):
+        return None
+    return {
+        "id": team_id.group(1),
+        "nom": result["displayName"],
+        "lliga": path,
+        "competicio": result.get("subtitle", ""),
+    }
+
+
+def _has_games(team: dict) -> bool:
+    """Si ESPN publica partidos del equipo (próximos o el último): si no, el panel no tendría nada que mostrar."""
+    try:
+        games = espn.team_games(team)
+    except Exception:  # noqa: BLE001  (calendario vacío o inexistente: el equipo no se ofrece)
+        return False
+    return bool(games["proxims"] or games["ultim"])
+
+
+def search_teams(text: str) -> list[dict]:
+    """Equipos de cualquier deporte con ese nombre que tienen partidos publicados en ESPN."""
+    text = text.strip()
+    if len(text) < MIN_SEARCH:
+        raise ValueError(f"Escriu almenys {MIN_SEARCH} lletres del nom de l'equip.")
+    params = {"query": text, "limit": MAX_FOUND, "type": "team"}
+    data = comun.get(SEARCH_URL, headers={"User-Agent": comun.UA_NAVEGADOR}, params=params).json()
+    results = [c for g in data.get("results", []) if g.get("type") == "team" for c in g.get("contents", [])]
+    found = [t for t in map(_found_team, results[:MAX_FOUND]) if t]
+    with ThreadPoolExecutor(max_workers=MAX_PARALLEL) as pool:
+        with_games = list(pool.map(_has_games, found))
+    return [t for t, ok in zip(found, with_games, strict=True) if ok]
+
+
+# ---------------------------------------------------------------------------
+# Lo que ya hay configurado y lo que se guarda
+# ---------------------------------------------------------------------------
+
+
 def current_choices(cfg: dict) -> dict:
     e = cfg.get("esports") or {}
     return {"equips": list(e.get("equips", [])), "f1": bool(e.get("f1")), "motogp": bool(e.get("motogp"))}
@@ -69,11 +124,14 @@ def build(answer: dict) -> dict:
     """La parte "esports" de config.json."""
     chosen = []
     for t in answer.get("equips", []):
-        if sports.find_league(t.get("lliga", "")) is None:
-            raise ValueError("Un equip triat és d'una competició que no és a la llista.")
-        if not str(t.get("id", "")).strip() or not str(t.get("nom", "")).strip():
+        if not LEAGUE_PATH.match(str(t.get("lliga", ""))):
+            raise ValueError("Un equip triat no té una competició vàlida.")
+        if not str(t.get("id", "")).strip().isdigit() or not str(t.get("nom", "")).strip():
             raise ValueError("Cada equip necessita el seu identificador i el seu nom.")
-        chosen.append({"lliga": t["lliga"], "id": str(t["id"]), "nom": t["nom"].strip()})
+        team = {"lliga": t["lliga"], "id": str(t["id"]).strip(), "nom": t["nom"].strip()}
+        if sports.find_league(t["lliga"]) is None and str(t.get("competicio", "")).strip():
+            team["competicio"] = str(t["competicio"]).strip()  # equipo de «Un altre…»: su competición, para mostrarla
+        chosen.append(team)
     f1, motogp = bool(answer.get("f1")), bool(answer.get("motogp"))
     if not chosen and not f1 and not motogp:
         raise ValueError("Tria almenys un equip o un campionat de motor (o salta aquest pas).")

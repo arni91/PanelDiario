@@ -16,6 +16,17 @@ def test_cada_medio_tiene_grupo_secciones_e_idioma_validos() -> None:
         assert o.language in ("ca", "es", "en", "fr"), o.name
 
 
+def test_cada_grupo_es_de_un_bloque() -> None:
+    assert all(g.block in outlets.BLOCKS for g in outlets.GROUPS.values())
+
+
+def test_los_medios_de_un_tema_publican_ese_tema() -> None:
+    """En «Per temes», Marca va a Esports y Xataka a Tecnologia: el grupo es la sección que publican."""
+    for o in outlets.CATALOG:
+        if outlets.GROUPS[o.group].block == "temes" and o.group != "cultura":
+            assert o.group in o.feeds, o.name
+
+
 def test_nombres_y_feeds_sin_repetir() -> None:
     nombres = [o.name for o in outlets.CATALOG]
     assert len(nombres) == len(set(nombres))
