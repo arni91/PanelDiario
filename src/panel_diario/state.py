@@ -14,7 +14,19 @@ from typing import Any
 
 from panel_diario import VERSION
 from panel_diario.config import CACHE, DATOS_DIR
-from panel_diario.sources import agenda, avisos, comun, drawdown, markets, noticias, sports, tiempo
+from panel_diario.sources import (
+    agenda,
+    aire,
+    avisos,
+    carburants,
+    comun,
+    drawdown,
+    llum,
+    markets,
+    noticias,
+    sports,
+    tiempo,
+)
 
 log = logging.getLogger("panel")
 
@@ -67,6 +79,9 @@ def actualizar(estado: Estado, cfg: dict) -> None:
             "borsa": lambda: markets.obtener_borsa(cfg),
             "drawdown": lambda: drawdown.obtener_drawdown(cfg, DATOS_DIR / "drawdown.json"),
             "agenda": lambda: agenda.obtener_agenda(cfg),
+            "aire": lambda: aire.obtener_aire(cfg),
+            "llum": lambda: llum.obtener_llum(cfg),
+            "carburants": lambda: carburants.obtener_carburants(cfg),
         }
         resultados, errores = {}, {}
         hilos = []

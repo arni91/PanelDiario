@@ -556,6 +556,167 @@
      "guanyador": "Pilot de motos d'exemple"
     }
    }
+  },
+  "llum": {
+   "ara": 0.214,
+   "mitjana": 0.1877,
+   "min": {
+    "h": 14,
+    "preu": 0.131
+   },
+   "max": {
+    "h": 20,
+    "preu": 0.321
+   },
+   "barates": [
+    3,
+    13,
+    14
+   ],
+   "hores": [
+    {
+     "h": 0,
+     "preu": 0.162
+    },
+    {
+     "h": 1,
+     "preu": 0.151
+    },
+    {
+     "h": 2,
+     "preu": 0.143
+    },
+    {
+     "h": 3,
+     "preu": 0.139
+    },
+    {
+     "h": 4,
+     "preu": 0.141
+    },
+    {
+     "h": 5,
+     "preu": 0.149
+    },
+    {
+     "h": 6,
+     "preu": 0.171
+    },
+    {
+     "h": 7,
+     "preu": 0.205
+    },
+    {
+     "h": 8,
+     "preu": 0.231
+    },
+    {
+     "h": 9,
+     "preu": 0.214
+    },
+    {
+     "h": 10,
+     "preu": 0.186
+    },
+    {
+     "h": 11,
+     "preu": 0.162
+    },
+    {
+     "h": 12,
+     "preu": 0.149
+    },
+    {
+     "h": 13,
+     "preu": 0.138
+    },
+    {
+     "h": 14,
+     "preu": 0.131
+    },
+    {
+     "h": 15,
+     "preu": 0.135
+    },
+    {
+     "h": 16,
+     "preu": 0.152
+    },
+    {
+     "h": 17,
+     "preu": 0.184
+    },
+    {
+     "h": 18,
+     "preu": 0.236
+    },
+    {
+     "h": 19,
+     "preu": 0.298
+    },
+    {
+     "h": 20,
+     "preu": 0.321
+    },
+    {
+     "h": 21,
+     "preu": 0.287
+    },
+    {
+     "h": 22,
+     "preu": 0.231
+    },
+    {
+     "h": 23,
+     "preu": 0.189
+    }
+   ]
+  },
+  "aire": {
+   "ica": 24,
+   "qualitat": "Acceptable",
+   "nivell": 1,
+   "pollen": [
+    {
+     "nom": "Gramínies",
+     "valor": 14.2,
+     "nivell": "moderat"
+    },
+    {
+     "nom": "Artemísia",
+     "valor": 2.1,
+     "nivell": "baix"
+    }
+   ]
+  },
+  "carburants": {
+   "producte": "Gasolina 95",
+   "radi_km": 10,
+   "mitjana": 1.598,
+   "total": 42,
+   "gasolineres": [
+    {
+     "nom": "Gasolinera A",
+     "adreca": "Carrer d'exemple, 1",
+     "localitat": "Ciutat d'exemple",
+     "preu": 1.399,
+     "km": 2.1
+    },
+    {
+     "nom": "Gasolinera B",
+     "adreca": "Avinguda d'exemple, 25",
+     "localitat": "Ciutat d'exemple",
+     "preu": 1.429,
+     "km": 4.6
+    },
+    {
+     "nom": "Gasolinera C",
+     "adreca": "Carretera d'exemple, km 3",
+     "localitat": "Poble d'exemple",
+     "preu": 1.459,
+     "km": 7.8
+    }
+   ]
   }
  },
  "pestanas": [

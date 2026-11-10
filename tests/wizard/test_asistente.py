@@ -122,6 +122,18 @@ def test_no_modifica_la_config_de_partida() -> None:
     assert base == original
 
 
+def test_dia_a_dia_con_la_provincia_de_la_ciudad_elegida() -> None:
+    cfg = asistente.construir_config(plantilla(), {"ubicacion": LUGAR, "dia": {"llum": True, "carburants": True}})
+    assert cfg["llum"] == {"activa": True} and cfg["aire"] == {"activa": False}
+    assert cfg["carburants"]["provincia"] == "17" and cfg["carburants"]["activa"] is True
+
+
+def test_dia_a_dia_sin_cambiar_de_ciudad_usa_la_de_los_avisos() -> None:
+    base = {**plantilla(), "avisos_meteo": {"zonas": ["Lleida"]}}
+    cfg = asistente.construir_config(base, {"dia": {"carburants": True}})
+    assert cfg["carburants"]["provincia"] == "25"
+
+
 def test_esports_drawdown_y_agenda() -> None:
     respuestas = {
         "esports": {"equips": [{"lliga": "soccer/esp.1", "id": 7, "nom": " Equip "}], "f1": True},

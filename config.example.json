@@ -61,6 +61,18 @@
     "ical_urls": [],
     "dias": 7
   },
+  "llum": {
+    "activa": false
+  },
+  "aire": {
+    "activa": false
+  },
+  "carburants": {
+    "activa": false,
+    "provincia": "",
+    "producte": "gasolina95",
+    "radi_km": 10
+  },
   "esports": {
     "equips": [],
     "f1": false,
