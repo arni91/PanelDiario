@@ -50,12 +50,21 @@ def test_todos_los_equipos_del_deporte_sin_elegir_competicion(monkeypatch: pytes
     assert sorted(pedidas) == sorted(lg.path for lg in catalogo.leagues_of("futbol"))
 
 
+def test_los_equipos_de_ligas_femeninas_se_distinguen_por_el_nombre(monkeypatch: pytest.MonkeyPatch) -> None:
+    def get(url: str, **k: Any) -> types.SimpleNamespace:
+        return _respuesta((19483, "Barcelona")) if "esp.w.1" in url else _respuesta((83, "Barcelona"))
+
+    monkeypatch.setattr(comun, "get", get)
+    equipos = {e["id"]: e["nom"] for e in sports.teams("futbol")}
+    assert equipos == {"83": "Barcelona", "19483": "Barcelona (femení)"}
+
+
 def test_fuera_del_futbol_el_mismo_id_en_dos_ligas_son_dos_equipos(monkeypatch: pytest.MonkeyPatch) -> None:
     def get(url: str, **k: Any) -> types.SimpleNamespace:
         return _respuesta((3, "Equip NBA")) if "/nba/" in url else _respuesta((3, "Equip WNBA"))
 
     monkeypatch.setattr(comun, "get", get)
-    assert [e["nom"] for e in sports.teams("basquet")] == ["Equip NBA", "Equip WNBA"]
+    assert [e["nom"] for e in sports.teams("basquet")] == ["Equip NBA", "Equip WNBA (femení)"]
 
 
 def test_una_competicion_caida_no_deja_sin_equipos(monkeypatch: pytest.MonkeyPatch) -> None:

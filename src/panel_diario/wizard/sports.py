@@ -20,6 +20,7 @@ log = logging.getLogger("panel")
 
 TEAMS_URL = "https://site.api.espn.com/apis/site/v2/sports/{path}/teams"
 SEARCH_URL = "https://site.web.api.espn.com/apis/search/v2"
+WOMEN_SUFFIX = " (femení)"
 MAX_PARALLEL = 6  # peticiones a la vez a ESPN, para no saturarla
 MAX_FOUND = 8  # resultados del buscador que se comprueban
 MIN_SEARCH = 3  # letras mínimas para buscar
@@ -43,8 +44,11 @@ def _league_teams(league: sports.League) -> list[dict] | None:
     except Exception as ex:  # noqa: BLE001  (una competición caída no deja sin equipos las demás)
         log.warning("Asistente: equips de %s sense resposta (%s)", league.name, type(ex).__name__)
         return None
+    # En las ligas femeninas se añade "(femení)": si no, "Barcelona" saldría dos veces sin saber cuál es cuál
+    suffix = WOMEN_SUFFIX if league.women else ""
     return [
-        {"id": str(t["id"]), "nom": t["displayName"], "lliga": league.path, "competicio": league.name} for t in found
+        {"id": str(t["id"]), "nom": t["displayName"] + suffix, "lliga": league.path, "competicio": league.name}
+        for t in found
     ]
 
 

@@ -32,6 +32,7 @@ class League:
     path: str
     name: str
     sport: str
+    women: bool = False  # liga femenina: sus equipos se llaman igual que los masculinos ("Barcelona")
 
 
 # El orden importa: un equipo que juega varias competiciones se guarda con la primera de la lista
@@ -40,7 +41,7 @@ class League:
 LEAGUES: tuple[League, ...] = (
     League("soccer/esp.1", "LaLiga", "futbol"),
     League("soccer/esp.2", "LaLiga Hypermotion", "futbol"),
-    League("soccer/esp.w.1", "Liga F", "futbol"),
+    League("soccer/esp.w.1", "Liga F", "futbol", women=True),
     League("soccer/eng.1", "Premier League", "futbol"),
     League("soccer/ita.1", "Serie A", "futbol"),
     League("soccer/ger.1", "Bundesliga", "futbol"),
@@ -54,7 +55,7 @@ LEAGUES: tuple[League, ...] = (
     League("soccer/uefa.champions", "Champions League", "futbol"),
     League("soccer/esp.copa_del_rey", "Copa del Rei", "futbol"),
     League("basketball/nba", "NBA", "basquet"),
-    League("basketball/wnba", "WNBA", "basquet"),
+    League("basketball/wnba", "WNBA", "basquet", women=True),
     League("football/nfl", "NFL", "futbol_america"),
     League("hockey/nhl", "NHL", "hoquei"),
     League("baseball/mlb", "MLB", "beisbol"),
