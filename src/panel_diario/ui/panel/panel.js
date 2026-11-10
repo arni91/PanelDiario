@@ -163,6 +163,61 @@ function pintarEsports(b, error) {
   el.innerHTML = html;
 }
 
+// --- Calidad del aire (índice europeo) y polen de hoy ---
+// Color de cada tramo del índice: de bona (verde) a extremadament dolenta (granate)
+const COLORES_AIRE = ["var(--up)", "#8bd17c", "#f2c94c", "#f2994a", "#eb5757", "#a33ea1"];
+
+function pintarAire(a, error) {
+  const el = document.getElementById("aire");
+  if (ocultarSi(el, !a || !!a.sin_configurar)) return;
+  const pollen = a.pollen.length
+    ? a.pollen.map(p => `${esc(p.nom)} <b>${esc(p.nivell)}</b> <span class="muted">(${coma(p.valor, 0)} grans/m³)</span>`).join(" · ")
+    : `<span class="muted">res destacable avui</span>`;
+  el.innerHTML = `<h3>🌿 Aire i pol·len</h3>
+    <div class="aire-fila"><span class="punt" style="background:${COLORES_AIRE[a.nivell] || COLORES_AIRE[0]}"></span>
+      Qualitat de l'aire: <b>${esc(a.qualitat)}</b> <span class="muted">(índex ${a.ica})</span></div>
+    <div class="aire-fila">Pol·len: ${pollen}</div>
+    ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: Open-Meteo no respon</div>` : ""}`;
+}
+
+// --- Precio de la luz: ahora, el día en barras y las horas más baratas ---
+const euros = (n, dec = 3) => coma(n, dec) + " €";
+// Barata (verde) por debajo del 90 % de la media del día, cara (roja) por encima del 110 %
+const colorLlum = (preu, mitjana) => preu <= mitjana * 0.9 ? "var(--up)" : preu >= mitjana * 1.1 ? "var(--down)" : "#f2c94c";
+
+function pintarLlum(l, error) {
+  const el = document.getElementById("llum");
+  if (ocultarSi(el, !l || !!l.sin_configurar)) return;
+  const max = Math.max(...l.hores.map(h => h.preu));
+  const ara = new Date().getHours();
+  el.innerHTML = `<h3>⚡ Preu de la llum</h3>
+    <div class="llum-top">
+      ${l.ara !== null ? `<div class="llum-ara" style="color:${colorLlum(l.ara, l.mitjana)}">${euros(l.ara)}</div>` : ""}
+      <div class="llum-txt">per kWh ara · mitjana d'avui ${euros(l.mitjana)}<br>
+        Més barata a les <b>${l.min.h} h</b> (${euros(l.min.preu)}) · més cara a les <b>${l.max.h} h</b> (${euros(l.max.preu)})</div>
+    </div>
+    <div class="llum-barres">${l.hores.map(h => `
+      <div class="${h.h === ara ? "ara" : ""}" title="${h.h} h: ${euros(h.preu)}"
+        style="height:${Math.max(8, Math.round(h.preu / max * 100))}%; background:${colorLlum(h.preu, l.mitjana)}"></div>`).join("")}
+    </div>
+    <div class="llum-eix"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div>
+    <div class="muted llum-nota">Les 3 hores més barates: ${l.barates.map(h => h + " h").join(", ")}</div>
+    ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: Red Eléctrica no respon</div>` : ""}`;
+}
+
+// --- Carburantes: las gasolineras más baratas cerca ---
+function pintarCarburants(c, error) {
+  const el = document.getElementById("carburants");
+  if (ocultarSi(el, !c || !!c.sin_configurar)) return;
+  const filas = c.gasolineres.length
+    ? c.gasolineres.map(g => `<div class="gas"><b>${euros(g.preu)}</b>
+        <span>${esc(g.nom)} <span class="muted">· ${esc(g.adreca)}, ${esc(g.localitat)} · ${coma(g.km, 1)} km</span></span></div>`).join("")
+    : `<div class="nota">No hi ha gasolineres a menys de ${coma(c.radi_km, 0)} km.</div>`;
+  el.innerHTML = `<h3>⛽ ${esc(c.producte)} més barata a prop</h3>${filas}
+    ${c.mitjana !== null ? `<div class="muted llum-nota">Mitjana de ${c.total} gasolineres a menys de ${coma(c.radi_km, 0)} km: ${euros(c.mitjana)}</div>` : ""}
+    ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: el Ministeri no respon</div>` : ""}`;
+}
+
 // --- Borsa: índices con la variación del día y listas de valores del día ---
 // Precio con separador de miles y dos decimales, al estilo catalán (12.000,00)
 const preuCa = (n) => Number(n).toLocaleString("ca-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -299,7 +354,7 @@ function pintarPie() {
     const lista = caidas.map(c => `${c.fuente} (${c.categoria}): ${c.error}`).join("\n");
     partes.push(`<span class="aviso-f" title="${esc(lista)}">⚠ ${caidas.length} ${caidas.length === 1 ? "font no respon" : "fonts no responen"}</span>`);
   }
-  const nombres = { tiempo: "temps", avisos: "avisos", esports: "esports", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", agenda: "agenda" };
+  const nombres = { tiempo: "temps", avisos: "avisos", esports: "esports", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", agenda: "agenda", aire: "aire i pol·len", llum: "llum", carburants: "carburants" };
   const fallos = Object.keys(err).map(k => nombres[k] || k);
   if (fallos.length) partes.push(`<span class="aviso-f" title="${esc(Object.entries(err).map(([k, v]) => k + ": " + v).join("\n"))}">⚠ sense actualitzar: ${esc(fallos.join(", "))}</span>`);
   pie.innerHTML = (partes.length ? partes.join(" · ") : "Tot en ordre")
@@ -314,7 +369,10 @@ async function cargar() {
   document.getElementById("btn-ref").classList.toggle("girando", !!(D && D.actualizando));
   pintarAvisos(s.avisos);
   pintarTiempo(s.tiempo);
+  pintarAire(s.aire, D && D.errores && D.errores.aire);
   pintarAgenda(s.agenda, D && D.errores && D.errores.agenda);
+  pintarLlum(s.llum, D && D.errores && D.errores.llum);
+  pintarCarburants(s.carburants, D && D.errores && D.errores.carburants);
   pintarEsports(s.esports, D && D.errores && D.errores.esports);
   pintarBorsa(s.borsa, D && D.errores && D.errores.borsa);
   pintarDrawdown(s.drawdown, D && D.errores && D.errores.drawdown);

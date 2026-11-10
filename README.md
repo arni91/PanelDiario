@@ -22,6 +22,9 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 |---|---|---|
 | Tiempo | Ahora, próximas horas, 6 días y avisos oficiales | Open-Meteo, MeteoAlarm |
 | Agenda | Eventos de hoy y de la semana | Calendario iCal (Google, Outlook, iCloud) |
+| Aire y polen | Calidad del aire (índice europeo) y polen de hoy | Open-Meteo |
+| Luz | Precio de cada hora de hoy (PVPC), las horas más baratas y la más cara | Red Eléctrica |
+| Gasolineras | Las tres más baratas cerca, para el combustible elegido, y la media de la zona | Ministerio de Industria |
 | Deportes | Próximos partidos y último resultado de los equipos elegidos (fútbol, baloncesto, fútbol americano, hockey sobre hielo y béisbol), la Fórmula 1 y MotoGP | ESPN, motogp.com |
 | Bolsa | Índices con la variación del día y los valores que más suben, bajan o se negocian | Yahoo Finance |
 | ETF propio (opcional) | Caída desde el máximo y aportación extra por niveles (en %) | Yahoo Finance |

@@ -1,10 +1,10 @@
 # Panel Diario
-Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiempo; al hacer clic despliega un panel con avisos meteorológicos, agenda (Google Calendar por iCal), bolsa (índices y valores del día), opcionalmente las caídas de un ETF propio con niveles de aportación extra en %, próximos partidos y resultados de varios equipos y deportes, la Fórmula 1 y MotoGP y noticias por pestañas. Un asistente de configuración escribe config.json.
+Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiempo; al hacer clic despliega un panel con avisos meteorológicos, agenda (Google Calendar por iCal), bolsa (índices y valores del día), precio de la luz por horas, calidad del aire y polen, las gasolineras más baratas cerca, opcionalmente las caídas de un ETF propio con niveles de aportación extra en %, próximos partidos y resultados de varios equipos y deportes, la Fórmula 1 y MotoGP y noticias por pestañas. Un asistente de configuración escribe config.json.
 
 # Stack
 - Python 3.12 + pywebview (3 ventanas: píldora ui/pill/, panel ui/panel/ y asistente ui/wizard/) + pystray (icono junto al reloj).
 - Interfaz en HTML/CSS/JS sin framework; Python y JS se comunican con el puente js_api de pywebview.
-- Datos: Open-Meteo (tiempo y geocodificación), MeteoAlarm, iCal, Yahoo Finance, ESPN y motogp.com (no oficiales, sin clave), RSS y Google Noticias. Traducción con el traductor de Google (no oficial).
+- Datos: Open-Meteo (tiempo y geocodificación), MeteoAlarm, iCal, Yahoo Finance, ESPN y motogp.com (no oficiales, sin clave), Red Eléctrica (luz), Open-Meteo calidad del aire, Ministerio de Industria (carburantes), RSS y Google Noticias. Traducción con el traductor de Google (no oficial).
 - uv (uv.lock), ruff, mypy, pytest, pre-commit y GitHub Actions (windows-latest).
 
 # Estructura (src/panel_diario/)
@@ -12,8 +12,8 @@ Widget de escritorio para Windows. Una píldora en el escritorio muestra el tiem
 - config.py: rutas (CONFIG, EJEMPLO, DATOS_DIR), leer/guardar config.json, zona horaria.
 - state.py: último dato bueno de cada sección y caché; actualizar() pide las fuentes en paralelo.
 - sources/ (back): una fuente de datos por módulo. comun.py tiene HTTP (comun.get), zona horaria (comun.TZ) y utilidades. Si una fuente falla, lanza excepción y state.py conserva el último dato bueno. Si a una sección le falta su clave, devuelve {"sin_clave"/"sin_url"/"sin_configurar": True} y la interfaz la oculta.
-- catalog/ (datos públicos): markets.py (índices y listas de valores del día de Yahoo), sports.py (deportes del desplegable del asistente: de equipos, con sus competiciones de ESPN, y de motor) y outlets.py, catálogo de medios (nombre, idioma, grupo y feed RSS de cada sección); de ahí salen config.example.json y el asistente. Cada titular muestra solo el nombre del medio.
-- wizard/: asistente.py (pasos generales, construir_config y ApiAsistente) y un módulo por paso con lógica propia: news.py (medios y secciones), markets.py (bolsa) y sports.py (deportes).
+- catalog/ (datos públicos): markets.py (índices y listas de valores del día de Yahoo), sports.py (deportes del desplegable del asistente: de equipos, con sus competiciones de ESPN, y de motor), fuel.py (combustibles y provincias del Ministerio) y outlets.py, catálogo de medios (nombre, idioma, grupo y feed RSS de cada sección); de ahí salen config.example.json y el asistente. Cada titular muestra solo el nombre del medio.
+- wizard/: asistente.py (pasos generales, construir_config y ApiAsistente) y un módulo por paso con lógica propia: news.py (medios y secciones), markets.py (bolsa), sports.py (deportes) y daily.py («El teu dia a dia»: luz, aire y gasolineras).
 - desktop/ (Windows): bandeja.py (icono junto al reloj; recibe las acciones como funciones) y win32.py (todo lo que usa ctypes: monitores, anclar al escritorio, barra de tareas, errores).
 - ui/ (front): una carpeta por ventana con su .html, .css y .js (panel/, pill/ = píldora, wizard/ = asistente); common/ para lo compartido.
 - demo.json: datos para --demo, con sus propias pestañas. probar_fuentes.py: comprueba las fuentes reales de config.json.

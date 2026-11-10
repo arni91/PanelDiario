@@ -146,6 +146,27 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
              background: var(--panel-2); }
 .dd-aviso { margin-top: 6px; font-size: 11px; color: #f2994a; }
 
+/* Aire y polen */
+.aire-fila { font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.aire-fila + .aire-fila { margin-top: 6px; }
+.punt { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Luz: precio de ahora y una barra por hora del día */
+.llum-top { display: flex; align-items: center; gap: 12px; }
+.llum-ara { font-size: 26px; font-weight: 600; line-height: 1; white-space: nowrap; }
+.llum-txt { font-size: 12px; color: var(--muted); }
+.llum-txt b { color: var(--text); }
+.llum-barres { display: flex; align-items: flex-end; gap: 2px; height: 46px; margin-top: 10px; }
+.llum-barres div { flex: 1; border-radius: 2px 2px 0 0; opacity: .75; }
+.llum-barres div.ara { opacity: 1; outline: 2px solid var(--text); outline-offset: 1px; }
+.llum-eix { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 3px; }
+.llum-nota { font-size: 11px; margin-top: 6px; }
+
+/* Carburantes: una fila por gasolinera, precio delante */
+.gas { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 8px; font-size: 13px; padding: 4px 0; }
+.gas + .gas { border-top: 1px solid var(--line); }
+.gas b { color: var(--up); }
+
 /* Pestañas */
 .tabs { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 0; }
 .tabs::-webkit-scrollbar { height: 0; }

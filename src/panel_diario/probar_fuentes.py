@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 from panel_diario.config import cargar_config
-from panel_diario.sources import avisos, drawdown, markets, noticias, sports, tiempo
+from panel_diario.sources import aire, avisos, carburants, drawdown, llum, markets, noticias, sports, tiempo
 
 
 def linea(ok: bool, nombre: str, detalle: str) -> None:
@@ -70,6 +70,25 @@ def main() -> int:
                 "sin esports en config.json"
                 if r.get("sin_configurar")
                 else f"{len(r['equips'])} equipos · F1: {_si(r['f1'])} · MotoGP: {_si(r['motogp'])}"
+            ),
+        ),
+        (
+            "Aire y polen (Open-Meteo)",
+            lambda: aire.obtener_aire(cfg),
+            lambda r: "sin activar" if r.get("sin_configurar") else f"ICA {r['ica']} · {len(r['pollen'])} pólenes",
+        ),
+        (
+            "Luz (Red Eléctrica)",
+            lambda: llum.obtener_llum(cfg),
+            lambda r: "sin activar" if r.get("sin_configurar") else f"ahora {r['ara']} €/kWh · {len(r['hores'])} horas",
+        ),
+        (
+            "Carburantes (Ministerio)",
+            lambda: carburants.obtener_carburants(cfg),
+            lambda r: (
+                "sin activar"
+                if r.get("sin_configurar")
+                else f"{r['producte']}: {r['total']} gasolineras a menos de {r['radi_km']} km"
             ),
         ),
     ]
