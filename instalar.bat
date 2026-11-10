@@ -36,7 +36,7 @@ rem esperar 2 s a que se cierre. Con PowerShell y no con timeout: timeout falla 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and ($_.CommandLine -like '*panel_diario*' -or $_.CommandLine -like '*panel.py*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; Start-Sleep -Seconds 2" >nul 2>&1
 
 rem --- Accesos directos: Inicio (arranca con Windows) y Escritorio (para reabrirlo) ---
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$w=New-Object -ComObject WScript.Shell; foreach($d in @([Environment]::GetFolderPath('Startup'),[Environment]::GetFolderPath('Desktop'))){ $s=$w.CreateShortcut($d+'\Panel Diario.lnk'); $s.TargetPath=$env:PD+'.venv\Scripts\pythonw.exe'; $s.Arguments='-m panel_diario'; $s.WorkingDirectory=$env:PD; $s.Description='Panel Diario'; $s.Save() }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$w=New-Object -ComObject WScript.Shell; foreach($d in @([Environment]::GetFolderPath('Startup'),[Environment]::GetFolderPath('Desktop'))){ $s=$w.CreateShortcut($d+'\Panel Diario.lnk'); $s.TargetPath=$env:PD+'.venv\Scripts\pythonw.exe'; $s.Arguments='-m panel_diario'; $s.WorkingDirectory=$env:PD; $s.Description='Panel Diario'; $s.IconLocation=$env:PD+'src\panel_diario\ui\common\logo.ico'; $s.Save() }"
 if errorlevel 1 echo Aviso: no se pudieron crear los accesos directos.
 
 echo.

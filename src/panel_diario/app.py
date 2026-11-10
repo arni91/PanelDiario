@@ -46,6 +46,7 @@ from panel_diario.desktop.win32 import (
     escritorio_virtual,
     mover_hija,
     ocultar_de_barra_tareas,
+    poner_icono,
     redondear_esquinas,
     tamano_pantalla,
     ya_en_marcha,
@@ -338,6 +339,19 @@ def registrar_atajo(cfg: dict, api: Api) -> None:
         log.warning("No se pudo registrar el atajo %s: %s", atajo, ex)
 
 
+def hwnd_de(ventana: webview.Window) -> int | None:
+    """Identificador de Windows de una ventana de pywebview (su formulario WinForms).
+
+    Mejor que buscarla por título: con dos copias abiertas (p. ej. --demo y la normal), el título
+    no distingue cuál es cuál.
+    """
+    nativa = getattr(ventana, "native", None)  # el formulario de WinForms (None hasta que se crea)
+    try:
+        return int(nativa.Handle.ToInt64()) if nativa is not None else None
+    except Exception:  # noqa: BLE001  (otro motor de pywebview: sin Handle)
+        return None
+
+
 def main() -> None:
     """Arranca el panel: config, estado, las tres ventanas, la bandeja, el atajo y el bucle de actualización."""
     demo = "--demo" in sys.argv
@@ -397,6 +411,8 @@ def main() -> None:
         return False  # nunca se cierra: se oculta (para salir, usa el menú del icono junto al reloj)
 
     ventana.events.closing += al_cerrar
+    logo = PAQUETE / "ui" / "common" / "logo.ico"
+    ventana.events.shown += lambda: poner_icono(hwnd_de(ventana), logo)
 
     # Asistente de configuración (oculto salvo la primera vez o con --asistente)
     def al_guardar(nueva: dict) -> None:
@@ -431,6 +447,7 @@ def main() -> None:
         return False  # se oculta para poder reabrirlo desde la bandeja
 
     ventana_asistente.events.closing += al_cerrar_asistente
+    ventana_asistente.events.shown += lambda: poner_icono(hwnd_de(ventana_asistente), logo)
 
     # Ficha del escritorio
     ficha: ApiFicha | None = None

@@ -1,3 +1,5 @@
+<p align="center"><img src="src/panel_diario/ui/common/logo.png" width="96" alt="Logo de Panel Diario"></p>
+
 # Panel Diario
 
 [![CI](https://github.com/arni91/PanelDiario/actions/workflows/ci.yml/badge.svg)](https://github.com/arni91/PanelDiario/actions/workflows/ci.yml)
