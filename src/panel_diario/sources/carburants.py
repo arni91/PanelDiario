@@ -49,7 +49,9 @@ def obtener_carburants(cfg: dict) -> dict:
     province = c.get("provincia", "")
     if not c.get("activa") or province not in fuel.PROVINCES:
         return {"sin_configurar": True}
-    stations = comun.get(API.format(province=province), timeout=30).json().get("ListaEESSPrecio", [])
+    stations = (
+        comun.get(API.format(province=province), timeout=30, tls_compatible=True).json().get("ListaEESSPrecio", [])
+    )
     u = cfg.get("ubicacion") or {}
     near = _near(stations, u["lat"], u["lon"]) if "lat" in u and "lon" in u else []
     if near:

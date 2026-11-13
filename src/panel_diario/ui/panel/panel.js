@@ -380,25 +380,37 @@ function pintarPie() {
     + `<span style="margin-left:auto">v${esc((D && D.version) || "?")}</span>`;
 }
 
+// Secciones con datos propios: id de la sección (y de su <section>) -> función que la pinta
+const PINTORES = {
+  aire: pintarAire, agenda: pintarAgenda, plans: pintarPlans, llum: pintarLlum, carburants: pintarCarburants,
+  esports: pintarEsports, borsa: pintarBorsa, drawdown: pintarDrawdown,
+};
+
+// Pinta una sección sin que un fallo suyo (p. ej. datos con un formato inesperado) deje sin pintar
+// las demás: el error va a la consola y, si es una sección de PINTORES (se repinta entera cada
+// vez), se queda con un aviso. Noticias, avisos y pie no se vacían: tienen elementos fijos dentro.
+function pintarSeguro(id, fn) {
+  try {
+    fn();
+  } catch (ex) {
+    console.error(`Secció ${id}:`, ex);
+    const el = id in PINTORES && document.getElementById(id);
+    if (el) { el.style.display = ""; el.innerHTML = `<div class="dd-aviso">⚠ No s'ha pogut mostrar aquesta secció</div>`; }
+  }
+}
+
 async function cargar() {
   D = await api().obtener();
   const s = (D && D.secciones) || {};
+  const err = (D && D.errores) || {};
   pintarFecha();
   document.getElementById("actualizado").textContent = D && D.actualizado ? "Act. " + D.actualizado : "";
   document.getElementById("btn-ref").classList.toggle("girando", !!(D && D.actualizando));
-  pintarAvisos(s.avisos);
-  pintarTiempo(s.tiempo);
-  pintarAire(s.aire, D && D.errores && D.errores.aire);
-  pintarAgenda(s.agenda, D && D.errores && D.errores.agenda);
-  pintarPlans(s.plans, D && D.errores && D.errores.plans);
-  pintarLlum(s.llum, D && D.errores && D.errores.llum);
-  pintarCarburants(s.carburants, D && D.errores && D.errores.carburants);
-  pintarEsports(s.esports, D && D.errores && D.errores.esports);
-  pintarBorsa(s.borsa, D && D.errores && D.errores.borsa);
-  pintarDrawdown(s.drawdown, D && D.errores && D.errores.drawdown);
-  pintarTabs();
-  pintarLista();
-  pintarPie();
+  pintarSeguro("avisos", () => pintarAvisos(s.avisos));
+  pintarSeguro("tiempo", () => pintarTiempo(s.tiempo));
+  for (const [id, fn] of Object.entries(PINTORES)) pintarSeguro(id, () => fn(s[id], err[id]));
+  pintarSeguro("noticias", () => { pintarTabs(); pintarLista(); });
+  pintarSeguro("pie", pintarPie);
   clearTimeout(temporizador);
   if (D && D.actualizando) temporizador = setTimeout(cargar, 2500);
 }
