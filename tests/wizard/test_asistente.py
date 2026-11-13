@@ -215,10 +215,10 @@ def test_noticias_con_sus_dos_pasos() -> None:
 # --- Planes (detalle en test_plans.py) ------------------------------------------------
 
 
-def test_plans_sin_ciudad_propia_usan_la_del_tiempo_ya_configurada() -> None:
+def test_plans_con_sus_interesos() -> None:
     respuestas = {"plans": {"activa": True, "interessos": ["performance"]}}
-    cfg = asistente.construir_config({"ubicacion": {"nombre": "Girona"}}, respuestas)
-    assert cfg["plans"]["ciutat"] == "Girona" and cfg["plans"]["interessos"] == ["performance"]
+    cfg = asistente.construir_config({}, respuestas)
+    assert cfg["plans"]["activa"] is True and cfg["plans"]["interessos"] == ["performance"]
 
 
 def test_saltar_el_paso_de_medios_conserva_los_que_habia() -> None:

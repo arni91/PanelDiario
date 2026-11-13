@@ -96,9 +96,7 @@ const PASOS = [
   {
     id: "dia",
     pintar: () => {
-      const a = INICIO.dia_actual, o = INICIO.dia;
-      // La provincia de los carburantes: por defecto, la de la ciudad (Python la reconoce al guardar)
-      const ciutat = (tmp.lugar && tmp.lugar.provincia) || "la teva ciutat";
+      const a = INICIO.dia_actual;
       return `<div class="paso"><h2>🏠 El teu dia a dia</h2>
       <p>Marca el que et sigui útil. El preu de la llum i dels carburants són d'Espanya.</p>
       <div class="opciones">
@@ -107,24 +105,13 @@ const PASOS = [
         <label class="opcion"><input type="checkbox" id="dia-aire" ${a.aire ? "checked" : ""}>
           <b>🌿 Qualitat de l'aire i pol·len</b><small>a la teva ciutat</small></label>
         <label class="opcion"><input type="checkbox" id="dia-carb" ${a.carburants ? "checked" : ""}>
-          <b>⛽ Preu dels carburants</b><small>el preu mitjà de la gasolina 95, la 98 i el dièsel a la teva província</small></label>
-      </div>
-      <div id="dia-gas" class="${a.carburants ? "" : "oculto"}">
-        <div class="niveles" style="margin-top:10px">
-          <label>Província</label><select id="dia-provincia">
-            <option value="">La de ${esc(ciutat)}</option>
-            ${o.provincies.map(p => `<option value="${esc(p.id)}" ${a.provincia === p.id ? "selected" : ""}>${esc(p.nom)}</option>`).join("")}</select>
-        </div>
+          <b>⛽ Preu dels carburants</b><small>el preu mitjà de la gasolina 95, la 98 i el dièsel a prop de casa</small></label>
       </div>
       <div class="mensaje" id="mensaje"></div></div>`;
-    },
-    alMostrar: () => {
-      $("dia-carb").onchange = () => $("dia-gas").classList.toggle("oculto", !$("dia-carb").checked);
     },
     recoger: () => {
       const r = {
         llum: $("dia-llum").checked, aire: $("dia-aire").checked, carburants: $("dia-carb").checked,
-        provincia: $("dia-provincia").value,
       };
       if (!r.llum && !r.aire && !r.carburants) { mensaje("Marca almenys una opció (o salta aquest pas).", "error"); return null; }
       return r;
@@ -135,14 +122,12 @@ const PASOS = [
     pintar: () => {
       const a = INICIO.plans_actual;
       return `<div class="paso"><h2>🎭 Plans</h2>
-      <p>Exposicions, concerts, xerrades, festivals i espectacles dels propers dies (Agenda Cultural de Catalunya:
-      només Catalunya). Els que coincideixen amb els teus interessos surten primer, a «Per a tu».</p>
+      <p>Exposicions, concerts, xerrades, festivals i espectacles dels propers dies a menys de 20 km de casa
+      (Agenda Cultural de Catalunya: només Catalunya). Els que coincideixen amb els teus interessos surten primer,
+      a «Per a tu».</p>
       <div class="opciones"><label class="opcion"><input type="checkbox" id="plans-on" ${a.activa ? "checked" : ""}>
-        <b>Mostra plans al panell</b><small>a la ciutat que triïs</small></label></div>
+        <b>Mostra plans a prop de casa</b><small>al voltant de la ciutat del temps</small></label></div>
       <div id="plans-cos" class="${a.activa ? "" : "oculto"}">
-        <label>Ciutat</label>
-        <input type="text" id="plans-ciutat" value="${esc(a.ciutat)}"
-          placeholder="Si la deixes buida, la del temps (p. ex. Barcelona si vius a prop)">
         <label>Els teus interessos</label>
         <div class="opciones">${INICIO.plans.interessos.map(i => `
           <label class="opcion"><input type="checkbox" data-interes value="${esc(i.id)}" ${a.interessos.includes(i.id) ? "checked" : ""}>
@@ -158,7 +143,6 @@ const PASOS = [
     },
     recoger: () => ({
       activa: $("plans-on").checked,
-      ciutat: $("plans-ciutat").value.trim(),
       interessos: [...document.querySelectorAll("[data-interes]:checked")].map(el => el.value),
       paraules: $("plans-paraules").value.split(",").map(p => p.trim()).filter(Boolean),
     }),

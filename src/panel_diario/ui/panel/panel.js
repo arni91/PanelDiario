@@ -141,11 +141,11 @@ function pintarPlans(p, error) {
   const filas = lista.length ? lista.map(x => `<div class="ev plan" data-url="${esc(x.enllac)}" title="${esc(x.enllac)}">
       <div class="h">${esc(x.quan)}</div>
       <div><div class="t">${esc(x.titol)}</div>
-        <div class="l">${esc(x.lloc)}${x.gratuit ? " · gratuït" : ""}</div>
+        <div class="l">${esc(x.lloc)} · ${x.km} km${x.gratuit ? " · gratuït" : ""}</div>
         ${x.interessos.length ? `<div class="meta">${x.interessos.map(i => `<span class="chip tema">${esc(i)}</span>`).join("")}</div>` : ""}
       </div></div>`).join("")
-    : `<div class="nota">No hi ha plans a ${esc(p.ciutat)} els propers ${p.dies} dies.</div>`;
-  el.innerHTML = `<div class="agenda-cab"><h3>🎭 Plans a ${esc(p.ciutat)}</h3>${botones}</div>${filas}
+    : `<div class="nota">No hi ha plans a menys de ${coma(p.radi_km, 0)} km els propers ${p.dies} dies.</div>`;
+  el.innerHTML = `<div class="agenda-cab"><h3>🎭 Plans a prop</h3>${botones}</div>${filas}
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: l'Agenda Cultural no respon</div>` : ""}`;
 }
 
@@ -231,7 +231,7 @@ function pintarLlum(l, error) {
 function pintarCarburants(c, error) {
   const el = document.getElementById("carburants");
   if (ocultarSi(el, !c || !!c.sin_configurar)) return;
-  el.innerHTML = `<h3>⛽ Carburants · preu mitjà a ${esc(c.provincia)}</h3>
+  el.innerHTML = `<h3>⛽ Carburants · preu mitjà ${esc(c.zona)}</h3>
     <div class="gas">${c.preus.map(p => `<div><small class="muted">${esc(p.nom)}</small>
       <b>${p.mitjana !== null ? euros(p.mitjana) : "—"}</b></div>`).join("")}</div>
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: el Ministeri no respon</div>` : ""}`;

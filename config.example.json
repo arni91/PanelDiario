@@ -73,7 +73,7 @@
   },
   "plans": {
     "activa": false,
-    "ciutat": "",
+    "radi_km": 20,
     "dies": 7,
     "interessos": [],
     "paraules": []

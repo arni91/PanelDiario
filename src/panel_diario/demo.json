@@ -658,7 +658,7 @@
    ]
   },
   "carburants": {
-   "provincia": "Ciutat d'exemple",
+   "zona": "a menys de 10 km",
    "preus": [
     {
      "nom": "Gasolina 95",
@@ -678,12 +678,13 @@
    ]
   },
   "plans": {
-   "ciutat": "Ciutat d'exemple",
+   "radi_km": 20,
    "dies": 7,
    "per_a_tu": [
     {
      "titol": "[Demo] Nit de música electrònica i visuals",
      "lloc": "Sala d'exemple",
+     "km": 3,
      "quan": "ds 14/11",
      "categoria": "concerts",
      "interessos": [
@@ -695,6 +696,7 @@
     {
      "titol": "[Demo] Cicle de performance i cos",
      "lloc": "Centre d'art d'exemple",
+     "km": 12,
      "quan": "fins dg 29/11",
      "categoria": "festivals i mostres",
      "interessos": [
@@ -709,6 +711,7 @@
     {
      "titol": "[Demo] Nit de música electrònica i visuals",
      "lloc": "Sala d'exemple",
+     "km": 3,
      "quan": "ds 14/11",
      "categoria": "concerts",
      "interessos": [
@@ -720,6 +723,7 @@
     {
      "titol": "[Demo] Xerrada sobre la ciutat i el futur",
      "lloc": "Biblioteca d'exemple",
+     "km": 1,
      "quan": "dt 17/11",
      "categoria": "conferencies",
      "interessos": [],
@@ -729,6 +733,7 @@
     {
      "titol": "[Demo] Cicle de performance i cos",
      "lloc": "Centre d'art d'exemple",
+     "km": 12,
      "quan": "fins dg 29/11",
      "categoria": "festivals i mostres",
      "interessos": [
@@ -741,6 +746,7 @@
     {
      "titol": "[Demo] Exposició de fotografia contemporània",
      "lloc": "Museu d'exemple",
+     "km": 15,
      "quan": "fins dg 17/1",
      "categoria": "exposicions",
      "interessos": [],

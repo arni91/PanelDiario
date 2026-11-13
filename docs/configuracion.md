@@ -27,14 +27,14 @@ El asistente las pregunta en un mismo paso, con una casilla para cada una. Las t
 
 - `llum.activa`: el precio de la luz (PVPC, la tarifa regulada) de cada hora de hoy, en €/kWh: el de ahora, la media del día, la hora más barata y la más cara, y las tres más baratas. API pública de Red Eléctrica (apidatos.ree.es), sin clave. Precios de la península.
 - `aire.activa`: la calidad del aire (índice europeo, de «Bona» a «Extremadament dolenta») y el polen de hoy en la ubicación del panel. API de calidad del aire de Open-Meteo, sin clave. El polen solo existe en Europa y en temporada; los niveles (baix, moderat, alt: menos de 10, de 10 a 50 y más de 50 granos/m³) son orientativos e iguales para todos los pólenes.
-- `carburants`: precio medio de la gasolina 95, la gasolina 98 y el diésel entre las gasolineras de la provincia. `provincia` es el código de provincia del Ministerio (`08` Barcelona, `17` Girona…; lista en [`catalog/fuel.py`](../src/panel_diario/catalog/fuel.py)): el asistente la saca de la ciudad elegida y solo la pregunta si no la reconoce. API pública de precios de carburantes del Ministerio, sin clave, solo España.
+- `carburants`: precio medio de la gasolina 95, la gasolina 98 y el diésel entre las gasolineras a menos de 10 km de la ubicación (si no hay ninguna, el de toda la provincia). En el asistente es solo una casilla. `provincia` es el código de provincia del Ministerio (`08` Barcelona, `17` Girona…; lista en [`catalog/fuel.py`](../src/panel_diario/catalog/fuel.py)), y el asistente lo saca de la ciudad del tiempo. API pública de precios de carburantes del Ministerio, sin clave, solo España.
 
 ## Plans (`plans`)
 
-Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días en una ciudad de Cataluña, de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). El panel tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
+Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días cerca de la ubicación del panel (solo Cataluña), de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). El panel tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
 
 - `activa`: mostrar la sección.
-- `ciutat`: el municipio, como se escribe normalmente (`Barcelona`, `L'Hospitalet de Llobregat`…). El asistente pone la del tiempo si no se escribe otra: quien vive en un pueblo cercano suele querer los planes de la ciudad grande.
+- `radi_km`: distancia máxima desde la ubicación (20 por defecto): desde un municipio del área metropolitana entran la ciudad grande y las de alrededor (desde Sant Cugat, Barcelona, Sabadell, Terrassa, Rubí…).
 - `dies`: cuántos días hacia delante (7 por defecto).
 - `interessos`: ids de [`catalog/interests.py`](../src/panel_diario/catalog/interests.py) (`lgtbi`, `electronica`, `performance`, `drag`, `feminisme`, `reivindicatiu`, `underground`, `art_contemporani`). Cada uno es una lista de palabras que se buscan en el título, el subtítulo, la descripción y las categorías del plan.
 - `paraules`: palabras propias que también cuentan como interés (`["jazz", "cinema japonès"]`).

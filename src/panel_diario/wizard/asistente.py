@@ -231,7 +231,7 @@ def construir_config(base: dict, respuestas: dict) -> dict:
         zonas = (cfg.get("avisos_meteo") or {}).get("zonas") or [""]
         cfg.update(daily.build(respuestas["dia"], (lugar or {}).get("provincia") or zonas[0]))
     if "plans" in respuestas:
-        cfg.update(plans.build(respuestas["plans"], (lugar or cfg.get("ubicacion") or {}).get("nombre", "")))
+        cfg.update(plans.build(respuestas["plans"]))
     if "esports" in respuestas:
         cfg.update(sports.build(respuestas["esports"]))
         cfg.pop("futbol", None)  # el formato anterior (football-data.org) queda sustituido
@@ -282,7 +282,6 @@ class ApiAsistente:
         return {
             "ciudades": CIUDADES,
             "calendarios": CALENDARIOS,
-            "dia": daily.options(),
             "dia_actual": daily.current_choices(c),
             "plans": plans.options(),
             "plans_actual": plans.current_choices(c),

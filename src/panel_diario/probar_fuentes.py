@@ -88,7 +88,7 @@ def main() -> int:
             lambda r: (
                 "sin activar"
                 if r.get("sin_configurar")
-                else f"{r['ciutat']}: {len(r['per_a_tu'])} per a tu, {len(r['tot'])} en total"
+                else f"a {r['radi_km']} km: {len(r['per_a_tu'])} per a tu, {len(r['tot'])} en total"
             ),
         ),
         (

@@ -22,10 +22,10 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 |---|---|---|
 | Tiempo | Ahora, próximas horas, 6 días y avisos oficiales | Open-Meteo, MeteoAlarm |
 | Agenda | Eventos de hoy y de la semana | Calendario iCal (Google, Outlook, iCloud) |
-| Planes | Exposiciones, conciertos, charlas y festivales de los próximos días; primero los de los interesos elegidos (LGTBIQ+, música electrónica, performance…) | Agenda Cultural de Catalunya |
+| Planes | Exposiciones, conciertos, charlas y festivales de los próximos días a menos de 20 km; primero los de los interesos elegidos (LGTBIQ+, música electrónica, performance…) | Agenda Cultural de Catalunya |
 | Aire y polen | Calidad del aire (índice europeo) y polen de hoy | Open-Meteo |
 | Luz | Precio de cada hora de hoy (PVPC), las horas más baratas y la más cara | Red Eléctrica |
-| Carburantes | Precio medio de la gasolina 95, la 98 y el diésel en la provincia | Ministerio de Industria |
+| Carburantes | Precio medio de la gasolina 95, la 98 y el diésel a menos de 10 km | Ministerio de Industria |
 | Deportes | Próximos partidos y último resultado de los equipos elegidos (fútbol, baloncesto, fútbol americano, hockey sobre hielo y béisbol), la Fórmula 1 y MotoGP | ESPN, motogp.com |
 | Bolsa | Índices con la variación del día y los valores que más suben, bajan o se negocian | Yahoo Finance |
 | ETF propio (opcional) | Caída desde el máximo y aportación extra por niveles (en %) | Yahoo Finance |
