@@ -690,31 +690,22 @@
    ]
   },
   "carburants": {
-   "producte": "Gasolina 95",
-   "radi_km": 10,
-   "mitjana": 1.598,
-   "total": 42,
-   "gasolineres": [
+   "provincia": "Ciutat d'exemple",
+   "preus": [
     {
-     "nom": "Gasolinera A",
-     "adreca": "Carrer d'exemple, 1",
-     "localitat": "Ciutat d'exemple",
-     "preu": 1.399,
-     "km": 2.1
+     "nom": "Gasolina 95",
+     "mitjana": 1.598,
+     "gasolineres": 412
     },
     {
-     "nom": "Gasolinera B",
-     "adreca": "Avinguda d'exemple, 25",
-     "localitat": "Ciutat d'exemple",
-     "preu": 1.429,
-     "km": 4.6
+     "nom": "Gasolina 98",
+     "mitjana": 1.742,
+     "gasolineres": 287
     },
     {
-     "nom": "Gasolinera C",
-     "adreca": "Carretera d'exemple, km 3",
-     "localitat": "Poble d'exemple",
-     "preu": 1.459,
-     "km": 7.8
+     "nom": "Dièsel",
+     "mitjana": 1.549,
+     "gasolineres": 405
     }
    ]
   }

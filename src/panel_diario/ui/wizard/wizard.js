@@ -97,24 +97,20 @@ const PASOS = [
     id: "dia",
     pintar: () => {
       const a = INICIO.dia_actual, o = INICIO.dia;
-      // La provincia de las gasolineras: por defecto, la de la ciudad (Python la reconoce al guardar)
+      // La provincia de los carburantes: por defecto, la de la ciudad (Python la reconoce al guardar)
       const ciutat = (tmp.lugar && tmp.lugar.provincia) || "la teva ciutat";
       return `<div class="paso"><h2>🏠 El teu dia a dia</h2>
-      <p>Marca el que et sigui útil. El preu de la llum i les gasolineres són d'Espanya.</p>
+      <p>Marca el que et sigui útil. El preu de la llum i dels carburants són d'Espanya.</p>
       <div class="opciones">
         <label class="opcion"><input type="checkbox" id="dia-llum" ${a.llum ? "checked" : ""}>
           <b>⚡ Preu de la llum</b><small>el preu de cada hora d'avui i les hores més barates</small></label>
         <label class="opcion"><input type="checkbox" id="dia-aire" ${a.aire ? "checked" : ""}>
           <b>🌿 Qualitat de l'aire i pol·len</b><small>a la teva ciutat</small></label>
         <label class="opcion"><input type="checkbox" id="dia-carb" ${a.carburants ? "checked" : ""}>
-          <b>⛽ Gasolineres més barates</b><small>les més barates a prop teu</small></label>
+          <b>⛽ Preu dels carburants</b><small>el preu mitjà de la gasolina 95, la 98 i el dièsel a la teva província</small></label>
       </div>
       <div id="dia-gas" class="${a.carburants ? "" : "oculto"}">
         <div class="niveles" style="margin-top:10px">
-          <label>Carburant</label><select id="dia-producte">${o.carburants.map(c =>
-            `<option value="${esc(c.id)}" ${a.producte === c.id ? "selected" : ""}>${esc(c.nom)}</option>`).join("")}</select>
-          <label>A menys de</label><select id="dia-radi">${o.radis.map(r =>
-            `<option value="${r}" ${a.radi_km === r ? "selected" : ""}>${r} km</option>`).join("")}</select>
           <label>Província</label><select id="dia-provincia">
             <option value="">La de ${esc(ciutat)}</option>
             ${o.provincies.map(p => `<option value="${esc(p.id)}" ${a.provincia === p.id ? "selected" : ""}>${esc(p.nom)}</option>`).join("")}</select>
@@ -128,7 +124,7 @@ const PASOS = [
     recoger: () => {
       const r = {
         llum: $("dia-llum").checked, aire: $("dia-aire").checked, carburants: $("dia-carb").checked,
-        producte: $("dia-producte").value, radi_km: Number($("dia-radi").value), provincia: $("dia-provincia").value,
+        provincia: $("dia-provincia").value,
       };
       if (!r.llum && !r.aire && !r.carburants) { mensaje("Marca almenys una opció (o salta aquest pas).", "error"); return null; }
       return r;

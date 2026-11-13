@@ -69,9 +69,7 @@
   },
   "carburants": {
     "activa": false,
-    "provincia": "",
-    "producte": "gasolina95",
-    "radi_km": 10
+    "provincia": ""
   },
   "esports": {
     "equips": [],

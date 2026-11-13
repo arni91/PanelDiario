@@ -31,6 +31,7 @@ def test_provincia_desconocida() -> None:
     assert fuel.find_province("") is None
 
 
-def test_combustibles_sin_repetir() -> None:
-    ids = [p.ministry_id for p in fuel.PRODUCTS.values()]
-    assert len(ids) == len(set(ids))
+def test_gasolina_95_98_y_diesel_sin_repetir() -> None:
+    assert [p.name for p in fuel.PRODUCTS] == ["Gasolina 95", "Gasolina 98", "Dièsel"]
+    campos = [p.ministry_field for p in fuel.PRODUCTS]
+    assert len(campos) == len(set(campos))

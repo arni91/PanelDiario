@@ -88,7 +88,7 @@ def main() -> int:
             lambda r: (
                 "sin activar"
                 if r.get("sin_configurar")
-                else f"{r['producte']}: {r['total']} gasolineras a menos de {r['radi_km']} km"
+                else ", ".join(f"{p['nom']} {p['mitjana']} €" for p in r["preus"])
             ),
         ),
     ]

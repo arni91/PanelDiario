@@ -6,7 +6,7 @@ Lo normal es configurar el panel con el **asistente** (se abre solo la primera v
 
 ## Qué funciona sin claves
 
-Tiempo, avisos meteorológicos, noticias, deportes, bolsa, el ETF propio, el precio de la luz, el aire y el polen y las gasolineras funcionan sin ninguna clave. La agenda necesita su dirección iCal. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
+Tiempo, avisos meteorológicos, noticias, deportes, bolsa, el ETF propio, el precio de la luz, el aire y el polen y los carburantes funcionan sin ninguna clave. La agenda necesita su dirección iCal. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
 
 ## Ubicación y avisos
 
@@ -27,7 +27,7 @@ El asistente las pregunta en un mismo paso, con una casilla para cada una. Las t
 
 - `llum.activa`: el precio de la luz (PVPC, la tarifa regulada) de cada hora de hoy, en €/kWh: el de ahora, la media del día, la hora más barata y la más cara, y las tres más baratas. API pública de Red Eléctrica (apidatos.ree.es), sin clave. Precios de la península.
 - `aire.activa`: la calidad del aire (índice europeo, de «Bona» a «Extremadament dolenta») y el polen de hoy en la ubicación del panel. API de calidad del aire de Open-Meteo, sin clave. El polen solo existe en Europa y en temporada; los niveles (baix, moderat, alt: menos de 10, de 10 a 50 y más de 50 granos/m³) son orientativos e iguales para todos los pólenes.
-- `carburants`: las tres gasolineras más baratas a menos de `radi_km` km (5, 10, 20 o 30) de la ubicación, para el combustible `producte` (`gasolina95`, `gasolina98`, `gasoil`, `gasoil_premium` o `glp`), con la media de la zona. `provincia` es el código de provincia del Ministerio (`08` Barcelona, `17` Girona…; lista en [`catalog/fuel.py`](../src/panel_diario/catalog/fuel.py)): el asistente la saca de la ciudad elegida y solo la pregunta si no la reconoce. API pública de precios de carburantes del Ministerio, sin clave, solo España.
+- `carburants`: precio medio de la gasolina 95, la gasolina 98 y el diésel entre las gasolineras de la provincia. `provincia` es el código de provincia del Ministerio (`08` Barcelona, `17` Girona…; lista en [`catalog/fuel.py`](../src/panel_diario/catalog/fuel.py)): el asistente la saca de la ciudad elegida y solo la pregunta si no la reconoce. API pública de precios de carburantes del Ministerio, sin clave, solo España.
 
 ## Esports (`esports`)
 

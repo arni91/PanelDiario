@@ -205,16 +205,13 @@ function pintarLlum(l, error) {
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: Red Eléctrica no respon</div>` : ""}`;
 }
 
-// --- Carburantes: las gasolineras más baratas cerca ---
+// --- Carburantes: precio medio de cada combustible en la provincia ---
 function pintarCarburants(c, error) {
   const el = document.getElementById("carburants");
   if (ocultarSi(el, !c || !!c.sin_configurar)) return;
-  const filas = c.gasolineres.length
-    ? c.gasolineres.map(g => `<div class="gas"><b>${euros(g.preu)}</b>
-        <span>${esc(g.nom)} <span class="muted">· ${esc(g.adreca)}, ${esc(g.localitat)} · ${coma(g.km, 1)} km</span></span></div>`).join("")
-    : `<div class="nota">No hi ha gasolineres a menys de ${coma(c.radi_km, 0)} km.</div>`;
-  el.innerHTML = `<h3>⛽ ${esc(c.producte)} més barata a prop</h3>${filas}
-    ${c.mitjana !== null ? `<div class="muted llum-nota">Mitjana de ${c.total} gasolineres a menys de ${coma(c.radi_km, 0)} km: ${euros(c.mitjana)}</div>` : ""}
+  el.innerHTML = `<h3>⛽ Carburants · preu mitjà a ${esc(c.provincia)}</h3>
+    <div class="gas">${c.preus.map(p => `<div><small class="muted">${esc(p.nom)}</small>
+      <b>${p.mitjana !== null ? euros(p.mitjana) : "—"}</b></div>`).join("")}</div>
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: el Ministeri no respon</div>` : ""}`;
 }
 
