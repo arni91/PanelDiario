@@ -39,18 +39,31 @@ class Estado:
         """Arranca con los datos de la caché, si la hay: así el panel muestra algo antes de actualizar."""
         self.lock = threading.Lock()
         self.datos: dict[str, Any] = {
+            "version": VERSION,
             "secciones": {},
             "errores": {},
             "fuentes_caidas": [],
             "actualizado": None,
             "leidos": [],
         }
-        if CACHE.exists():
-            try:
-                self.datos.update(json.loads(CACHE.read_text(encoding="utf-8")))
-            except Exception as ex:  # noqa: BLE001
-                log.warning("Caché ilegible, se ignora: %s", ex)
+        self._cargar_cache()
         self.actualizando = False
+
+    def _cargar_cache(self) -> None:
+        """Los datos de la caché. Si los guardó otra versión, solo lo leído: una sección puede haber
+        cambiado de formato y, si su fuente falla al arrancar, el panel no la sabría pintar."""
+        if not CACHE.exists():
+            return
+        try:
+            cache = json.loads(CACHE.read_text(encoding="utf-8"))
+        except Exception as ex:  # noqa: BLE001
+            log.warning("Caché ilegible, se ignora: %s", ex)
+            return
+        if cache.get("version") == VERSION:
+            self.datos.update(cache)
+        else:
+            log.info("Caché de otra versión (%s): se descartan sus secciones", cache.get("version"))
+            self.datos["leidos"] = cache.get("leidos", [])
 
     def guardar(self) -> None:
         with self.lock:
