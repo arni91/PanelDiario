@@ -57,7 +57,7 @@ El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`)
 - `medios_triats`: los medios del catálogo elegidos en el asistente (aunque no publiquen ninguna de las secciones elegidas).
 - `pestanas`: lista de pestañas con `id`, `nombre` y, para ver noticias de hasta un mes atrás con los botones "Aquesta setmana / Aquest mes", `"filtro_periodo": true`.
 - `fuentes`: para cada `id` de pestaña, la lista de medios con `nombre` y `url` del RSS. Opcional: `idioma` (`"ca"`, `"es"`…: evita pasar por el traductor), `horas_max` (antigüedad máxima), `tema` (etiqueta), `requereix` (solo titulares con alguna de esas palabras).
-- `plans`: pestaña opcional con planes en tu ciudad (Google Noticias). `tema1`, `tema2`…: temas propios, también de Google Noticias.
+- `plans`: pestaña opcional con planes de una ciudad (Google Noticias); el asistente usa la del tiempo o la que se escriba (por ejemplo, la ciudad grande más cercana). `tema1`, `tema2`…: temas propios, también de Google Noticias.
 - Un tema o un medio sin RSS: Google Noticias como fuente con `"agregador": true`, p. ej. `https://news.google.com/rss/search?q=robotica&hl=es&gl=ES&ceid=ES:es` o `...?q=site:ejemplo.com`.
 - La misma noticia publicada por varios medios se muestra una vez, con la versión del primer medio de `prioridad_medios`, y "també a …" con los demás.
 - `medios_excluidos`: medios que no quieres ver. `paraules_excloses`: por pestaña, descarta titulares con esas palabras.

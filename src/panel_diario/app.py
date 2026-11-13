@@ -56,8 +56,11 @@ from panel_diario.state import Estado, actualizar
 from panel_diario.wizard.asistente import ApiAsistente
 
 ANCHO = 440  # ancho del panel desplegado
-ANCHO_FICHA = 176  # ficha en forma de píldora (icono + temperatura + máx/mín + lluvia)
+ANCHO_FICHA = 176  # ficha del escritorio (icono + temperatura + máx/mín + lluvia)
 ALTO_FICHA = 34
+# Radio pequeño: Windows recorta la ventana sin suavizar el borde, y con un radio grande
+# (extremos de píldora) se ven escalones en las curvas
+RADIO_FICHA = 6
 TITULO_PANEL = "Panel Diario"
 TITULO_FICHA = "Panel Diario - ficha"
 TITULO_ASISTENTE = "Panel Diario · Configuració"
@@ -470,7 +473,7 @@ def main() -> None:
             frameless=True,
             on_top=(modo == "encima"),
             resizable=False,
-            background_color="#171e26",
+            background_color="#222a35",  # el de ui/pill/pill.css, para que no parpadee al cargar
             easy_drag=False,
         )
         if vf is None:
@@ -479,12 +482,12 @@ def main() -> None:
         vf.events.closing += lambda: False  # la ficha no se cierra con Alt+F4
 
         def al_mostrar_ficha() -> None:
-            """Al aparecer la píldora: fuera de la barra de tareas, esquinas redondas y anclada al escritorio."""
+            """Al aparecer la píldora: fuera de la barra de tareas, esquinas redondeadas y anclada al escritorio."""
             ocultar_de_barra_tareas(TITULO_FICHA, reaparecer=True)
             # Buscamos la ventana por su título AHORA: una vez anclada al escritorio deja de ser
             # una ventana "de primer nivel" y FindWindowW ya no la encuentra (fallo de la v1.7).
             hwnd = buscar_ventana(TITULO_FICHA)
-            redondear_esquinas(hwnd, radio_css=ALTO_FICHA // 2, alto_css=ALTO_FICHA)  # extremos redondos
+            redondear_esquinas(hwnd, radio_css=RADIO_FICHA, alto_css=ALTO_FICHA)
             if modo == "escritorio" and hwnd:
                 nueva_ficha.anclaje = anclar_al_escritorio(hwnd, nueva_ficha.pos)
 

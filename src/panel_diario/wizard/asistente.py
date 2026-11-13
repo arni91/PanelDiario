@@ -245,7 +245,9 @@ def construir_config(base: dict, respuestas: dict) -> dict:
         # Un paso saltado conserva lo que ya había (los medios o las secciones actuales)
         actual = news.current_choices(cfg)
         medios = respuestas.get("noticias") or {k: actual[k] for k in ("medios", "propios")}
-        seccions = respuestas.get("seccions") or {k: actual[k] for k in ("seccions", "plans", "temes", "traduir")}
+        seccions = respuestas.get("seccions") or {
+            k: actual[k] for k in ("seccions", "plans", "plans_ciutat", "temes", "traduir")
+        }
         ciudad = (lugar or cfg.get("ubicacion") or {}).get("nombre", "")
         cfg.update(news.build(medios, seccions, ciudad))
     return cfg
