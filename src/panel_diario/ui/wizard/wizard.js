@@ -287,7 +287,10 @@ const PASOS = [
         <label class="opcion"><input type="checkbox" data-seccio value="${s.id}" ${tmp.seccions.has(s.id) ? "checked" : ""}>
           <b>${esc(s.nombre)}</b><small>${esc(cobertura(s.id))}</small></label>`).join("")}
         <label class="opcion"><input type="checkbox" id="plans" ${tmp.plans ? "checked" : ""}>
-          <b>Plans a la teva ciutat</b><small>concerts, exposicions i festivals (Google Notícies)</small></label>
+          <b>Plans a prop</b><small>concerts, exposicions i festivals (Google Notícies)</small></label>
+        <div class="fila ${tmp.plans ? "" : "oculto"}" id="fila-plans">
+          <input type="text" id="plans-ciutat" value="${esc(tmp.plansCiutat)}"
+            placeholder="Ciutat dels plans (si la deixes buida, la del temps)"></div>
       </div>
       <label>Temes propis</label>
       <div class="opciones">
@@ -305,7 +308,11 @@ const PASOS = [
       document.querySelectorAll("[data-seccio]").forEach(el => el.onchange = () => {
         tmp.seccions[el.checked ? "add" : "delete"](el.value);
       });
-      $("plans").onchange = () => { tmp.plans = $("plans").checked; };
+      $("plans").onchange = () => {
+        tmp.plans = $("plans").checked;
+        $("fila-plans").classList.toggle("oculto", !tmp.plans);
+      };
+      $("plans-ciutat").oninput = () => { tmp.plansCiutat = $("plans-ciutat").value; };
       $("traduir").onchange = () => { tmp.traduir = $("traduir").checked; };
       $("otro-tema").onclick = () => { $("form-tema").classList.remove("oculto"); $("tema-texto").focus(); };
       $("btn-tema").onclick = anadirTema;
@@ -317,7 +324,10 @@ const PASOS = [
         mensaje("Tria almenys una secció (o salta aquest pas).", "error");
         return null;
       }
-      return { seccions: [...tmp.seccions], plans: tmp.plans, temes: tmp.temes, traduir: tmp.traduir };
+      return {
+        seccions: [...tmp.seccions], plans: tmp.plans, plans_ciutat: tmp.plansCiutat.trim(),
+        temes: tmp.temes, traduir: tmp.traduir,
+      };
     },
   },
   {
@@ -484,6 +494,7 @@ function prepararNoticias() {
   tmp.propios = [...act.propios];
   tmp.seccions = new Set(act.seccions);
   tmp.plans = act.plans;
+  tmp.plansCiutat = act.plans_ciutat;
   tmp.temes = [...act.temes];
   tmp.traduir = act.traduir;
 }

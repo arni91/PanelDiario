@@ -50,6 +50,12 @@ def test_plans_de_la_ciudad_y_temas_propios_con_google_noticias() -> None:
     assert cfg["pestanas"][2]["nombre"] == "Energia solar"
 
 
+def test_plans_en_otra_ciudad_que_la_del_tiempo() -> None:
+    cfg = news.build(MEDIOS, {"plans": True, "plans_ciutat": " Barcelona "}, "Girona")
+    assert cfg["pestanas"][1]["nombre"] == "Plans a Barcelona"
+    assert cfg["fuentes"]["plans"][0]["url"].startswith("https://news.google.com/rss/search?q=Barcelona%20")
+
+
 def test_sin_ciudad_no_hay_plans() -> None:
     assert "plans" not in _ids(news.build(MEDIOS, {"plans": True}, ""))
 
@@ -100,7 +106,13 @@ def test_cada_grupo_lleva_su_bloque_y_los_bloques_no_se_mezclan() -> None:
 
 def test_lo_configurado_se_recupera_tal_cual() -> None:
     respuesta = {"medios": ["Ara", "El País"], "propios": [{"nombre": "Diari X", "url": "https://diarix.example/feed"}]}
-    secciones = {"seccions": ["portades", "cultura"], "plans": True, "temes": ["energia solar"], "traduir": True}
+    secciones = {
+        "seccions": ["portades", "cultura"],
+        "plans": True,
+        "plans_ciutat": "Barcelona",
+        "temes": ["energia solar"],
+        "traduir": True,
+    }
     elegido = news.current_choices(news.build(respuesta, secciones, "Girona"))
     assert elegido == {**respuesta, **secciones}
 
@@ -111,6 +123,7 @@ def test_config_sin_noticias() -> None:
         "propios": [],
         "seccions": ["portades"],
         "plans": False,
+        "plans_ciutat": "",
         "temes": [],
         "traduir": False,
     }
