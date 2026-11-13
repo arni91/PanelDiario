@@ -206,10 +206,19 @@ def test_verificar_ical_que_falla_explica_sin_la_direccion(monkeypatch: pytest.M
 # --- Noticias (detalle en test_news.py) ---------------------------------------------
 
 
-def test_noticias_con_sus_dos_pasos_y_la_ciudad_ya_configurada() -> None:
-    respuestas = {"noticias": {"medios": ["Ara"]}, "seccions": {"seccions": ["portades"], "plans": True}}
+def test_noticias_con_sus_dos_pasos() -> None:
+    respuestas = {"noticias": {"medios": ["Ara"]}, "seccions": {"seccions": ["portades", "cultura"]}}
+    cfg = asistente.construir_config({}, respuestas)
+    assert [p["nombre"] for p in cfg["pestanas"]] == ["Portades", "Cultura"]
+
+
+# --- Planes (detalle en test_plans.py) ------------------------------------------------
+
+
+def test_plans_sin_ciudad_propia_usan_la_del_tiempo_ya_configurada() -> None:
+    respuestas = {"plans": {"activa": True, "interessos": ["performance"]}}
     cfg = asistente.construir_config({"ubicacion": {"nombre": "Girona"}}, respuestas)
-    assert [p["nombre"] for p in cfg["pestanas"]] == ["Portades", "Plans a Girona"]
+    assert cfg["plans"]["ciutat"] == "Girona" and cfg["plans"]["interessos"] == ["performance"]
 
 
 def test_saltar_el_paso_de_medios_conserva_los_que_habia() -> None:

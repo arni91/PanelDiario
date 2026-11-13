@@ -29,6 +29,18 @@ El asistente las pregunta en un mismo paso, con una casilla para cada una. Las t
 - `aire.activa`: la calidad del aire (índice europeo, de «Bona» a «Extremadament dolenta») y el polen de hoy en la ubicación del panel. API de calidad del aire de Open-Meteo, sin clave. El polen solo existe en Europa y en temporada; los niveles (baix, moderat, alt: menos de 10, de 10 a 50 y más de 50 granos/m³) son orientativos e iguales para todos los pólenes.
 - `carburants`: precio medio de la gasolina 95, la gasolina 98 y el diésel entre las gasolineras de la provincia. `provincia` es el código de provincia del Ministerio (`08` Barcelona, `17` Girona…; lista en [`catalog/fuel.py`](../src/panel_diario/catalog/fuel.py)): el asistente la saca de la ciudad elegida y solo la pregunta si no la reconoce. API pública de precios de carburantes del Ministerio, sin clave, solo España.
 
+## Plans (`plans`)
+
+Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días en una ciudad de Cataluña, de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). El panel tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
+
+- `activa`: mostrar la sección.
+- `ciutat`: el municipio, como se escribe normalmente (`Barcelona`, `L'Hospitalet de Llobregat`…). El asistente pone la del tiempo si no se escribe otra: quien vive en un pueblo cercano suele querer los planes de la ciudad grande.
+- `dies`: cuántos días hacia delante (7 por defecto).
+- `interessos`: ids de [`catalog/interests.py`](../src/panel_diario/catalog/interests.py) (`lgtbi`, `electronica`, `performance`, `drag`, `feminisme`, `reivindicatiu`, `underground`, `art_contemporani`). Cada uno es una lista de palabras que se buscan en el título, el subtítulo, la descripción y las categorías del plan.
+- `paraules`: palabras propias que también cuentan como interés (`["jazz", "cinema japonès"]`).
+
+La Agenda la alimentan los equipamientos y los ayuntamientos: museos, centros de arte, teatros, salas de conciertos, ateneos… La escena de clubes casi no está.
+
 ## Esports (`esports`)
 
 - `equips`: lista de equipos con `lliga` (ruta de ESPN de su competición, p. ej. `soccer/esp.1`), `id` (identificador de ESPN) y `nom`. En el asistente se elige el deporte en un desplegable y debajo salen **todos sus equipos** en una lista con buscador, sin elegir competición: se marca el equipo y ya está. La lista junta los equipos de todas las competiciones del deporte de [`catalog/sports.py`](../src/panel_diario/catalog/sports.py): fútbol (LaLiga, Hypermotion, Liga F, Premier, Serie A, Bundesliga, Ligue 1, Portugal, Países Bajos, Argentina, Brasil, México, MLS, Champions y Copa del Rey), baloncesto (NBA, WNBA), fútbol americano (NFL), hockey sobre hielo (NHL) y béisbol (MLB). Un equipo que juega varias competiciones sale una vez y se guarda con la primera de la lista (su liga).
@@ -57,7 +69,7 @@ El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`)
 - `medios_triats`: los medios del catálogo elegidos en el asistente (aunque no publiquen ninguna de las secciones elegidas).
 - `pestanas`: lista de pestañas con `id`, `nombre` y, para ver noticias de hasta un mes atrás con los botones "Aquesta setmana / Aquest mes", `"filtro_periodo": true`.
 - `fuentes`: para cada `id` de pestaña, la lista de medios con `nombre` y `url` del RSS. Opcional: `idioma` (`"ca"`, `"es"`…: evita pasar por el traductor), `horas_max` (antigüedad máxima), `tema` (etiqueta), `requereix` (solo titulares con alguna de esas palabras).
-- `plans`: pestaña opcional con planes de una ciudad (Google Noticias); el asistente usa la del tiempo o la que se escriba (por ejemplo, la ciudad grande más cercana). `tema1`, `tema2`…: temas propios, también de Google Noticias.
+- `tema1`, `tema2`…: temas propios, de Google Noticias.
 - Un tema o un medio sin RSS: Google Noticias como fuente con `"agregador": true`, p. ej. `https://news.google.com/rss/search?q=robotica&hl=es&gl=ES&ceid=ES:es` o `...?q=site:ejemplo.com`.
 - La misma noticia publicada por varios medios se muestra una vez, con la versión del primer medio de `prioridad_medios`, y "també a …" con los demás.
 - `medios_excluidos`: medios que no quieres ver. `paraules_excloses`: por pestaña, descarta titulares con esas palabras.

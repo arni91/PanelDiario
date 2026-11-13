@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 from panel_diario.config import cargar_config
-from panel_diario.sources import aire, avisos, carburants, drawdown, llum, markets, noticias, sports, tiempo
+from panel_diario.sources import aire, avisos, carburants, drawdown, llum, markets, noticias, plans, sports, tiempo
 
 
 def linea(ok: bool, nombre: str, detalle: str) -> None:
@@ -81,6 +81,15 @@ def main() -> int:
             "Luz (Red Eléctrica)",
             lambda: llum.obtener_llum(cfg),
             lambda r: "sin activar" if r.get("sin_configurar") else f"ahora {r['ara']} €/kWh · {len(r['hores'])} horas",
+        ),
+        (
+            "Planes (Agenda Cultural de Catalunya)",
+            lambda: plans.obtener_plans(cfg),
+            lambda r: (
+                "sin activar"
+                if r.get("sin_configurar")
+                else f"{r['ciutat']}: {len(r['per_a_tu'])} per a tu, {len(r['tot'])} en total"
+            ),
         ),
         (
             "Carburantes (Ministerio)",

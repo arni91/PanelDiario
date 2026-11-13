@@ -131,6 +131,39 @@ const PASOS = [
     },
   },
   {
+    id: "plans",
+    pintar: () => {
+      const a = INICIO.plans_actual;
+      return `<div class="paso"><h2>🎭 Plans</h2>
+      <p>Exposicions, concerts, xerrades, festivals i espectacles dels propers dies (Agenda Cultural de Catalunya:
+      només Catalunya). Els que coincideixen amb els teus interessos surten primer, a «Per a tu».</p>
+      <div class="opciones"><label class="opcion"><input type="checkbox" id="plans-on" ${a.activa ? "checked" : ""}>
+        <b>Mostra plans al panell</b><small>a la ciutat que triïs</small></label></div>
+      <div id="plans-cos" class="${a.activa ? "" : "oculto"}">
+        <label>Ciutat</label>
+        <input type="text" id="plans-ciutat" value="${esc(a.ciutat)}"
+          placeholder="Si la deixes buida, la del temps (p. ex. Barcelona si vius a prop)">
+        <label>Els teus interessos</label>
+        <div class="opciones">${INICIO.plans.interessos.map(i => `
+          <label class="opcion"><input type="checkbox" data-interes value="${esc(i.id)}" ${a.interessos.includes(i.id) ? "checked" : ""}>
+            <b>${esc(i.nom)}</b></label>`).join("")}</div>
+        <label>Altres paraules</label>
+        <input type="text" id="plans-paraules" value="${esc(a.paraules.join(", "))}"
+          placeholder="Separades per comes (p. ex. jazz, cinema japonès)">
+      </div>
+      <div class="mensaje" id="mensaje"></div></div>`;
+    },
+    alMostrar: () => {
+      $("plans-on").onchange = () => $("plans-cos").classList.toggle("oculto", !$("plans-on").checked);
+    },
+    recoger: () => ({
+      activa: $("plans-on").checked,
+      ciutat: $("plans-ciutat").value.trim(),
+      interessos: [...document.querySelectorAll("[data-interes]:checked")].map(el => el.value),
+      paraules: $("plans-paraules").value.split(",").map(p => p.trim()).filter(Boolean),
+    }),
+  },
+  {
     id: "esports",
     pintar: () => {
       if (!tmp.equips) {
@@ -282,11 +315,6 @@ const PASOS = [
       <div class="opciones">${INICIO.seccions.map(s => `
         <label class="opcion"><input type="checkbox" data-seccio value="${s.id}" ${tmp.seccions.has(s.id) ? "checked" : ""}>
           <b>${esc(s.nombre)}</b><small>${esc(cobertura(s.id))}</small></label>`).join("")}
-        <label class="opcion"><input type="checkbox" id="plans" ${tmp.plans ? "checked" : ""}>
-          <b>Plans a prop</b><small>concerts, exposicions i festivals (Google Notícies)</small></label>
-        <div class="fila ${tmp.plans ? "" : "oculto"}" id="fila-plans">
-          <input type="text" id="plans-ciutat" value="${esc(tmp.plansCiutat)}"
-            placeholder="Ciutat dels plans (si la deixes buida, la del temps)"></div>
       </div>
       <label>Temes propis</label>
       <div class="opciones">
@@ -304,11 +332,6 @@ const PASOS = [
       document.querySelectorAll("[data-seccio]").forEach(el => el.onchange = () => {
         tmp.seccions[el.checked ? "add" : "delete"](el.value);
       });
-      $("plans").onchange = () => {
-        tmp.plans = $("plans").checked;
-        $("fila-plans").classList.toggle("oculto", !tmp.plans);
-      };
-      $("plans-ciutat").oninput = () => { tmp.plansCiutat = $("plans-ciutat").value; };
       $("traduir").onchange = () => { tmp.traduir = $("traduir").checked; };
       $("otro-tema").onclick = () => { $("form-tema").classList.remove("oculto"); $("tema-texto").focus(); };
       $("btn-tema").onclick = anadirTema;
@@ -316,20 +339,17 @@ const PASOS = [
       pintarTemasPropios();
     },
     recoger: () => {
-      if (!tmp.seccions.size && !tmp.plans && !tmp.temes.length) {
+      if (!tmp.seccions.size && !tmp.temes.length) {
         mensaje("Tria almenys una secció (o salta aquest pas).", "error");
         return null;
       }
-      return {
-        seccions: [...tmp.seccions], plans: tmp.plans, plans_ciutat: tmp.plansCiutat.trim(),
-        temes: tmp.temes, traduir: tmp.traduir,
-      };
+      return { seccions: [...tmp.seccions], temes: tmp.temes, traduir: tmp.traduir };
     },
   },
   {
     id: "final", sinSaltar: true,
     pintar: () => {
-      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", dia: "🏠 Dia a dia", esports: "🏅 Esports", borsa: "📈 Borsa", drawdown: "📉 El teu ETF", noticias: "📰 Mitjans", seccions: "🗂️ Seccions" };
+      const nombres = { ubicacion: "🌤️ Temps", agenda: "📅 Agenda", dia: "🏠 Dia a dia", plans: "🎭 Plans", esports: "🏅 Esports", borsa: "📈 Borsa", drawdown: "📉 El teu ETF", noticias: "📰 Mitjans", seccions: "🗂️ Seccions" };
       return `<div class="paso"><h2>Tot a punt</h2><p>Això és el que es desarà:</p>
       <div class="resumen">${Object.entries(nombres).map(([id, n]) =>
         `<div>${n}: ${estadoPaso[id] === "hecho" ? "<b>configurat</b>" : "es queda com estava"}</div>`).join("")}</div>
@@ -489,8 +509,6 @@ function prepararNoticias() {
   tmp.medios = new Set(act.medios);
   tmp.propios = [...act.propios];
   tmp.seccions = new Set(act.seccions);
-  tmp.plans = act.plans;
-  tmp.plansCiutat = act.plans_ciutat;
   tmp.temes = [...act.temes];
   tmp.traduir = act.traduir;
 }

@@ -1,6 +1,6 @@
 """Asistente de configuración: la lógica que hay detrás de ui/wizard/asistente.html.
 
-Pregunta paso a paso (tiempo, agenda, día a día, deportes, bolsa y noticias) y construye config.json.
+Pregunta paso a paso (tiempo, agenda, día a día, planes, deportes, bolsa y noticias) y construye config.json.
 Cada paso se puede saltar: lo saltado se queda como estaba. Las funciones que salen a internet
 usan comun.get (los tests la sustituyen). ApiAsistente es el puente con el JavaScript de la ventana.
 """
@@ -16,7 +16,7 @@ from typing import Any
 import webview
 
 from panel_diario.sources import agenda, comun, drawdown, noticias
-from panel_diario.wizard import daily, markets, news, sports
+from panel_diario.wizard import daily, markets, news, plans, sports
 
 log = logging.getLogger("panel")
 
@@ -227,9 +227,11 @@ def construir_config(base: dict, respuestas: dict) -> dict:
     if "agenda" in respuestas:
         cfg.setdefault("agenda", {"dias": 7})["ical_urls"] = _ical(respuestas["agenda"].get("ical_urls", []))
     if "dia" in respuestas:
-        # La provincia de las gasolineras sale de la ciudad: la elegida ahora o la que ya había
+        # La provincia de los carburantes sale de la ciudad: la elegida ahora o la que ya había
         zonas = (cfg.get("avisos_meteo") or {}).get("zonas") or [""]
         cfg.update(daily.build(respuestas["dia"], (lugar or {}).get("provincia") or zonas[0]))
+    if "plans" in respuestas:
+        cfg.update(plans.build(respuestas["plans"], (lugar or cfg.get("ubicacion") or {}).get("nombre", "")))
     if "esports" in respuestas:
         cfg.update(sports.build(respuestas["esports"]))
         cfg.pop("futbol", None)  # el formato anterior (football-data.org) queda sustituido
@@ -245,11 +247,8 @@ def construir_config(base: dict, respuestas: dict) -> dict:
         # Un paso saltado conserva lo que ya había (los medios o las secciones actuales)
         actual = news.current_choices(cfg)
         medios = respuestas.get("noticias") or {k: actual[k] for k in ("medios", "propios")}
-        seccions = respuestas.get("seccions") or {
-            k: actual[k] for k in ("seccions", "plans", "plans_ciutat", "temes", "traduir")
-        }
-        ciudad = (lugar or cfg.get("ubicacion") or {}).get("nombre", "")
-        cfg.update(news.build(medios, seccions, ciudad))
+        seccions = respuestas.get("seccions") or {k: actual[k] for k in ("seccions", "temes", "traduir")}
+        cfg.update(news.build(medios, seccions))
     return cfg
 
 
@@ -285,6 +284,8 @@ class ApiAsistente:
             "calendarios": CALENDARIOS,
             "dia": daily.options(),
             "dia_actual": daily.current_choices(c),
+            "plans": plans.options(),
+            "plans_actual": plans.current_choices(c),
             "esports": sports.options(),
             "esports_actual": sports.current_choices(c),
             "etfs": ETF_HABITUALES,

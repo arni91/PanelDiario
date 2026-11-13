@@ -22,6 +22,7 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 |---|---|---|
 | Tiempo | Ahora, próximas horas, 6 días y avisos oficiales | Open-Meteo, MeteoAlarm |
 | Agenda | Eventos de hoy y de la semana | Calendario iCal (Google, Outlook, iCloud) |
+| Planes | Exposiciones, conciertos, charlas y festivales de los próximos días; primero los de los interesos elegidos (LGTBIQ+, música electrónica, performance…) | Agenda Cultural de Catalunya |
 | Aire y polen | Calidad del aire (índice europeo) y polen de hoy | Open-Meteo |
 | Luz | Precio de cada hora de hoy (PVPC), las horas más baratas y la más cara | Red Eléctrica |
 | Carburantes | Precio medio de la gasolina 95, la 98 y el diésel en la provincia | Ministerio de Industria |

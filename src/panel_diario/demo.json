@@ -267,38 +267,6 @@
      ],
      "enlaces": []
     }
-   ],
-   "plans": [
-    {
-     "titulo": "[Demo] Festival de música a l'aire lliure aquest cap de setmana",
-     "enlace": "https://example.com/57615904",
-     "medio": "Mitjà E",
-     "ts": 1792667488.3972666,
-     "resumen": "Tres dies de concerts gratuïts al parc. Dissabte i diumenge a partir de les 18 h.",
-     "tema": "Música",
-     "otros_medios": [],
-     "enlaces": []
-    },
-    {
-     "titulo": "[Demo] Exposició de fotografia contemporània al museu de la ciutat",
-     "enlace": "https://example.com/36676453",
-     "medio": "Mitjà E",
-     "ts": 1792559488.3972666,
-     "resumen": "Fins al mes que ve, de dimarts a diumenge.",
-     "tema": "Exposicions",
-     "otros_medios": [],
-     "enlaces": []
-    },
-    {
-     "titulo": "[Demo] Cicle de cinema a la fresca",
-     "enlace": "https://example.com/44361325",
-     "medio": "Mitjà F",
-     "ts": 1792019488.3972666,
-     "resumen": "",
-     "tema": "Cinema",
-     "otros_medios": [],
-     "enlaces": []
-    }
    ]
   },
   "agenda": {
@@ -708,6 +676,78 @@
      "gasolineres": 405
     }
    ]
+  },
+  "plans": {
+   "ciutat": "Ciutat d'exemple",
+   "dies": 7,
+   "per_a_tu": [
+    {
+     "titol": "[Demo] Nit de música electrònica i visuals",
+     "lloc": "Sala d'exemple",
+     "quan": "ds 14/11",
+     "categoria": "concerts",
+     "interessos": [
+      "Música electrònica"
+     ],
+     "gratuit": false,
+     "enllac": "https://example.com/plans/1"
+    },
+    {
+     "titol": "[Demo] Cicle de performance i cos",
+     "lloc": "Centre d'art d'exemple",
+     "quan": "fins dg 29/11",
+     "categoria": "festivals i mostres",
+     "interessos": [
+      "Performance",
+      "LGTBIQ+"
+     ],
+     "gratuit": true,
+     "enllac": "https://example.com/plans/2"
+    }
+   ],
+   "tot": [
+    {
+     "titol": "[Demo] Nit de música electrònica i visuals",
+     "lloc": "Sala d'exemple",
+     "quan": "ds 14/11",
+     "categoria": "concerts",
+     "interessos": [
+      "Música electrònica"
+     ],
+     "gratuit": false,
+     "enllac": "https://example.com/plans/1"
+    },
+    {
+     "titol": "[Demo] Xerrada sobre la ciutat i el futur",
+     "lloc": "Biblioteca d'exemple",
+     "quan": "dt 17/11",
+     "categoria": "conferencies",
+     "interessos": [],
+     "gratuit": true,
+     "enllac": "https://example.com/plans/3"
+    },
+    {
+     "titol": "[Demo] Cicle de performance i cos",
+     "lloc": "Centre d'art d'exemple",
+     "quan": "fins dg 29/11",
+     "categoria": "festivals i mostres",
+     "interessos": [
+      "Performance",
+      "LGTBIQ+"
+     ],
+     "gratuit": true,
+     "enllac": "https://example.com/plans/2"
+    },
+    {
+     "titol": "[Demo] Exposició de fotografia contemporània",
+     "lloc": "Museu d'exemple",
+     "quan": "fins dg 17/1",
+     "categoria": "exposicions",
+     "interessos": [],
+     "gratuit": false,
+     "enllac": "https://example.com/plans/4"
+    }
+   ]
   }
  },
  "pestanas": [
@@ -726,11 +766,6 @@
   {
    "id": "tecnologia",
    "nombre": "Tecnologia"
-  },
-  {
-   "id": "plans",
-   "nombre": "Plans a la ciutat",
-   "filtro_periodo": true
   }
  ]
 }
