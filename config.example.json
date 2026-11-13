@@ -69,9 +69,14 @@
   },
   "carburants": {
     "activa": false,
-    "provincia": "",
-    "producte": "gasolina95",
-    "radi_km": 10
+    "provincia": ""
+  },
+  "plans": {
+    "activa": false,
+    "radi_km": 20,
+    "dies": 7,
+    "interessos": [],
+    "paraules": []
   },
   "esports": {
     "equips": [],
@@ -110,11 +115,6 @@
     {
       "id": "esports",
       "nombre": "Esports"
-    },
-    {
-      "id": "plans",
-      "nombre": "Plans a Girona",
-      "filtro_periodo": true
     }
   ],
   "fuentes": {
@@ -623,15 +623,6 @@
         "url": "https://e00-marca.uecdn.es/rss/portada.xml",
         "idioma": "es"
       }
-    ],
-    "plans": [
-      {
-        "nombre": "Google Noticias",
-        "url": "https://news.google.com/rss/search?q=Girona%20%28concert%20OR%20exposici%C3%B3%20OR%20festival%20OR%20teatre%29&hl=ca&gl=ES&ceid=ES:ca",
-        "agregador": true,
-        "tema": "Girona",
-        "horas_max": 720
-      }
     ]
   },
   "titulares_por_categoria": {
@@ -642,8 +633,7 @@
     "cultura": 12,
     "tecnologia": 12,
     "ciencia": 12,
-    "esports": 12,
-    "plans": 20
+    "esports": 12
   },
   "max_per_font": {
     "portades": 4,
@@ -653,8 +643,7 @@
     "cultura": 4,
     "tecnologia": 4,
     "ciencia": 4,
-    "esports": 4,
-    "plans": 4
+    "esports": 4
   },
   "medios_excluidos": [],
   "prioridad_medios": [

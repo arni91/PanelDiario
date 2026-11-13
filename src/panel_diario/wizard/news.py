@@ -2,8 +2,7 @@
 
 El paso «Mitjans» elige medios; el paso «Seccions» elige las pestañas (Portades, Política...).
 Cada pestaña junta el feed de esa sección de cada medio elegido (catalog/outlets.py). Además:
-«Plans a prop» (en la ciudad elegida, por defecto la del tiempo) y temas propios (búsquedas de
-Google Noticias) y traducir o no.
+temas propios (búsquedas de Google Noticias) y traducir o no.
 """
 
 from __future__ import annotations
@@ -12,10 +11,6 @@ from urllib.parse import quote
 
 from panel_diario.catalog import outlets
 
-# Planes en una ciudad: Google Noticias busca conciertos, exposiciones, festivales... Puede no ser
-# la del tiempo: quien vive en un pueblo cercano suele querer los planes de la ciudad grande.
-LOCAL_PLANS_QUERY = "{city} (concert OR exposició OR festival OR teatre)"
-LOCAL_PLANS = {"id": "plans", "nombre": "Plans a {city}"}
 # Las búsquedas de Google Noticias se hacen en catalán, en la edición de España
 GOOGLE_NEWS_LANG, GOOGLE_NEWS_COUNTRY = "ca", "ES"
 
@@ -58,24 +53,18 @@ def sections() -> list[dict]:
     return [{"id": k, "nombre": v} for k, v in outlets.SECTIONS.items()]
 
 
-def _plans_city(cfg: dict) -> str:
-    """Ciudad de la pestaña de planes configurada (la guarda su fuente como «tema»)."""
-    sources = (cfg.get("fuentes") or {}).get(LOCAL_PLANS["id"]) or [{}]
-    return str(sources[0].get("tema", ""))
-
-
 def current_choices(cfg: dict) -> dict:
     """Lo que ya hay en config.json, para marcarlo en el asistente."""
     catalog_urls = {url: o.name for o in outlets.CATALOG for url in o.feeds.values()}
     chosen: list[str] = []
     own: list[dict] = []
     topics: list[str] = []
-    for tab, lista in (cfg.get("fuentes") or {}).items():
+    for lista in (cfg.get("fuentes") or {}).values():
         for f in lista:
             name = catalog_urls.get(f.get("url", ""))
             if name and name not in chosen:
                 chosen.append(name)
-            elif f.get("agregador") and f.get("tema") and tab != LOCAL_PLANS["id"] and f["tema"] not in topics:
+            elif f.get("agregador") and f.get("tema") and f["tema"] not in topics:
                 topics.append(f["tema"])
             elif not name and not f.get("agregador") and f not in own:
                 own.append({"nombre": f["nombre"], "url": f["url"]})
@@ -85,8 +74,6 @@ def current_choices(cfg: dict) -> dict:
         "medios": cfg.get("medios_triats", chosen),
         "propios": own,
         "seccions": [t for t in tabs if t in outlets.SECTIONS] or ["portades"],
-        "plans": LOCAL_PLANS["id"] in tabs,
-        "plans_ciutat": _plans_city(cfg),
         "temes": topics,
         "traduir": bool((cfg.get("traduccio") or {}).get("activa", False)),
     }
@@ -104,13 +91,12 @@ def _own_source(m: dict) -> dict:
     return {"nombre": name, "url": url}
 
 
-def build(outlets_answer: dict, sections_answer: dict, city: str) -> dict:
+def build(outlets_answer: dict, sections_answer: dict) -> dict:
     """Pestañas, fuentes y opciones de noticias de config.json a partir de los dos pasos.
 
     `outlets_answer`: {"medios": [nombres del catálogo], "propios": [{"nombre", "url"}]}.
-    `sections_answer`: {"seccions": [ids], "plans": bool, "plans_ciutat": str, "temes": [palabras],
-    "traduir": bool}; si se ha saltado, solo Portades. Los medios propios van a Portades.
-    `city` es la ciudad del tiempo: la de los planes si no se ha escrito otra.
+    `sections_answer`: {"seccions": [ids], "temes": [palabras], "traduir": bool};
+    si se ha saltado, solo Portades. Los medios propios van a Portades.
     """
     names = list(outlets_answer.get("medios", []))
     unknown = [n for n in names if outlets.find(n) is None]
@@ -129,15 +115,6 @@ def build(outlets_answer: dict, sections_answer: dict, city: str) -> dict:
             pestanas.append({"id": section, "nombre": label})
             fuentes[section] = sources
 
-    plans_city = (sections_answer.get("plans_ciutat") or "").strip() or city
-    if sections_answer.get("plans") and plans_city:
-        source = google_news_source(LOCAL_PLANS_QUERY.format(city=plans_city), topic=plans_city)
-        source["horas_max"] = 720
-        pestanas.append(
-            {"id": LOCAL_PLANS["id"], "nombre": LOCAL_PLANS["nombre"].format(city=plans_city), "filtro_periodo": True}
-        )
-        fuentes[LOCAL_PLANS["id"]] = [source]
-
     for i, text in enumerate(t.strip() for t in sections_answer.get("temes", [])):
         if not text:
             raise ValueError("Escriu les paraules del tema (p. ex. «energia solar») o treu-lo.")
@@ -151,7 +128,7 @@ def build(outlets_answer: dict, sections_answer: dict, city: str) -> dict:
         "medios_triats": names,
         "pestanas": pestanas,
         "fuentes": fuentes,
-        "titulares_por_categoria": {p["id"]: 20 if p["id"] in ("portades", "plans") else 12 for p in pestanas},
+        "titulares_por_categoria": {p["id"]: 20 if p["id"] == "portades" else 12 for p in pestanas},
         "max_per_font": {p["id"]: 4 for p in pestanas},
         "traduccio": {"activa": bool(sections_answer.get("traduir")), "idioma": "ca", "conservar": ["ca", "es"]},
     }

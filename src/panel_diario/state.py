@@ -24,6 +24,7 @@ from panel_diario.sources import (
     llum,
     markets,
     noticias,
+    plans,
     sports,
     tiempo,
 )
@@ -82,6 +83,7 @@ def actualizar(estado: Estado, cfg: dict) -> None:
             "aire": lambda: aire.obtener_aire(cfg),
             "llum": lambda: llum.obtener_llum(cfg),
             "carburants": lambda: carburants.obtener_carburants(cfg),
+            "plans": lambda: plans.obtener_plans(cfg),
         }
         resultados, errores = {}, {}
         hilos = []

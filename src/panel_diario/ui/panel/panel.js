@@ -127,6 +127,28 @@ function pintarAgenda(a, error) {
   el.innerHTML = cab(botones) + html;
 }
 
+// --- Planes de los próximos días. verTot = toda la agenda; si no, solo los de los interesos ---
+let verTot = false;
+function pintarPlans(p, error) {
+  const el = document.getElementById("plans");
+  if (ocultarSi(el, !p || !!p.sin_configurar)) return;
+  // Sin interesos que coincidan, «Per a tu» estaría vacío: se enseña toda la agenda
+  const tot = verTot || !p.per_a_tu.length;
+  const botones = p.per_a_tu.length
+    ? `<button class="mini-btn ${tot ? "" : "on"}" data-plans="per">Per a tu</button>
+       <button class="mini-btn ${tot ? "on" : ""}" data-plans="tot">Tot</button>` : "";
+  const lista = tot ? p.tot : p.per_a_tu;
+  const filas = lista.length ? lista.map(x => `<div class="ev plan" data-url="${esc(x.enllac)}" title="${esc(x.enllac)}">
+      <div class="h">${esc(x.quan)}</div>
+      <div><div class="t">${esc(x.titol)}</div>
+        <div class="l">${esc(x.lloc)} · ${x.km} km${x.gratuit ? " · gratuït" : ""}</div>
+        ${x.interessos.length ? `<div class="meta">${x.interessos.map(i => `<span class="chip tema">${esc(i)}</span>`).join("")}</div>` : ""}
+      </div></div>`).join("")
+    : `<div class="nota">No hi ha plans a menys de ${coma(p.radi_km, 0)} km els propers ${p.dies} dies.</div>`;
+  el.innerHTML = `<div class="agenda-cab"><h3>🎭 Plans a prop</h3>${botones}</div>${filas}
+    ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: l'Agenda Cultural no respon</div>` : ""}`;
+}
+
 // --- Deportes: próximos partidos y último resultado de cada equipo, y los campeonatos de motor ---
 const rivalTxt = (p) => `${p.local ? "vs" : "@"} ${esc(p.rival)}`;
 
@@ -205,16 +227,13 @@ function pintarLlum(l, error) {
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: Red Eléctrica no respon</div>` : ""}`;
 }
 
-// --- Carburantes: las gasolineras más baratas cerca ---
+// --- Carburantes: precio medio de cada combustible en la provincia ---
 function pintarCarburants(c, error) {
   const el = document.getElementById("carburants");
   if (ocultarSi(el, !c || !!c.sin_configurar)) return;
-  const filas = c.gasolineres.length
-    ? c.gasolineres.map(g => `<div class="gas"><b>${euros(g.preu)}</b>
-        <span>${esc(g.nom)} <span class="muted">· ${esc(g.adreca)}, ${esc(g.localitat)} · ${coma(g.km, 1)} km</span></span></div>`).join("")
-    : `<div class="nota">No hi ha gasolineres a menys de ${coma(c.radi_km, 0)} km.</div>`;
-  el.innerHTML = `<h3>⛽ ${esc(c.producte)} més barata a prop</h3>${filas}
-    ${c.mitjana !== null ? `<div class="muted llum-nota">Mitjana de ${c.total} gasolineres a menys de ${coma(c.radi_km, 0)} km: ${euros(c.mitjana)}</div>` : ""}
+  el.innerHTML = `<h3>⛽ Carburants · preu mitjà ${esc(c.zona)}</h3>
+    <div class="gas">${c.preus.map(p => `<div><small class="muted">${esc(p.nom)}</small>
+      <b>${p.mitjana !== null ? euros(p.mitjana) : "—"}</b></div>`).join("")}</div>
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: el Ministeri no respon</div>` : ""}`;
 }
 
@@ -354,7 +373,7 @@ function pintarPie() {
     const lista = caidas.map(c => `${c.fuente} (${c.categoria}): ${c.error}`).join("\n");
     partes.push(`<span class="aviso-f" title="${esc(lista)}">⚠ ${caidas.length} ${caidas.length === 1 ? "font no respon" : "fonts no responen"}</span>`);
   }
-  const nombres = { tiempo: "temps", avisos: "avisos", esports: "esports", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", agenda: "agenda", aire: "aire i pol·len", llum: "llum", carburants: "carburants" };
+  const nombres = { tiempo: "temps", avisos: "avisos", esports: "esports", borsa: "borsa", drawdown: "el teu ETF", noticias: "notícies", agenda: "agenda", aire: "aire i pol·len", llum: "llum", carburants: "carburants", plans: "plans" };
   const fallos = Object.keys(err).map(k => nombres[k] || k);
   if (fallos.length) partes.push(`<span class="aviso-f" title="${esc(Object.entries(err).map(([k, v]) => k + ": " + v).join("\n"))}">⚠ sense actualitzar: ${esc(fallos.join(", "))}</span>`);
   pie.innerHTML = (partes.length ? partes.join(" · ") : "Tot en ordre")
@@ -371,6 +390,7 @@ async function cargar() {
   pintarTiempo(s.tiempo);
   pintarAire(s.aire, D && D.errores && D.errores.aire);
   pintarAgenda(s.agenda, D && D.errores && D.errores.agenda);
+  pintarPlans(s.plans, D && D.errores && D.errores.plans);
   pintarLlum(s.llum, D && D.errores && D.errores.llum);
   pintarCarburants(s.carburants, D && D.errores && D.errores.carburants);
   pintarEsports(s.esports, D && D.errores && D.errores.esports);
@@ -388,6 +408,12 @@ let temporizador = null;
 document.addEventListener("click", async (ev) => {
   const botonPeriodo = ev.target.closest("[data-periodo]");
   if (botonPeriodo) { periodo = Number(botonPeriodo.dataset.periodo); pintarLista(); return; }
+  const botonPlans = ev.target.closest("[data-plans]");
+  if (botonPlans) {
+    verTot = botonPlans.dataset.plans === "tot";
+    pintarPlans(D && D.secciones && D.secciones.plans, D && D.errores && D.errores.plans);
+    return;
+  }
   const botonAgenda = ev.target.closest("[data-agenda]");
   if (botonAgenda) {
     verSemana = botonAgenda.dataset.agenda === "semana";

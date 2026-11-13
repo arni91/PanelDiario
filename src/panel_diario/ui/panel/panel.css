@@ -162,10 +162,15 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 .llum-eix { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 3px; }
 .llum-nota { font-size: 11px; margin-top: 6px; }
 
-/* Carburantes: una fila por gasolinera, precio delante */
-.gas { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 8px; font-size: 13px; padding: 4px 0; }
-.gas + .gas { border-top: 1px solid var(--line); }
-.gas b { color: var(--up); }
+/* Planes: como la agenda, clicables y con los interesos que coinciden */
+.plan { cursor: pointer; grid-template-columns: 92px minmax(0, 1fr); }  /* "fins dg 29/11" cabe en una línea */
+.plan:hover .t { color: var(--accent); }
+.plan .meta { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+
+/* Carburantes: una columna por combustible, nombre arriba y precio medio debajo */
+.gas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 4px 0; }
+.gas small { display: block; font-size: 11px; }
+.gas b { font-size: 15px; }
 
 /* Pestañas */
 .tabs { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 0; }

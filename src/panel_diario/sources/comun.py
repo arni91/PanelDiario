@@ -6,6 +6,7 @@ sustituir comun.get por una respuesta falsa en un solo sitio y ninguna fuente sa
 
 from __future__ import annotations
 
+import math
 import unicodedata
 from datetime import date, datetime
 from typing import Any
@@ -50,6 +51,22 @@ def get(
     r = requests.get(url, headers=h, params=params, timeout=timeout)
     r.raise_for_status()
     return r
+
+
+def distancia_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Distancia en línea recta (fórmula del haversine) en km."""
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp, dl = p2 - p1, math.radians(lon2 - lon1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * 6371 * math.asin(math.sqrt(a))
+
+
+def numero(texto: object) -> float | None:
+    """ "1,744" o "41.47" -> número; vacío o no numérico -> None (las APIs públicas usan coma o punto)."""
+    try:
+        return float(str(texto).replace(",", "."))
+    except ValueError:
+        return None
 
 
 def normalizar(texto: str) -> str:

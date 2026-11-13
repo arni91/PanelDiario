@@ -1,9 +1,10 @@
-"""Catálogo público de carburantes: los combustibles que se ofrecen y las provincias de España.
+"""Catálogo público de carburantes: los combustibles con precio medio y las provincias de España.
 
-Los identificadores son los de la API pública de precios de carburantes del Ministerio
-(ServiciosRESTCarburantes, Listados/ProductosPetroliferos y Listados/Provincias, comprobados el
-10-11-2026). Cada provincia lleva su nombre en catalán y los nombres con que la puede dar la
-geocodificación (castellano, euskera, gallego...), para reconocer la de la ciudad del panel.
+Los campos de precio y los códigos de provincia son los de la API pública de precios de
+carburantes del Ministerio (ServiciosRESTCarburantes: EstacionesTerrestres/FiltroProvincia y
+Listados/Provincias, comprobados el 13-11-2026). Cada provincia lleva su nombre en catalán y los
+nombres con que la puede dar la geocodificación (castellano, euskera, gallego...), para reconocer
+la de la ciudad del panel.
 """
 
 from __future__ import annotations
@@ -16,17 +17,15 @@ from panel_diario.sources import comun
 @dataclass(frozen=True)
 class Product:
     name: str
-    ministry_id: str
+    ministry_field: str  # campo con su precio en cada gasolinera de la API
 
 
-# Combustibles más habituales, en el orden del asistente; el primero es el de por defecto
-PRODUCTS: dict[str, Product] = {
-    "gasolina95": Product("Gasolina 95", "1"),
-    "gasolina98": Product("Gasolina 98", "3"),
-    "gasoil": Product("Gasoil", "4"),
-    "gasoil_premium": Product("Gasoil Premium", "5"),
-    "glp": Product("Autogàs (GLP)", "17"),
-}
+# Combustibles de los que el panel da el precio medio, en el orden en que salen
+PRODUCTS: tuple[Product, ...] = (
+    Product("Gasolina 95", "Precio Gasolina 95 E5"),
+    Product("Gasolina 98", "Precio Gasolina 98 E5"),
+    Product("Dièsel", "Precio Gasoleo A"),
+)
 
 # Código de provincia -> (nombre en catalán, otros nombres con que puede llegar)
 PROVINCES: dict[str, tuple[str, ...]] = {

@@ -1,4 +1,4 @@
-"""Tests de las gasolineras más baratas (sources/carburants.py). El Ministerio se simula."""
+"""Tests del precio medio de los carburantes (sources/carburants.py). El Ministerio se simula."""
 
 import types
 from typing import Any
@@ -7,28 +7,25 @@ import pytest
 
 from panel_diario.sources import carburants, comun
 
-UBICACION = {"lat": 41.98, "lon": 2.82}
-CFG = {"carburants": {"activa": True, "provincia": "17", "producte": "gasoil", "radi_km": 10}, "ubicacion": UBICACION}
+CASA = {"lat": 41.98, "lon": 2.82}
+CFG = {"carburants": {"activa": True, "provincia": "17"}, "ubicacion": CASA}
 
 
-def _gasolinera(rotulo: str, precio: str, lat: str, lon: str) -> dict:
+def _gasolinera(g95: str, g98: str, diesel: str, lat: str = "41,980000", lon: str = "2,830000") -> dict:
     return {
-        "Rótulo": rotulo,
-        "Dirección": "CARRER MAJOR, 1",
-        "Localidad": "GIRONA",
-        "PrecioProducto": precio,
+        "Precio Gasolina 95 E5": g95,
+        "Precio Gasolina 98 E5": g98,
+        "Precio Gasoleo A": diesel,
         "Latitud": lat,
         "Longitud (WGS84)": lon,
     }
 
 
 GASOLINERAS = [
-    _gasolinera("CARA", "1,650", "41,980000", "2,830000"),
-    _gasolinera("BARATA LLUNY", "1,400", "42,500000", "2,820000"),  # a unos 58 km: fuera del radio
-    _gasolinera("BARATA", "1,500", "41,970000", "2,820000"),
-    _gasolinera("MITJANA", "1,550", "41,990000", "2,800000"),
-    _gasolinera("IGUAL PERO MES LLUNY", "1,500", "41,900000", "2,820000"),
-    _gasolinera("SENSE PREU", "", "41,980000", "2,820000"),
+    _gasolinera("1,500", "1,700", "1,400"),
+    _gasolinera("1,600", "", "1,500"),  # no vende 98: no cuenta en su media
+    _gasolinera("1,700", "1,800", ""),
+    _gasolinera("1,000", "1,000", "1,000", lat="42,500000"),  # a unos 58 km: fuera del radio
 ]
 
 
@@ -44,41 +41,36 @@ def ministerio(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     return urls
 
 
-def test_las_mas_baratas_dentro_del_radio(ministerio: list[str]) -> None:
+def test_media_de_cada_combustible_cerca_de_casa(ministerio: list[str]) -> None:
     r = carburants.obtener_carburants(CFG)
-    assert ministerio == [carburants.API.format(province="17", product="4")]  # gasoil = producto 4
-    assert [g["nom"] for g in r["gasolineres"]] == [
-        "Barata",
-        "Igual Pero Mes Lluny",
-        "Mitjana",
-    ]  # a igual precio, la más cercana
-    assert r["gasolineres"][0] == {
-        "nom": "Barata",
-        "adreca": "Carrer Major, 1",
-        "localitat": "Girona",
-        "preu": 1.5,
-        "km": 1.1,  # 0,01° de latitud
+    assert ministerio == [carburants.API.format(province="17")]  # una sola petición
+    assert r == {
+        "zona": "a menys de 10 km",
+        "preus": [
+            {"nom": "Gasolina 95", "mitjana": 1.6, "gasolineres": 3},
+            {"nom": "Gasolina 98", "mitjana": 1.75, "gasolineres": 2},
+            {"nom": "Dièsel", "mitjana": 1.45, "gasolineres": 2},
+        ],
     }
-    assert r["producte"] == "Gasoil" and r["total"] == 4 and r["mitjana"] == 1.55
 
 
-def test_sin_gasolineras_cerca(ministerio: list[str]) -> None:
+def test_sin_gasolineras_cerca_la_media_de_la_provincia(ministerio: list[str]) -> None:
     r = carburants.obtener_carburants({**CFG, "ubicacion": {"lat": 40.0, "lon": -3.0}})
-    assert r["gasolineres"] == [] and r["mitjana"] is None
+    assert r["zona"] == "a Girona" and r["preus"][0]["gasolineres"] == 4
+
+
+def test_combustible_que_no_vende_nadie() -> None:
+    preus = carburants.averages([_gasolinera("1,500", "", "")])
+    assert preus[1] == {"nom": "Gasolina 98", "mitjana": None, "gasolineres": 0}
 
 
 @pytest.mark.parametrize(
     "carb",
     [
         {},
-        {"activa": False, "provincia": "17", "producte": "gasoil"},
-        {"activa": True, "provincia": "99", "producte": "gasoil"},
-        {"activa": True, "provincia": "17", "producte": "queroseno"},
+        {"activa": False, "provincia": "17"},
+        {"activa": True, "provincia": "99"},
     ],
 )
 def test_sin_configurar_no_sale_a_internet(carb: dict) -> None:
-    assert carburants.obtener_carburants({"carburants": carb, "ubicacion": UBICACION}) == {"sin_configurar": True}
-
-
-def test_distancia() -> None:
-    assert round(carburants.distance_km(41.3874, 2.1686, 41.9794, 2.8214)) == 85  # Barcelona-Girona en línea recta
+    assert carburants.obtener_carburants({"carburants": carb, "ubicacion": CASA}) == {"sin_configurar": True}

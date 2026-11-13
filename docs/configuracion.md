@@ -6,7 +6,7 @@ Lo normal es configurar el panel con el **asistente** (se abre solo la primera v
 
 ## Qué funciona sin claves
 
-Tiempo, avisos meteorológicos, noticias, deportes, bolsa, el ETF propio, el precio de la luz, el aire y el polen y las gasolineras funcionan sin ninguna clave. La agenda necesita su dirección iCal. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
+Tiempo, avisos meteorológicos, noticias, deportes, bolsa, el ETF propio, el precio de la luz, el aire y el polen y los carburantes funcionan sin ninguna clave. La agenda necesita su dirección iCal. Las secciones sin configurar no se muestran, y el pie del panel dice cuáles faltan.
 
 ## Ubicación y avisos
 
@@ -27,7 +27,19 @@ El asistente las pregunta en un mismo paso, con una casilla para cada una. Las t
 
 - `llum.activa`: el precio de la luz (PVPC, la tarifa regulada) de cada hora de hoy, en €/kWh: el de ahora, la media del día, la hora más barata y la más cara, y las tres más baratas. API pública de Red Eléctrica (apidatos.ree.es), sin clave. Precios de la península.
 - `aire.activa`: la calidad del aire (índice europeo, de «Bona» a «Extremadament dolenta») y el polen de hoy en la ubicación del panel. API de calidad del aire de Open-Meteo, sin clave. El polen solo existe en Europa y en temporada; los niveles (baix, moderat, alt: menos de 10, de 10 a 50 y más de 50 granos/m³) son orientativos e iguales para todos los pólenes.
-- `carburants`: las tres gasolineras más baratas a menos de `radi_km` km (5, 10, 20 o 30) de la ubicación, para el combustible `producte` (`gasolina95`, `gasolina98`, `gasoil`, `gasoil_premium` o `glp`), con la media de la zona. `provincia` es el código de provincia del Ministerio (`08` Barcelona, `17` Girona…; lista en [`catalog/fuel.py`](../src/panel_diario/catalog/fuel.py)): el asistente la saca de la ciudad elegida y solo la pregunta si no la reconoce. API pública de precios de carburantes del Ministerio, sin clave, solo España.
+- `carburants`: precio medio de la gasolina 95, la gasolina 98 y el diésel entre las gasolineras a menos de 10 km de la ubicación (si no hay ninguna, el de toda la provincia). En el asistente es solo una casilla. `provincia` es el código de provincia del Ministerio (`08` Barcelona, `17` Girona…; lista en [`catalog/fuel.py`](../src/panel_diario/catalog/fuel.py)), y el asistente lo saca de la ciudad del tiempo. API pública de precios de carburantes del Ministerio, sin clave, solo España.
+
+## Plans (`plans`)
+
+Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días cerca de la ubicación del panel (solo Cataluña), de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). El panel tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
+
+- `activa`: mostrar la sección.
+- `radi_km`: distancia máxima desde la ubicación (20 por defecto): desde un municipio del área metropolitana entran la ciudad grande y las de alrededor (desde Sant Cugat, Barcelona, Sabadell, Terrassa, Rubí…).
+- `dies`: cuántos días hacia delante (7 por defecto).
+- `interessos`: ids de [`catalog/interests.py`](../src/panel_diario/catalog/interests.py) (`lgtbi`, `electronica`, `performance`, `drag`, `feminisme`, `reivindicatiu`, `underground`, `art_contemporani`). Cada uno es una lista de palabras que se buscan en el título, el subtítulo, la descripción y las categorías del plan.
+- `paraules`: palabras propias que también cuentan como interés (`["jazz", "cinema japonès"]`).
+
+La Agenda la alimentan los equipamientos y los ayuntamientos: museos, centros de arte, teatros, salas de conciertos, ateneos… La escena de clubes casi no está.
 
 ## Esports (`esports`)
 
@@ -57,7 +69,7 @@ El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`)
 - `medios_triats`: los medios del catálogo elegidos en el asistente (aunque no publiquen ninguna de las secciones elegidas).
 - `pestanas`: lista de pestañas con `id`, `nombre` y, para ver noticias de hasta un mes atrás con los botones "Aquesta setmana / Aquest mes", `"filtro_periodo": true`.
 - `fuentes`: para cada `id` de pestaña, la lista de medios con `nombre` y `url` del RSS. Opcional: `idioma` (`"ca"`, `"es"`…: evita pasar por el traductor), `horas_max` (antigüedad máxima), `tema` (etiqueta), `requereix` (solo titulares con alguna de esas palabras).
-- `plans`: pestaña opcional con planes de una ciudad (Google Noticias); el asistente usa la del tiempo o la que se escriba (por ejemplo, la ciudad grande más cercana). `tema1`, `tema2`…: temas propios, también de Google Noticias.
+- `tema1`, `tema2`…: temas propios, de Google Noticias.
 - Un tema o un medio sin RSS: Google Noticias como fuente con `"agregador": true`, p. ej. `https://news.google.com/rss/search?q=robotica&hl=es&gl=ES&ceid=ES:es` o `...?q=site:ejemplo.com`.
 - La misma noticia publicada por varios medios se muestra una vez, con la versión del primer medio de `prioridad_medios`, y "també a …" con los demás.
 - `medios_excluidos`: medios que no quieres ver. `paraules_excloses`: por pestaña, descarta titulares con esas palabras.
