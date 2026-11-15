@@ -128,7 +128,9 @@ function pintarAgenda(a, error) {
 }
 
 // --- Planes de los próximos días. verTot = toda la agenda; si no, solo los de los interesos ---
+// Plegados por defecto: la lista es larga y obligaba a bajar mucho para llegar a lo siguiente
 let verTot = false;
+let plansAbierto = false;
 function pintarPlans(p, error) {
   const el = document.getElementById("plans");
   if (ocultarSi(el, !p || !!p.sin_configurar)) return;
@@ -145,7 +147,11 @@ function pintarPlans(p, error) {
         ${x.interessos.length ? `<div class="meta">${x.interessos.map(i => `<span class="chip tema">${esc(i)}</span>`).join("")}</div>` : ""}
       </div></div>`).join("")
     : `<div class="nota">No hi ha plans a menys de ${coma(p.radi_km, 0)} km els propers ${p.dies} dies.</div>`;
-  el.innerHTML = `<div class="agenda-cab"><h3>🎭 Plans a prop</h3>${botones}</div>${filas}
+  const cabecera = `<button class="plegar" data-plans-plegar aria-expanded="${plansAbierto}">
+      <h3>🎭 Plans a prop</h3><span class="plegar-n">${lista.length}</span>
+      <span class="plegar-fletxa">${plansAbierto ? "▾" : "▸"}</span></button>`;
+  el.innerHTML = `<div class="agenda-cab${plansAbierto ? "" : " plegada"}">${cabecera}${plansAbierto ? botones : ""}</div>
+    ${plansAbierto ? filas : ""}
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: l'Agenda Cultural no respon</div>` : ""}`;
 }
 
@@ -420,6 +426,11 @@ let temporizador = null;
 document.addEventListener("click", async (ev) => {
   const botonPeriodo = ev.target.closest("[data-periodo]");
   if (botonPeriodo) { periodo = Number(botonPeriodo.dataset.periodo); pintarLista(); return; }
+  if (ev.target.closest("[data-plans-plegar]")) {
+    plansAbierto = !plansAbierto;
+    pintarPlans(D && D.secciones && D.secciones.plans, D && D.errores && D.errores.plans);
+    return;
+  }
   const botonPlans = ev.target.closest("[data-plans]");
   if (botonPlans) {
     verTot = botonPlans.dataset.plans === "tot";
