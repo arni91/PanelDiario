@@ -39,9 +39,19 @@ class _Respuesta:
         pass
 
 
-def test_si_la_negociacion_tls_falla_reintenta_con_tls_compatible(monkeypatch: pytest.MonkeyPatch) -> None:
+# El corte llega como error TLS (OpenSSL 3.5, Python de uv) o como conexión reiniciada (OpenSSL 3.0, python.org)
+@pytest.mark.parametrize(
+    "error",
+    [
+        requests.exceptions.SSLError("EOF occurred in violation of protocol"),
+        requests.exceptions.ConnectionError("Connection aborted.", ConnectionResetError(10054, "reset")),
+    ],
+)
+def test_si_la_negociacion_tls_falla_reintenta_con_tls_compatible(
+    monkeypatch: pytest.MonkeyPatch, error: Exception
+) -> None:
     def falla(*a: object, **k: object) -> None:
-        raise requests.exceptions.SSLError("EOF occurred in violation of protocol")
+        raise error
 
     montados: list[object] = []
 

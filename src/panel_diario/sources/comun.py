@@ -77,10 +77,12 @@ def get(
         h.update(headers)
     try:
         r = requests.get(url, headers=h, params=params, timeout=timeout)
-    except requests.exceptions.SSLError:
+    # Según la versión de OpenSSL, el corte llega como SSLError o como conexión reiniciada
+    # (ConnectionError, de la que SSLError es un caso particular): se reintenta en los dos casos.
+    except requests.exceptions.ConnectionError:
         if not tls_compatible:
             raise
-        log.info("Negociación TLS cortada; segundo intento con TLS compatible")
+        log.info("Conexión cortada en la negociación TLS; segundo intento con TLS compatible")
         with requests.Session() as s:
             s.mount("https://", _AdaptadorTlsCompatible())
             r = s.get(url, headers=h, params=params, timeout=timeout)
