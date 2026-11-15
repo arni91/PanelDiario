@@ -6,8 +6,8 @@ Widget de escritorio para Windows: una píldora con el tiempo que, al hacer clic
 - `tests/` replica el árbol de `src/`. `docs/`: configuracion.md (referencia de config.json), fonts.md (RSS descartados), trampas.md y capturas/. Fuentes y decisiones de diseño: README.
 - `docs/constitution.md` (principios) y `specs/NNN-nombre/` (`spec.md` = qué y por qué; `plan.md` = cómo; `tasks.md` = tareas).
 ## Comandos (en la raíz)
-- Tests: `uv run pytest` (red simulada, sin internet)
-- Lint, formato y tipos: `uv run ruff check` · `uv run ruff format` · `uv run mypy`
+- Tests: `uv run python -m pytest` (red simulada, sin internet)
+- Lint, formato y tipos: `uv run python -m ruff check` · `uv run python -m ruff format` · `uv run python -m mypy`
 - Ejecutar: `uv run python -m panel_diario [--consola] [--demo] [--asistente]` · Instalar o reiniciar: `instalar.bat` (`/silencioso` sin pausas)
 - Privacidad: `uv run python scripts/revisar_privacidad.py` · Fuentes reales: `uv run python -m panel_diario.probar_fuentes`
 ## Convenciones
@@ -35,4 +35,4 @@ Widget de escritorio para Windows: una píldora con el tiempo que, al hacer clic
 - ⚠️ Pregunta antes: dependencias nuevas, fuentes de datos nuevas, cambios en el formato de config.json o de cache.json.
 - 🚫 Nunca: datos personales en ficheros versionados; saltarse pre-commit; editar `CLAUDE.md` (solo importa `@AGENTS.md`); loguear `str(ex)` de una petición con secretos en la URL.
 ## Verificación
-- `uv run pytest`, `uv run ruff check`, `uv run mypy` en verde y, si cambia la interfaz, arrancar `--demo` y comprobar la ventana afectada.
+- `uv run python -m pytest`, `uv run python -m ruff check`, `uv run python -m mypy` en verde y, si cambia la interfaz, arrancar `--demo` y comprobar la ventana afectada.

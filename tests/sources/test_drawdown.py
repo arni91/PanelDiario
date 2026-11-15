@@ -1,6 +1,6 @@
 """Tests del módulo de caídas de un ETF (datos.py): cálculo, niveles, caché y fallo de Yahoo.
 
-Se ejecutan con:  uv run pytest
+Se ejecutan con:  uv run python -m pytest
 Yahoo se sustituye por respuestas falsas (mock): los tests no usan internet.
 """
 

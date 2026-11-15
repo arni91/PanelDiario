@@ -15,13 +15,13 @@ jobs:
       - name: Instalar dependencias (versiones de uv.lock)
         run: uv sync --locked
       - name: Lint (ruff)
-        run: uv run ruff check
+        run: uv run python -m ruff check
       - name: Formato (ruff)
-        run: uv run ruff format --check
+        run: uv run python -m ruff format --check
       - name: Tipos (mypy)
-        run: uv run mypy
+        run: uv run python -m mypy
       - name: Tests (pytest)
-        run: uv run pytest
+        run: uv run python -m pytest
       # Sin .privado/ (no está en git) solo busca formas de claves, no los términos personales
       - name: Revisión de privacidad
         run: uv run python scripts/revisar_privacidad.py

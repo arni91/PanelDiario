@@ -63,7 +63,7 @@ Principios: cada fuente se consulta en paralelo y por separado, y si una falla s
 
 ## Instalación
 
-Requisitos: Windows 10/11 y [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`). uv descarga Python.
+Requisitos: Windows 10/11 y [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`). uv descarga Python. Con Smart App Control activado (Windows 11), instala antes el Python oficial, que va firmado: `winget install Python.Python.3.12`; instalar.bat lo usa si lo encuentra.
 
 1. Descarga el repositorio (**Code → Download ZIP** o `git clone`).
 2. Ejecuta **`instalar.bat`**: instala las dependencias, crea los accesos directos y abre el panel.
@@ -75,10 +75,10 @@ Uso: clic en la píldora para abrir el panel, arrastrar para moverla, **Ctrl+Alt
 
 ```bash
 uv sync                                   # dependencias y herramientas de desarrollo
-uv run pre-commit install                 # comprobaciones antes de cada commit
+uv run python -m pre_commit install                 # comprobaciones antes de cada commit
 uv run python -m panel_diario --demo      # interfaz con datos inventados
-uv run pytest                             # tests
-uv run ruff check && uv run mypy          # lint y tipos
+uv run python -m pytest                             # tests
+uv run python -m ruff check && uv run python -m mypy          # lint y tipos
 ```
 
 ## Licencia
