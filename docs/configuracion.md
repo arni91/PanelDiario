@@ -31,7 +31,7 @@ El asistente las pregunta en un mismo paso, con una casilla para cada una. Las t
 
 ## Plans (`plans`)
 
-Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días cerca de la ubicación del panel (solo Cataluña), de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). El panel tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
+Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días cerca de la ubicación del panel (solo Cataluña), de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). La sección sale plegada (título, número de planes y ▸) para no alargar el panel; al pulsar el título se despliega. Tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
 
 - `activa`: mostrar la sección.
 - `radi_km`: distancia máxima desde la ubicación (20 por defecto): desde un municipio del área metropolitana entran la ciudad grande y las de alrededor (desde Sant Cugat, Barcelona, Sabadell, Terrassa, Rubí…).

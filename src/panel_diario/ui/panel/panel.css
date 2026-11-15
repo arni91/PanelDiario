@@ -104,6 +104,14 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 /* Agenda */
 .agenda-cab { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
 .agenda-cab h3 { margin: 0; flex: 1; }
+/* Cabecera que pliega y despliega una sección (planes) */
+.agenda-cab.plegada { margin-bottom: 0; }
+.plegar { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; padding: 0;
+          border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.plegar h3 { margin: 0; flex: none; }   /* sin esto hereda flex: 1 de .agenda-cab h3 y aparta el número */
+.plegar-n { font-size: 11px; color: var(--muted); }
+.plegar-fletxa { color: var(--muted); }
+.plegar:hover .plegar-fletxa, .plegar:hover h3 { color: var(--text); }
 .mini-btn { font-size: 11px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line);
             color: var(--muted); background: var(--panel-2); }
 .mini-btn:hover { color: var(--text); }
