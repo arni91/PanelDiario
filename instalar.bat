@@ -23,7 +23,17 @@ echo Luego cierra esta ventana y vuelve a ejecutar instalar.bat
 exit /b 1
 :uv_ok
 
-echo Preparando el entorno (la primera vez descarga Python y tarda un minuto)...
+rem --- Cerrar una version anterior del panel si esta abierta (panel.py = versiones antiguas) y
+rem esperar 2 s a que se cierre. Con PowerShell y no con timeout: timeout falla sin teclado.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and ($_.CommandLine -like '*panel_diario*' -or $_.CommandLine -like '*panel.py*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; Start-Sleep -Seconds 2" >nul 2>&1
+
+rem --- Python firmado: Smart App Control (Windows 11) puede bloquear el Python que descarga uv,
+rem que no esta firmado. Si hay un Python oficial de python.org (firmado), se usa ese; si no, el de uv.
+set "UV_PYTHON_PREFERENCE=system"
+rem Un entorno antiguo hecho con el Python de uv se rehace con el oficial si ya esta instalado.
+if exist ".venv\pyvenv.cfg" findstr /c:"cpython-" ".venv\pyvenv.cfg" >nul && uv python find --system --python-preference only-system >nul 2>&1 && rmdir /s /q ".venv"
+
+echo Preparando el entorno (la primera vez puede descargar Python y tarda un minuto)...
 rem --no-dev: sin las herramientas de desarrollo. --inexact: si ya estan (quien programa), no las borra.
 uv sync --locked --no-dev --inexact --quiet
 if errorlevel 1 goto :error
@@ -31,9 +41,6 @@ if errorlevel 1 goto :error
 rem --- La primera vez no hay config.json: el panel abre solo el asistente de configuracion,
 rem que pregunta ciudad, agenda, equipo, ETF y noticias y escribe config.json (no va a git).
 
-rem --- Cerrar una version anterior del panel si esta abierta (panel.py = versiones antiguas) y
-rem esperar 2 s a que se cierre. Con PowerShell y no con timeout: timeout falla sin teclado.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and ($_.CommandLine -like '*panel_diario*' -or $_.CommandLine -like '*panel.py*') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; Start-Sleep -Seconds 2" >nul 2>&1
 
 rem --- Accesos directos: Inicio (arranca con Windows) y Escritorio (para reabrirlo) ---
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$w=New-Object -ComObject WScript.Shell; foreach($d in @([Environment]::GetFolderPath('Startup'),[Environment]::GetFolderPath('Desktop'))){ $s=$w.CreateShortcut($d+'\Panel Diario.lnk'); $s.TargetPath=$env:PD+'.venv\Scripts\pythonw.exe'; $s.Arguments='-m panel_diario'; $s.WorkingDirectory=$env:PD; $s.Description='Panel Diario'; $s.IconLocation=$env:PD+'src\panel_diario\ui\common\logo.ico'; $s.Save() }"
