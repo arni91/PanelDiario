@@ -1,4 +1,4 @@
-# Normaliza los saltos de línea en el repositorio (LF) y deja los .bat con CRLF al descargarlos:
-# cmd.exe puede fallar con los goto y las etiquetas de un .bat que solo tiene LF.
-* text=auto
+# Saltos de línea LF en el repositorio y en la copia de trabajo (evita diffs falsos entre Windows y GitHub).
+# Los .bat necesitan CRLF: cmd.exe puede fallar con goto y etiquetas si solo tienen LF.
+* text=auto eol=lf
 *.bat text eol=crlf
