@@ -48,9 +48,10 @@ def ficheros_versionados() -> list[Path]:
 
 
 def patrones_para(ruta: Path) -> dict[str, re.Pattern[str]]:
-    """uv.lock (lo genera uv) está lleno de huellas y URLs de PyPI en hexadecimal: son públicas,
-    así que ahí no se busca "clave hexadecimal"; los términos y el resto de patrones, sí."""
-    if ruta.name == "uv.lock":
+    """uv.lock y skills-lock.json (los generan uv y npx skills) están llenos de huellas y URLs de PyPI
+    en hexadecimal: son públicas, así que ahí no se busca "clave hexadecimal"; los términos y el resto
+    de patrones, sí."""
+    if ruta.name in ("uv.lock", "skills-lock.json"):
         return {k: v for k, v in PATRONES.items() if k != "clave hexadecimal larga"}
     return PATRONES
 
