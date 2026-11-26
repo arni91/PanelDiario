@@ -179,6 +179,16 @@ def ancho_en_pixeles_reales(
     return max(1, round(ancho_css * escala))
 
 
+def x_con_borde_derecho(derecha: int, ancho: int, monitor_x: int, monitor_ancho: int) -> int:
+    """x de la ventana para que su borde derecho siga en `derecha` sin salirse del monitor.
+
+    La ficha se crea con el ancho inicial en la posición guardada (la del ancho anterior), así que
+    al principio su borde derecho puede quedar fuera de la pantalla: se pega al borde del monitor.
+    """
+    derecha = min(derecha, monitor_x + monitor_ancho)
+    return max(derecha - ancho, monitor_x)
+
+
 def cambiar_ancho(
     hwnd: int, ancho_css: int, alto_css: int, padre: int | None = None, vista_css: float | None = None
 ) -> int | None:
@@ -196,7 +206,8 @@ def cambiar_ancho(
     user32.GetWindowRect(hwnd, ctypes.byref(r))
     alto = r.bottom - r.top
     nuevo = ancho_en_pixeles_reales(ancho_css, r.right - r.left, alto, alto_css, vista_css)
-    x = r.right - nuevo
+    mx, _, mw, _ = area_del_monitor((r.left + r.right) // 2, (r.top + r.bottom) // 2)
+    x = x_con_borde_derecho(r.right, nuevo, mx, mw)
     # Una ventana hija se coloca en coordenadas de su padre, no de pantalla
     punto = wintypes.POINT(x, r.top)
     if padre:
