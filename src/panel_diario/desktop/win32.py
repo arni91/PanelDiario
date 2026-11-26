@@ -166,11 +166,26 @@ def redondear_esquinas(hwnd: int | None, radio_css: int, alto_css: int) -> None:
         log.warning("No se pudieron redondear las esquinas: %s", ex)
 
 
-def cambiar_ancho(hwnd: int, ancho_css: int, alto_css: int, padre: int | None = None) -> int | None:
+def ancho_en_pixeles_reales(
+    ancho_css: float, real_actual: int, alto_real: int, alto_css: int, vista_css: float | None
+) -> int:
+    """Pasa un ancho en píxeles de la página a píxeles reales de la ventana.
+
+    Con `vista_css` (lo que la página ve de ancho ahora mismo) la proporción sale de la propia
+    ventana y vale con escalado de Windows y con zoom de WebView2. Sin ella, la de alto real /
+    alto_css, que falla con zoom: la página ve menos píxeles que la ventana y el texto se cortaba.
+    """
+    escala = real_actual / vista_css if vista_css else alto_real / alto_css
+    return max(1, round(ancho_css * escala))
+
+
+def cambiar_ancho(
+    hwnd: int, ancho_css: int, alto_css: int, padre: int | None = None, vista_css: float | None = None
+) -> int | None:
     """Cambia el ancho de la ventana manteniendo fijo su borde derecho; devuelve su nueva x en pantalla.
 
-    El ancho llega en píxeles de la página: se pasa a reales con la proporción alto real / alto_css,
-    que sirve con cualquier escalado. `padre` = escritorio si la ventana está anclada a él (hija).
+    El ancho llega en píxeles de la página y se pasa a reales (ancho_en_pixeles_reales).
+    `padre` = escritorio si la ventana está anclada a él (hija).
     """
     if os.name != "nt" or not hwnd:
         return None
@@ -180,7 +195,7 @@ def cambiar_ancho(hwnd: int, ancho_css: int, alto_css: int, padre: int | None = 
     r = wintypes.RECT()
     user32.GetWindowRect(hwnd, ctypes.byref(r))
     alto = r.bottom - r.top
-    nuevo = max(1, round(ancho_css * alto / alto_css))
+    nuevo = ancho_en_pixeles_reales(ancho_css, r.right - r.left, alto, alto_css, vista_css)
     x = r.right - nuevo
     # Una ventana hija se coloca en coordenadas de su padre, no de pantalla
     punto = wintypes.POINT(x, r.top)
