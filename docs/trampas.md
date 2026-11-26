@@ -7,6 +7,8 @@ Lo que es fácil hacer mal y no se deduce leyendo el código. Al encontrar una n
 - pywebview impone 200x100 px de mínimo: pasar siempre min_size en create_window.
 - pywebview no pone icono a las ventanas en Windows: app.py lo pone con WM_SETICON (win32.poner_icono) al mostrarse, con el hwnd de la propia ventana (hwnd_de: window.native.Handle). Buscarla por título falla si hay dos copias abiertas (--demo y la normal). El logo sale de scripts/generar_logo.py (ui/common/logo.png y logo.ico).
 - Con la píldora anclada al escritorio (SetParent), FindWindowW ya no la encuentra: obtener el hwnd ANTES de anclarla (buscar_ventana).
+- La píldora (anclada al escritorio) puede dibujarse con zoom en WebView2 aunque Windows esté al 100 %: en un PC la página veía 142 px en una ventana de 176 px reales. Un px de la página no es un px de la ventana: el ancho real se calcula con el ancho que ve la página (innerWidth), no con el alto ni con el DPI. El log lo apunta («la página ve N px»). Para mirar la píldora real sin quitar ventanas de encima: PrintWindow con PW_RENDERFULLCONTENT.
+- La posición guardada de la píldora es la de su ancho anterior: al crearla con el ancho inicial, su borde derecho puede quedar fuera de la pantalla. cambiar_ancho lo pega al borde del monitor.
 - Al abrir el panel desde la píldora, el foco vuelve un instante a ella: por eso se ignora la pérdida de foco durante 1 s. El panel se oculta al perder el foco: al hacer capturas, no hacer clic en otra ventana antes de capturarlo.
 - Un nombre de variable local igual que un módulo de sources/ (noticias, sports...) lo tapa: ruff lo avisa (F823/F821).
 - uv: en algunos Windows los hardlinks desde la caché fallan ("operación de nube"); por eso link-mode = "copy" en pyproject.toml.
