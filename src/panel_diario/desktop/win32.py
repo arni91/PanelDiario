@@ -166,6 +166,32 @@ def redondear_esquinas(hwnd: int | None, radio_css: int, alto_css: int) -> None:
         log.warning("No se pudieron redondear las esquinas: %s", ex)
 
 
+def cambiar_ancho(hwnd: int, ancho_css: int, alto_css: int, padre: int | None = None) -> int | None:
+    """Cambia el ancho de la ventana manteniendo fijo su borde derecho; devuelve su nueva x en pantalla.
+
+    El ancho llega en píxeles de la página: se pasa a reales con la proporción alto real / alto_css,
+    que sirve con cualquier escalado. `padre` = escritorio si la ventana está anclada a él (hija).
+    """
+    if os.name != "nt" or not hwnd:
+        return None
+    from ctypes import wintypes
+
+    user32 = _user32()
+    r = wintypes.RECT()
+    user32.GetWindowRect(hwnd, ctypes.byref(r))
+    alto = r.bottom - r.top
+    nuevo = max(1, round(ancho_css * alto / alto_css))
+    x = r.right - nuevo
+    # Una ventana hija se coloca en coordenadas de su padre, no de pantalla
+    punto = wintypes.POINT(x, r.top)
+    if padre:
+        user32.ScreenToClient(padre, ctypes.byref(punto))
+    SWP_NOZORDER, SWP_NOACTIVATE = 0x4, 0x10
+    if not user32.SetWindowPos(hwnd, None, punto.x, punto.y, nuevo, alto, SWP_NOZORDER | SWP_NOACTIVATE):
+        raise OSError(f"SetWindowPos falló (error {ctypes.get_last_error()})")
+    return x
+
+
 def dentro_de_pantalla(x: int, y: int, ancho: int, alto: int) -> list[int]:
     """Limita una posición para que la ventana no se salga del escritorio (todos los monitores)."""
     vx, vy, vw, vh = escritorio_virtual()

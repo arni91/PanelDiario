@@ -42,6 +42,7 @@ from panel_diario.desktop.win32 import (
     area_del_monitor,
     avisar_error,
     buscar_ventana,
+    cambiar_ancho,
     dentro_de_pantalla,
     escritorio_virtual,
     mover_hija,
@@ -56,7 +57,10 @@ from panel_diario.state import Estado, actualizar
 from panel_diario.wizard.asistente import ApiAsistente
 
 ANCHO = 440  # ancho del panel desplegado
-ANCHO_FICHA = 176  # ficha del escritorio (icono + temperatura + máx/mín + lluvia)
+ANCHO_FICHA = 176  # ancho inicial de la ficha; luego se ajusta a lo que lleva dentro (ajustar_ancho)
+# Límites del ajuste: por si la página midiera mal (aún sin pintar o con un texto inesperado)
+ANCHO_FICHA_MIN = 60
+ANCHO_FICHA_MAX = 260
 ALTO_FICHA = 34
 # Radio pequeño: Windows recorta la ventana sin suavizar el borde, y con un radio grande
 # (extremos de píldora) se ven escalones en las curvas
@@ -176,9 +180,10 @@ class Api:
         if self._ficha and self._ficha.pos:
             fx, fy = self._ficha.pos
             # Monitor donde está la ficha (con dos pantallas, el panel se abre en la misma)
-            mx, my, mw, mh = area_del_monitor(fx + ANCHO_FICHA // 2, fy + ALTO_FICHA // 2)
+            ancho_ficha = self._ficha.ancho
+            mx, my, mw, mh = area_del_monitor(fx + ancho_ficha // 2, fy + ALTO_FICHA // 2)
             # Alineado con el borde derecho de la píldora; debajo si está arriba, encima si está abajo
-            x = fx + ANCHO_FICHA - ANCHO
+            x = fx + ancho_ficha - ANCHO
             y = fy + ALTO_FICHA + 8 if fy + ALTO_FICHA / 2 < my + mh / 2 else fy - alto - 8
         else:
             mx, my, mw, mh = area_del_monitor(0, 0)
@@ -236,6 +241,9 @@ class ApiFicha:
         self._ventana: webview.Window | None = None
         self.pos = pos
         self.anclaje: tuple[int, int] | None = None  # (hwnd ficha, hwnd escritorio) si está anclada al escritorio
+        self.ancho = ANCHO_FICHA  # ancho en píxeles de la página; lo ajusta la propia página
+        self._hwnd: int | None = None  # se conoce al mostrarse la ventana (al_mostrar_ficha)
+        self._ancho_aplicado: int | None = None
         self._guardar_tm: threading.Timer | None = None
 
     def mini(self) -> dict:
@@ -264,9 +272,33 @@ class ApiFicha:
             log.exception("Error al abrir el panel desde la ficha: %s", ex)
         return True
 
+    def ajustar_ancho(self, ancho: float) -> bool:
+        """La página mide lo que ocupa su contenido y la ficha se ajusta a ese ancho.
+
+        Con un ancho fijo sobraba espacio a los lados cuando el texto es corto (p. ej. sin lluvia).
+        El borde derecho se queda donde estaba, que es donde se alinea el panel.
+        """
+        self.ancho = min(max(round(ancho), ANCHO_FICHA_MIN), ANCHO_FICHA_MAX)
+        return self.aplicar_ancho()
+
+    def aplicar_ancho(self) -> bool:
+        """Lleva `ancho` a la ventana (si ya existe y ha cambiado) y vuelve a recortar las esquinas."""
+        if not self._hwnd or self._ancho_aplicado == self.ancho:
+            return True
+        try:
+            x = cambiar_ancho(self._hwnd, self.ancho, ALTO_FICHA, self.anclaje[1] if self.anclaje else None)
+        except Exception as ex:  # noqa: BLE001
+            log.warning("No se pudo ajustar el ancho de la ficha: %s", ex)
+            return False
+        if x is not None:
+            self.pos = [x, self.pos[1]]
+        self._ancho_aplicado = self.ancho
+        redondear_esquinas(self._hwnd, radio_css=RADIO_FICHA, alto_css=ALTO_FICHA)
+        return True
+
     def mover_rel(self, dx: float, dy: float) -> bool:
         """Arrastre: mueve la ficha dx, dy desde donde está y guarda la posición."""
-        nueva = dentro_de_pantalla(self.pos[0] + int(dx), self.pos[1] + int(dy), ANCHO_FICHA, ALTO_FICHA)
+        nueva = dentro_de_pantalla(self.pos[0] + int(dx), self.pos[1] + int(dy), self.ancho, ALTO_FICHA)
         try:
             if self.anclaje:  # hija del escritorio: la movemos con Win32 directamente
                 mover_hija(self.anclaje[0], self.anclaje[1], nueva)
@@ -468,8 +500,9 @@ def main() -> None:
             x=ficha.pos[0],
             y=ficha.pos[1],
             # Sin esto pywebview impone un mínimo de 200x100 px: era el motivo de que la ficha
-            # saliera siempre grande (y ovalada al redondearla) hasta la v1.8.
-            min_size=(ANCHO_FICHA, ALTO_FICHA),
+            # saliera siempre grande (y ovalada al redondearla) hasta la v1.8. Con el mínimo
+            # del ajuste, no el inicial: si no, Windows no deja estrecharla (ajustar_ancho).
+            min_size=(ANCHO_FICHA_MIN, ALTO_FICHA),
             frameless=True,
             on_top=(modo == "encima"),
             resizable=False,
@@ -490,6 +523,9 @@ def main() -> None:
             redondear_esquinas(hwnd, radio_css=RADIO_FICHA, alto_css=ALTO_FICHA)
             if modo == "escritorio" and hwnd:
                 nueva_ficha.anclaje = anclar_al_escritorio(hwnd, nueva_ficha.pos)
+            # Si la página ya ha medido su contenido antes de que existiera la ventana, se aplica ahora
+            nueva_ficha._hwnd = hwnd
+            nueva_ficha.aplicar_ancho()
 
         vf.events.shown += al_mostrar_ficha
 

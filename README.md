@@ -29,7 +29,7 @@ Widget de escritorio para Windows que reúne en un panel el tiempo, la agenda, e
 | Deportes | Próximos partidos y último resultado de los equipos elegidos (fútbol, baloncesto, fútbol americano, hockey sobre hielo y béisbol), la Fórmula 1 y MotoGP | ESPN, motogp.com |
 | Bolsa | Índices con la variación del día y los valores que más suben, bajan o se negocian | Yahoo Finance |
 | ETF propio (opcional) | Caída desde el máximo y aportación extra por niveles (en %) | Yahoo Finance |
-| Noticias | 66 medios para elegir: diarios generalistas (Catalunya, España, Europa, mundo) y especializados por tema (economía, tecnología, ciencia, deportes, cultura y revistas), y secciones por tema; «Portades» resume las noticias principales de todas las portades. Cada titular en su idioma, con traducción opcional | RSS, Google Noticias |
+| Noticias | 72 medios para elegir: diarios generalistas (Catalunya, España, Europa, mundo) y especializados por tema (economía, tecnología, laboratorios de IA, ciencia, deportes, cultura y revistas), y secciones por tema (con «IA»: medios especializados y anuncios oficiales de los laboratorios); «Portades» resume las noticias principales de todas las portades. Cada titular en su idioma, con traducción opcional | RSS, Google Noticias |
 
 ## Stack
 

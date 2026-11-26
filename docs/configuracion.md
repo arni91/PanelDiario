@@ -31,7 +31,7 @@ El asistente las pregunta en un mismo paso, con una casilla para cada una. Las t
 
 ## Plans (`plans`)
 
-Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días cerca de la ubicación del panel (solo Cataluña), de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). La sección sale plegada (título, número de planes y ▸) para no alargar el panel; al pulsar el título se despliega. Tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
+Exposiciones, conciertos, charlas, festivales y espectáculos de los próximos días cerca de la ubicación del panel (solo Cataluña), de la [Agenda Cultural de Catalunya](https://analisi.transparenciacatalunya.cat/d/rhpv-yr4f) (dades obertes de la Generalitat, sin clave). Como todas las secciones del panel, sale plegada (título, número de planes y ▸); al pulsar el título se despliega. Tiene dos vistas: «Per a tu», con los planes que coinciden con los interesos, y «Tot», la agenda entera (primero lo que dura pocos días; las exposiciones largas, detrás).
 
 - `activa`: mostrar la sección.
 - `radi_km`: distancia máxima desde la ubicación (20 por defecto): desde un municipio del área metropolitana entran la ciudad grande y las de alrededor (desde Sant Cugat, Barcelona, Sabadell, Terrassa, Rubí…).
@@ -64,7 +64,7 @@ La Agenda la alimentan los equipamientos y los ayuntamientos: museos, centros de
 
 ## Noticias
 
-El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`) y las secciones. Cada sección (`portades`, `politica`, `economia`, `internacional`, `cultura`, `tecnologia`, `ciencia`, `esports`) es una pestaña con el feed de esa sección de cada medio elegido; el catálogo está en [fonts.md](fonts.md).
+El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`) y las secciones. Cada sección (`portades`, `politica`, `economia`, `internacional`, `cultura`, `tecnologia`, `ia`, `ciencia`, `esports`) es una pestaña con el feed de esa sección de cada medio elegido; el catálogo está en [fonts.md](fonts.md). La pestaña `ia` junta los medios especializados y los anuncios de los laboratorios de IA (etiqueta «Oficial»), lee hasta 30 días atrás (`horas_max: 720` en cada fuente) y lleva `filtro_periodo`.
 
 - `medios_triats`: los medios del catálogo elegidos en el asistente (aunque no publiquen ninguna de las secciones elegidas).
 - `pestanas`: lista de pestañas con `id`, `nombre` y, para ver noticias de hasta un mes atrás con los botones "Aquesta setmana / Aquest mes", `"filtro_periodo": true`.
