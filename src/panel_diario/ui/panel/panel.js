@@ -42,11 +42,12 @@ function pintarFecha() {
 
 function pintarAvisos(avisos) {
   const el = document.getElementById("avisos");
-  if (!avisos || !avisos.length) { el.innerHTML = ""; return; }
-  el.innerHTML = avisos.map(a =>
+  if (!avisos || !avisos.length) { el.innerHTML = ""; el.style.display = "none"; return; }
+  // Plegable como las demás (lo pidió Arnau): la cabecera dice cuántos hay aunque esté plegada
+  el.innerHTML = `<h3>⚠️ Avisos meteorològics (${avisos.length})</h3><div class="avisos-lista">` + avisos.map(a =>
     `<div class="aviso ${a.nivel}">⚠️ Avís ${({ amarillo: "groc", naranja: "taronja", rojo: "vermell" })[a.nivel] || a.nivel}: ${esc(a.evento)} · ${esc(a.zona)}${a.cuando ? " · " + esc(a.cuando) : ""}</div>`
-  ).join("");
-  el.style.display = "flex"; el.style.flexDirection = "column"; el.style.gap = "6px";
+  ).join("") + "</div>";
+  el.style.display = "";
 }
 
 function pintarTiempo(t) {
