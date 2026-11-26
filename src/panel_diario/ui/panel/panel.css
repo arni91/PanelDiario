@@ -104,14 +104,7 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 /* Agenda */
 .agenda-cab { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
 .agenda-cab h3 { margin: 0; flex: 1; }
-/* Cabecera que pliega y despliega una sección (planes) */
-.agenda-cab.plegada { margin-bottom: 0; }
-.plegar { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; padding: 0;
-          border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.plegar h3 { margin: 0; flex: none; }   /* sin esto hereda flex: 1 de .agenda-cab h3 y aparta el número */
-.plegar-n { font-size: 11px; color: var(--muted); }
-.plegar-fletxa { color: var(--muted); }
-.plegar:hover .plegar-fletxa, .plegar:hover h3 { color: var(--text); }
+.plegar-n { font-size: 11px; color: var(--muted); letter-spacing: 0; }
 .mini-btn { font-size: 11px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line);
             color: var(--muted); background: var(--panel-2); }
 .mini-btn:hover { color: var(--text); }
@@ -227,3 +220,17 @@ main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 footer { padding: 6px 14px 9px; font-size: 11px; color: var(--muted); display: flex; gap: 8px;
          border-top: 1px solid var(--line); }
 footer .aviso-f { color: var(--naranja); cursor: help; }
+
+/* Secciones plegables: la cabecera (primer elemento de la tarjeta) pliega y despliega.
+   Plegada solo se ve la cabecera y, si lo hay, el aviso de dato desactualizado. */
+main > .card > :first-child { cursor: pointer; }
+/* La flecha, siempre al final de la cabecera (también si lleva botones o el precio del ETF) */
+main > .card > :first-child::after {
+  content: "▾"; margin-left: auto; padding-left: 6px; color: var(--muted); font-size: 11px; }
+main > .card.plegada > :first-child::after { content: "▸"; }
+main > .card > :first-child:hover h3, main > .card > h3:hover { color: var(--text); }
+main > .card.plegada > :not(:first-child):not(.dd-aviso) { display: none; }
+main > .card.plegada > :first-child, #noticias.plegada > h3 { margin-bottom: 0; }
+main > .card.plegada > :first-child h3 { margin: 0; }
+main > .card.plegada > :first-child > button { display: none; }
+main > .card.plegada > .dd-aviso { margin-top: 6px; }

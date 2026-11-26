@@ -51,9 +51,9 @@ function pintarAvisos(avisos) {
 
 function pintarTiempo(t) {
   const el = document.getElementById("tiempo");
-  if (!t) { el.innerHTML = `<div class="vacio">Encara no hi ha dades del temps.</div>`; return; }
+  if (!t) { el.innerHTML = `<h3>🌤 Temps</h3><div class="vacio">Encara no hi ha dades del temps.</div>`; return; }
   const maxLl = Math.max(...t.horas.map(h => h.lluvia), 1);
-  el.innerHTML = `
+  el.innerHTML = `<h3>🌤 Temps</h3>
     <div class="tiempo-top">
       <div class="ico">${t.icono}</div>
       <div class="temp">${t.temp}°</div>
@@ -128,9 +128,7 @@ function pintarAgenda(a, error) {
 }
 
 // --- Planes de los próximos días. verTot = toda la agenda; si no, solo los de los interesos ---
-// Plegados por defecto: la lista es larga y obligaba a bajar mucho para llegar a lo siguiente
 let verTot = false;
-let plansAbierto = false;
 function pintarPlans(p, error) {
   const el = document.getElementById("plans");
   if (ocultarSi(el, !p || !!p.sin_configurar)) return;
@@ -147,11 +145,8 @@ function pintarPlans(p, error) {
         ${x.interessos.length ? `<div class="meta">${x.interessos.map(i => `<span class="chip tema">${esc(i)}</span>`).join("")}</div>` : ""}
       </div></div>`).join("")
     : `<div class="nota">No hi ha plans a menys de ${coma(p.radi_km, 0)} km els propers ${p.dies} dies.</div>`;
-  const cabecera = `<button class="plegar" data-plans-plegar aria-expanded="${plansAbierto}">
-      <h3>🎭 Plans a prop</h3><span class="plegar-n">${lista.length}</span>
-      <span class="plegar-fletxa">${plansAbierto ? "▾" : "▸"}</span></button>`;
-  el.innerHTML = `<div class="agenda-cab${plansAbierto ? "" : " plegada"}">${cabecera}${plansAbierto ? botones : ""}</div>
-    ${plansAbierto ? filas : ""}
+  el.innerHTML = `<div class="agenda-cab"><h3>🎭 Plans a prop <span class="plegar-n">${lista.length}</span></h3>${botones}</div>
+    <div>${filas}</div>
     ${error ? `<div class="dd-aviso">⚠ Dada desactualitzada: l'Agenda Cultural no respon</div>` : ""}`;
 }
 
@@ -422,15 +417,26 @@ async function cargar() {
 }
 let temporizador = null;
 
+// --- Secciones plegables: al abrir el panel están todas plegadas y se despliegan con un clic en su
+// cabecera (el primer elemento de la tarjeta). Lo abierto se marca en la <section>, que no se
+// repinta, así que sobrevive a las actualizaciones; al volver a abrir el panel, todo plegado otra vez.
+function plegarTodas() {
+  document.querySelectorAll("main > section.card").forEach(c => c.classList.add("plegada"));
+}
+
+function alternarSeccion(objetivo) {
+  const card = objetivo.closest("main > section.card");
+  if (!card || !card.firstElementChild || !card.firstElementChild.contains(objetivo)) return false;
+  if (objetivo.closest("button, a, [data-url]")) return false;   // los botones de la cabecera hacen lo suyo
+  card.classList.toggle("plegada");
+  return true;
+}
+
 // --- Eventos ---
 document.addEventListener("click", async (ev) => {
   const botonPeriodo = ev.target.closest("[data-periodo]");
   if (botonPeriodo) { periodo = Number(botonPeriodo.dataset.periodo); pintarLista(); return; }
-  if (ev.target.closest("[data-plans-plegar]")) {
-    plansAbierto = !plansAbierto;
-    pintarPlans(D && D.secciones && D.secciones.plans, D && D.errores && D.errores.plans);
-    return;
-  }
+  if (alternarSeccion(ev.target)) return;
   const botonPlans = ev.target.closest("[data-plans]");
   if (botonPlans) {
     verTot = botonPlans.dataset.plans === "tot";
@@ -493,13 +499,14 @@ function hacerArrastrable(el) {
 }
 document.querySelectorAll(".arrastre").forEach(hacerArrastrable);
 
-window.alMostrar = () => { mostradoEn = Date.now(); cargar(); };
+window.alMostrar = () => { mostradoEn = Date.now(); plegarTodas(); cargar(); };
 
 let iniciado = false;
 function iniciar() {
   if (iniciado) return;
   iniciado = true;
   mostradoEn = Date.now();
+  plegarTodas();
   cargar();
   setInterval(() => { if (document.hasFocus()) cargar(); }, 60000);
 }

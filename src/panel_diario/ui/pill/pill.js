@@ -16,7 +16,25 @@ async function pintar() {
     lluvia.className = "lluvia" + (m.lluvia >= 40 ? " alta" : "");   // en azul si es probable
     document.getElementById("aviso").className = "aviso " + (m.aviso || "");
     ficha.title = `${m.lugar || ""}: ${m.texto || ""}\nClic: obre · Arrossega: mou`;
+    ajustarAncho(a);
   } catch (e) { /* se reintenta en el siguiente ciclo */ }
+}
+
+// La ventana se ajusta a lo que ocupa el contenido (de la primera a la última pieza visible, más
+// el margen de los lados): con un ancho fijo sobraba espacio cuando el texto es corto.
+// El punto de aviso va en posición absoluta y no cuenta.
+let anchoPedido = 0;
+function ajustarAncho(a) {
+  if (!a.ajustar_ancho) return;
+  const piezas = [...ficha.children].filter(e => e.id !== "aviso" && e.getClientRects().length);
+  if (!piezas.length) return;
+  const izq = Math.min(...piezas.map(e => e.getBoundingClientRect().left));
+  const der = Math.max(...piezas.map(e => e.getBoundingClientRect().right));
+  const css = getComputedStyle(ficha);
+  const ancho = Math.ceil(der - izq + parseFloat(css.paddingLeft) + parseFloat(css.paddingRight));
+  if (ancho === anchoPedido) return;
+  anchoPedido = ancho;
+  a.ajustar_ancho(ancho);
 }
 window.pintar = pintar;
 
