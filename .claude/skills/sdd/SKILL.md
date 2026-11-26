@@ -41,10 +41,17 @@ Archivos y responsabilidades · Funciones puras (lo que dependa del reloj, del d
 ```
 - [ ] **Tn. <Descripción>.** RF-x, RF-y
   - Hecho cuando: <comprobación verificable>.
+- [ ] **Tn. <Descripción>.** RF-x [rápido]
+  - Archivos: <rutas>.
+  - Hecho cuando: <comando que lo comprueba, p. ej. `uv run pytest tests/test_x.py`>.
 ```
 Máximo 20-30 min por tarea, en orden de dependencia. Si salen más de 10, propón dividir la spec.
+Marcas de modelo (solo recomendación; sin marca = Opus, y nada cambia de modelo solo, ver «Modelo según la tarea» en `C:\dev\AGENTS.md`):
+- `[potente]` = recomendar Fable: arquitectura, modelo de datos, migraciones, seguridad o la causa raíz de un fallo que no salió al primer intento.
+- `[rápido]` = recomendar Sonnet: tarea mecánica y acotada, con archivos concretos y un comando que la verifique (tests de código existente, lint y tipos, textos, traducciones, comentarios, cambios que siguen un patrón ya existente). Nunca en arquitectura, modelo de datos, migraciones, empaquetado, seguridad, concurrencia ni cambios en varios módulos.
+- Una tarea lleva como mucho una marca.
 ## Implementación
-Una sola tarea cada vez: tests primero (en rojo), después el código, tests en verde, marcar la tarea y parar.
+Una sola tarea cada vez: tests primero (en rojo), después el código, tests en verde, marcar la tarea y parar. Si la tarea lleva marca de modelo, recomiéndalo en una línea antes de empezar y espera.
 ## Git (reglas de `C:\dev\AGENTS.md`)
 - Una rama por spec desde `main`: `feat/NNN-nombre` (o `fix/`, `docs/`…).
 - Un commit local por tarea, en inglés (Conventional Commits) y sin atribución a Claude.

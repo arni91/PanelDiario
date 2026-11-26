@@ -5,6 +5,8 @@ metadata:
   author: vercel
   version: "1.0.0"
   argument-hint: <file-or-pattern>
+  source: https://github.com/vercel-labs/web-interface-guidelines (command.md, commit 4ecfb9f del 2026-10-05)
+  downloaded: "2026-11-26"
 ---
 
 # Web Interface Guidelines
@@ -13,27 +15,23 @@ Review files for compliance with Web Interface Guidelines.
 
 ## How It Works
 
-1. Fetch the latest guidelines from the source URL below
+1. Read `guidelines.md`, in this skill's folder
 2. Read the specified files (or prompt user for files/pattern)
-3. Check against all rules in the fetched guidelines
+3. Check against all rules in `guidelines.md`
 4. Output findings in the terse `file:line` format
 
-## Guidelines Source
+## Guidelines
 
-Fetch fresh guidelines before each review:
+The rules and the output format are in `guidelines.md`, a fixed copy reviewed on 2026-11-26. Never fetch them from the network. Updating the copy means downloading it apart, reviewing it and replacing the file in both skill folders.
 
-```
-https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
-```
-
-Use WebFetch to retrieve the latest rules. The fetched content contains all the rules and output format instructions.
+The "Content & Copy" and "Typography" rules apply only where they don't contradict the project's language and style. In Spanish and Catalan: sentence case, not Title Case (only the first word is capitalised), and angle quotes «», not curly quotes.
 
 ## Usage
 
 When a user provides a file or pattern argument:
-1. Fetch guidelines from the source URL above
+1. Read `guidelines.md`
 2. Read the specified files
-3. Apply all rules from the fetched guidelines
+3. Apply all rules from `guidelines.md`
 4. Output findings using the format specified in the guidelines
 
 If no files specified, ask the user which files to review.
