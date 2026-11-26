@@ -1,6 +1,8 @@
 ---
 name: systematic-debugging
 description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+metadata:
+  source: https://github.com/obra/superpowers (skills/systematic-debugging, commit 22f0b46 del 2026-11-03)
 ---
 
 # Systematic Debugging
