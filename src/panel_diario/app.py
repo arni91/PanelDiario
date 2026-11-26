@@ -244,6 +244,7 @@ class ApiFicha:
         self.ancho = ANCHO_FICHA  # ancho en píxeles de la página; lo ajusta la propia página
         self._hwnd: int | None = None  # se conoce al mostrarse la ventana (al_mostrar_ficha)
         self._ancho_aplicado: int | None = None
+        self._vista: float | None = None  # ancho que ve la página al medir (para la escala real)
         self._guardar_tm: threading.Timer | None = None
 
     def mini(self) -> dict:
@@ -272,13 +273,16 @@ class ApiFicha:
             log.exception("Error al abrir el panel desde la ficha: %s", ex)
         return True
 
-    def ajustar_ancho(self, ancho: float) -> bool:
+    def ajustar_ancho(self, ancho: float, vista: float | None = None) -> bool:
         """La página mide lo que ocupa su contenido y la ficha se ajusta a ese ancho.
 
         Con un ancho fijo sobraba espacio a los lados cuando el texto es corto (p. ej. sin lluvia).
-        El borde derecho se queda donde estaba, que es donde se alinea el panel.
+        El borde derecho se queda donde estaba, que es donde se alinea el panel. `vista` es el ancho
+        que ve la página: con zoom no coincide con los píxeles de la ventana (cortaba el «0%»).
         """
         self.ancho = min(max(round(ancho), ANCHO_FICHA_MIN), ANCHO_FICHA_MAX)
+        self._vista = vista
+        log.info("Ficha: el contenido pide %s px de página; la página ve %s px", self.ancho, vista)
         return self.aplicar_ancho()
 
     def aplicar_ancho(self) -> bool:
@@ -286,7 +290,8 @@ class ApiFicha:
         if not self._hwnd or self._ancho_aplicado == self.ancho:
             return True
         try:
-            x = cambiar_ancho(self._hwnd, self.ancho, ALTO_FICHA, self.anclaje[1] if self.anclaje else None)
+            padre = self.anclaje[1] if self.anclaje else None
+            x = cambiar_ancho(self._hwnd, self.ancho, ALTO_FICHA, padre, self._vista)
         except Exception as ex:  # noqa: BLE001
             log.warning("No se pudo ajustar el ancho de la ficha: %s", ex)
             return False

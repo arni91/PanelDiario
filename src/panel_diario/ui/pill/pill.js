@@ -34,7 +34,8 @@ function ajustarAncho(a) {
   const ancho = Math.ceil(der - izq + parseFloat(css.paddingLeft) + parseFloat(css.paddingRight));
   if (ancho === anchoPedido) return;
   anchoPedido = ancho;
-  a.ajustar_ancho(ancho);
+  // También lo que ve ahora la página: con zoom sus píxeles no son los de la ventana
+  a.ajustar_ancho(ancho, window.innerWidth);
 }
 window.pintar = pintar;
 

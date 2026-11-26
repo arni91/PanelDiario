@@ -16,8 +16,10 @@ def llamadas(monkeypatch: pytest.MonkeyPatch) -> list[tuple]:
     """Sustituye las llamadas a Win32 y apunta con qué se han hecho."""
     vistas: list[tuple] = []
 
-    def cambiar_ancho(hwnd: int, ancho: int, alto: int, padre: int | None = None) -> int:
+    def cambiar_ancho(hwnd: int, ancho: int, alto: int, padre: int | None = None, vista: float | None = None) -> int:
         vistas.append(("ancho", hwnd, ancho, alto, padre))
+        if vista is not None:
+            vistas.append(("vista", vista))
         return 900
 
     monkeypatch.setattr(app, "cambiar_ancho", cambiar_ancho)
@@ -72,3 +74,11 @@ def test_si_windows_falla_no_rompe_y_lo_reintenta(monkeypatch: pytest.MonkeyPatc
     ficha._hwnd = 7
     assert ficha.ajustar_ancho(120) is False
     assert ficha._ancho_aplicado is None  # la siguiente medida lo vuelve a intentar
+
+
+def test_el_ancho_de_la_vista_llega_a_windows(llamadas: list[tuple]) -> None:
+    # La página dice cuántos px ve ahora: así el ancho real sale bien aunque tenga zoom
+    ficha = _ficha()
+    ficha._hwnd = 7
+    ficha.ajustar_ancho(134, 107.2)
+    assert ("vista", 107.2) in llamadas
