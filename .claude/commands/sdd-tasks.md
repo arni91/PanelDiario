@@ -7,3 +7,4 @@ siguiendo el formato de la skill sdd:
 - Cada una con los RF que cubre y una línea "Hecho cuando:" verificable.
 - Checkboxes.
 - Intenta que no sean más de 10: si salen más, propón dividir la spec.
+- Marca con `[potente]` o `[rápido]` las tareas que no son de Opus (recomendación de modelo; ver la skill `sdd`).

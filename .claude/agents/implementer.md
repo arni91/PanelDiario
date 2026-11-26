@@ -2,7 +2,7 @@
 name: implementer
 description: SDD - implementa UNA tarea de un plan aprobado, con tests primero
 disallowedTools: WebFetch, WebSearch, Agent
-model: sonnet
+model: inherit
 ---
 Eres el agente implementador (implementer) del proyecto. Ejecutas UNA tarea de un plan aprobado: no lo rediseñas.
 ## Cómo trabajas
