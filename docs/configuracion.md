@@ -64,7 +64,7 @@ La Agenda la alimentan los equipamientos y los ayuntamientos: museos, centros de
 
 ## Noticias
 
-El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`) y las secciones. Cada sección (`portades`, `politica`, `economia`, `internacional`, `cultura`, `tecnologia`, `ciencia`, `esports`) es una pestaña con el feed de esa sección de cada medio elegido; el catálogo está en [fonts.md](fonts.md).
+El asistente lo escribe todo a partir de dos pasos: los medios (`medios_triats`) y las secciones. Cada sección (`portades`, `politica`, `economia`, `internacional`, `cultura`, `tecnologia`, `ia`, `ciencia`, `esports`) es una pestaña con el feed de esa sección de cada medio elegido; el catálogo está en [fonts.md](fonts.md). La pestaña `ia` junta los medios especializados y los anuncios de los laboratorios de IA (etiqueta «Oficial»), lee hasta 30 días atrás (`horas_max: 720` en cada fuente) y lleva `filtro_periodo`.
 
 - `medios_triats`: los medios del catálogo elegidos en el asistente (aunque no publiquen ninguna de las secciones elegidas).
 - `pestanas`: lista de pestañas con `id`, `nombre` y, para ver noticias de hasta un mes atrás con los botones "Aquesta setmana / Aquest mes", `"filtro_periodo": true`.

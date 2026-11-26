@@ -62,8 +62,9 @@ def current_choices(cfg: dict) -> dict:
     for lista in (cfg.get("fuentes") or {}).values():
         for f in lista:
             name = catalog_urls.get(f.get("url", ""))
-            if name and name not in chosen:
-                chosen.append(name)
+            if name:  # del catálogo (su «tema», p. ej. «Oficial», no es un tema propio)
+                if name not in chosen:
+                    chosen.append(name)
             elif f.get("agregador") and f.get("tema") and f["tema"] not in topics:
                 topics.append(f["tema"])
             elif not name and not f.get("agregador") and f not in own:
@@ -112,7 +113,10 @@ def build(outlets_answer: dict, sections_answer: dict) -> dict:
             continue
         sources = outlets.sources_for(section, names) + (own if section == "portades" else [])
         if sources:
-            pestanas.append({"id": section, "nombre": label})
+            pestanas.append(
+                {"id": section, "nombre": label}
+                | ({"filtro_periodo": True} if section in outlets.PERIOD_SECTIONS else {})
+            )
             fuentes[section] = sources
 
     for i, text in enumerate(t.strip() for t in sections_answer.get("temes", [])):

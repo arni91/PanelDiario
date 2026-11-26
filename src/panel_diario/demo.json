@@ -267,6 +267,40 @@
      ],
      "enlaces": []
     }
+   ],
+   "ia": [
+    {
+     "titulo": "[Demo] Un laboratori d'exemple presenta un model nou",
+     "enlace": "https://example.com/ia/1",
+     "medio": "Laboratori A",
+     "ts": null,
+     "resumen": "",
+     "tema": "Oficial",
+     "otros_medios": [],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Com canvien els assistents de programació",
+     "enlace": "https://example.com/ia/2",
+     "medio": "Mitjà B",
+     "ts": null,
+     "resumen": "",
+     "tema": "",
+     "otros_medios": [
+      "Mitjà D"
+     ],
+     "enlaces": []
+    },
+    {
+     "titulo": "[Demo] Models oberts d'exemple: què ofereixen",
+     "enlace": "https://example.com/ia/3",
+     "medio": "Laboratori C",
+     "ts": null,
+     "resumen": "",
+     "tema": "Oficial",
+     "otros_medios": [],
+     "enlaces": []
+    }
    ]
   },
   "agenda": {
@@ -772,6 +806,11 @@
   {
    "id": "tecnologia",
    "nombre": "Tecnologia"
+  },
+  {
+   "id": "ia",
+   "nombre": "IA",
+   "filtro_periodo": true
   }
  ]
 }

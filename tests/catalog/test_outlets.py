@@ -72,3 +72,20 @@ def test_la_plantilla_publica_solo_usa_feeds_del_catalogo() -> None:
     for tab, fuentes in plantilla["fuentes"].items():
         for fuente in fuentes:
             assert fuente.get("agregador") or fuente["url"] in urls, (tab, fuente["nombre"])
+
+
+def test_seccion_ia_mira_un_mes_atras_y_marca_lo_oficial() -> None:
+    """Los laboratorios publican pocas veces al mes: la sección IA lee hasta 30 días y sus anuncios
+    llevan la etiqueta «Oficial» (los medios, no)."""
+    fuentes = {f["nombre"]: f for f in outlets.sources_for("ia", ["Xataka", "OpenAI", "Anthropic"])}
+    assert set(fuentes) == {"Xataka", "OpenAI", "Anthropic"}
+    assert all(f["horas_max"] == outlets.PERIOD_HOURS for f in fuentes.values())
+    assert fuentes["OpenAI"]["tema"] == fuentes["Anthropic"]["tema"] == "Oficial"
+    assert "tema" not in fuentes["Xataka"]
+    assert fuentes["Anthropic"]["agregador"] is True
+
+
+def test_las_demas_secciones_no_cambian() -> None:
+    assert outlets.sources_for("tecnologia", ["Xataka"]) == [
+        {"nombre": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "idioma": "es"}
+    ]

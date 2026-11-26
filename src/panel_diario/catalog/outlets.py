@@ -33,6 +33,7 @@ GROUPS: dict[str, Group] = {
     "mon": Group("Món", "actualitat"),
     "economia": Group("Economia", "temes"),
     "tecnologia": Group("Tecnologia", "temes"),
+    "ia": Group("Laboratoris d'IA", "temes"),
     "ciencia": Group("Ciència", "temes"),
     "esports": Group("Esports", "temes"),
     "cultura": Group("Cultura i revistes", "temes"),
@@ -46,9 +47,18 @@ SECTIONS: dict[str, str] = {
     "internacional": "Internacional",
     "cultura": "Cultura",
     "tecnologia": "Tecnologia",
+    "ia": "IA",
     "ciencia": "Ciència",
     "esports": "Esports",
 }
+
+
+# Secciones que miran un mes atrás, con los botones «Aquesta setmana / Aquest mes»: en IA, los
+# laboratorios publican pocas veces al mes y con 36 h (lo normal) casi nunca saldrían
+PERIOD_SECTIONS = {"ia"}
+PERIOD_HOURS = 24 * 30
+# Etiqueta de los anuncios de los propios laboratorios (fuente original, no un medio que lo cuenta)
+OFFICIAL_TAG = "Oficial"
 
 
 @dataclass(frozen=True)
@@ -366,15 +376,78 @@ CATALOG: tuple[Outlet, ...] = (
         {"economia": "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain"},
     ),
     # --- Tecnologia ---
-    Outlet("Xataka", "es", "tecnologia", {"tecnologia": "https://www.xataka.com/feedburner.xml"}),
+    # Los que tienen sección de IA la ofrecen también en la pestaña IA (comprobados el 26-11-2026)
+    Outlet(
+        "Xataka",
+        "es",
+        "tecnologia",
+        {
+            "tecnologia": "https://www.xataka.com/feedburner.xml",
+            "ia": "https://www.xataka.com/tag/inteligencia-artificial/rss2.xml",
+        },
+    ),
     Outlet("Genbeta", "es", "tecnologia", {"tecnologia": "https://www.genbeta.com/feedburner.xml"}),
-    Outlet("The Verge", "en", "tecnologia", {"tecnologia": "https://www.theverge.com/rss/index.xml"}),
-    Outlet("Wired", "en", "tecnologia", {"tecnologia": "https://www.wired.com/feed/rss"}),
-    Outlet("Ars Technica", "en", "tecnologia", {"tecnologia": "https://feeds.arstechnica.com/arstechnica/index"}),
-    Outlet("TechCrunch", "en", "tecnologia", {"tecnologia": "https://techcrunch.com/feed/"}),
+    Outlet(
+        "The Verge",
+        "en",
+        "tecnologia",
+        {
+            "tecnologia": "https://www.theverge.com/rss/index.xml",
+            "ia": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        },
+    ),
+    Outlet(
+        "Wired",
+        "en",
+        "tecnologia",
+        {"tecnologia": "https://www.wired.com/feed/rss", "ia": "https://www.wired.com/feed/tag/ai/latest/rss"},
+    ),
+    Outlet(
+        "Ars Technica",
+        "en",
+        "tecnologia",
+        {"tecnologia": "https://feeds.arstechnica.com/arstechnica/index", "ia": "https://arstechnica.com/ai/feed/"},
+    ),
+    Outlet(
+        "TechCrunch",
+        "en",
+        "tecnologia",
+        {
+            "tecnologia": "https://techcrunch.com/feed/",
+            "ia": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        },
+    ),
     Outlet("Engadget", "en", "tecnologia", {"tecnologia": "https://www.engadget.com/rss.xml"}),
-    Outlet("MIT Technology Review", "en", "tecnologia", {"tecnologia": "https://www.technologyreview.com/feed/"}),
+    Outlet(
+        "MIT Technology Review",
+        "en",
+        "tecnologia",
+        {
+            "tecnologia": "https://www.technologyreview.com/feed/",
+            "ia": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+        },
+    ),
     Outlet("Hacker News", "en", "tecnologia", {"tecnologia": "https://hnrss.org/frontpage"}),
+    # --- Laboratoris d'IA: sus propios anuncios (comprobados el 26-11-2026). Anthropic y Mistral no
+    # publican RSS: Google Noticias en inglés (en catalán, la búsqueda por dominio sale vacía) ---
+    Outlet("OpenAI", "en", "ia", {"ia": "https://openai.com/news/rss.xml"}),
+    Outlet(
+        "Anthropic",
+        "en",
+        "ia",
+        {"ia": "https://news.google.com/rss/search?q=site%3Aanthropic.com&hl=en-US&gl=US&ceid=US:en"},
+        google_news=True,
+    ),
+    Outlet("Google DeepMind", "en", "ia", {"ia": "https://deepmind.google/blog/rss.xml"}),
+    Outlet("Google AI", "en", "ia", {"ia": "https://blog.google/technology/ai/rss/"}),
+    Outlet(
+        "Mistral AI",
+        "en",
+        "ia",
+        {"ia": "https://news.google.com/rss/search?q=site%3Amistral.ai&hl=en-US&gl=US&ceid=US:en"},
+        google_news=True,
+    ),
+    Outlet("Hugging Face", "en", "ia", {"ia": "https://huggingface.co/blog/feed.xml"}),
     # --- Ciència ---
     Outlet("Nature", "en", "ciencia", {"ciencia": "https://www.nature.com/nature.rss"}),
     Outlet("Muy Interesante", "es", "ciencia", {"ciencia": "https://www.muyinteresante.com/feed/"}),
@@ -418,6 +491,8 @@ def sources_for(section: str, names: Iterable[str]) -> list[dict]:
     return [
         {"nombre": o.name, "url": o.feeds[section], "idioma": o.language}
         | ({"agregador": True} if o.google_news else {})
+        | ({"horas_max": PERIOD_HOURS} if section in PERIOD_SECTIONS else {})
+        | ({"tema": OFFICIAL_TAG} if o.group == "ia" else {})
         for o in CATALOG
         if o.name in elegidos and section in o.feeds
     ]

@@ -1,6 +1,6 @@
 # Catálogo de medios
 
-El catálogo ([`catalog/outlets.py`](../src/panel_diario/catalog/outlets.py)) guarda, de cada medio, su idioma, su grupo y el feed RSS de cada sección que publica. El asistente ofrece los medios en dos bloques, **Actualitat** (diarios generalistas por zona: Catalunya, Espanya, Europa, Món) y **Per temes** (medios especializados: Economia, Tecnologia, Ciència, Esports, Cultura i revistes), y después las secciones; cada sección del panel junta el feed de esa sección de cada medio elegido. **Portades** es la portada de cada medio: el panel agrupa la misma noticia publicada por varios medios y pone primero las que salen en más.
+El catálogo ([`catalog/outlets.py`](../src/panel_diario/catalog/outlets.py)) guarda, de cada medio, su idioma, su grupo y el feed RSS de cada sección que publica. El asistente ofrece los medios en dos bloques, **Actualitat** (diarios generalistas por zona: Catalunya, Espanya, Europa, Món) y **Per temes** (medios especializados: Economia, Tecnologia, Laboratoris d'IA, Ciència, Esports, Cultura i revistes), y después las secciones; cada sección del panel junta el feed de esa sección de cada medio elegido. **Portades** es la portada de cada medio: el panel agrupa la misma noticia publicada por varios medios y pone primero las que salen en más.
 
 La selección busca variedad: medios de distintos países, idiomas y líneas editoriales, generalistas, temáticos y revistas. El panel no etiqueta ninguna orientación: cada titular lleva solo el nombre del medio.
 
@@ -83,15 +83,28 @@ Comprobados el 9 de noviembre de 2026 (los añadidos a Economia, Ciència y Espo
 
 | Mitjà | Idioma | Seccions |
 |---|---|---|
-| Xataka | castellà | Tecnologia |
+| Xataka | castellà | Tecnologia, IA |
 | Genbeta | castellà | Tecnologia |
-| The Verge | anglès | Tecnologia |
-| Wired | anglès | Tecnologia |
-| Ars Technica | anglès | Tecnologia |
-| TechCrunch | anglès | Tecnologia |
+| The Verge | anglès | Tecnologia, IA |
+| Wired | anglès | Tecnologia, IA |
+| Ars Technica | anglès | Tecnologia, IA |
+| TechCrunch | anglès | Tecnologia, IA |
 | Engadget | anglès | Tecnologia |
-| MIT Technology Review | anglès | Tecnologia |
+| MIT Technology Review | anglès | Tecnologia, IA |
 | Hacker News | anglès | Tecnologia |
+
+### Laboratoris d'IA
+
+Comprobados el 26 de noviembre de 2026. Sus anuncios salen en la pestaña IA con la etiqueta «Oficial»; esa pestaña lee hasta 30 días atrás (con «Aquesta setmana / Aquest mes»), porque los laboratorios publican pocas veces al mes. Anthropic y Mistral no publican RSS: Google Noticias en inglés (en catalán, la búsqueda por dominio sale vacía).
+
+| Mitjà | Idioma | Seccions |
+|---|---|---|
+| OpenAI | anglès | IA |
+| Anthropic | anglès | IA (Google Noticias) |
+| Google DeepMind | anglès | IA |
+| Google AI | anglès | IA |
+| Mistral AI | anglès | IA (Google Noticias) |
+| Hugging Face | anglès | IA |
 
 ### Ciència
 
@@ -130,7 +143,7 @@ Comprobados el mismo día; se pueden añadir con «Un altre…» si se encuentra
 - **Sin RSS que funcione**: Público, El Temps, CTXT, Agencia SINC, National Geographic España (403), elEconomista (403), New Scientist (406), Via Empresa (404), Relevo (404), ESPN (no devuelve noticias).
 - **De pago o bloqueados**: The Telegraph (402), La Razón respondía 503 a sus antiguas direcciones (se usan las de `?outputType=xml`).
 - **Abandonados** (la última noticia tiene meses o años): RTVE, CNN, los feeds antiguos de The Wall Street Journal, Corriere della Sera.
-- **Poco actualizados o vacíos**: Der Spiegel International, Expansión (casi una semana sin noticias), Sport (sus noticias no llevan fecha), L'Esportiu, las secciones de ciencia de El Confidencial y Ara, deportes de El Mundo y The New York Times, política de VilaWeb y El Nacional.
+- **Poco actualizados o vacíos**: Der Spiegel International, Expansión (casi una semana sin noticias), Sport (sus noticias no llevan fecha), L'Esportiu, las secciones de ciencia de El Confidencial y Ara, deportes de El Mundo y The New York Times, política de VilaWeb y El Nacional, el blog de Meta AI (por Google Noticias, la última noticia tenía 25 días el 26-11-2026).
 
 ## Para añadir o corregir un medio
 

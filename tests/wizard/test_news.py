@@ -110,3 +110,18 @@ def test_config_sin_noticias() -> None:
         "temes": [],
         "traduir": False,
     }
+
+
+def test_pestana_ia_con_filtro_de_periodo() -> None:
+    cfg = news.build({"medios": ["Xataka", "OpenAI"]}, {"seccions": ["ia"]})
+    assert cfg["pestanas"] == [{"id": "ia", "nombre": "IA", "filtro_periodo": True}]
+    assert [f["nombre"] for f in cfg["fuentes"]["ia"]] == ["Xataka", "OpenAI"]
+
+
+def test_la_etiqueta_oficial_no_se_lee_como_tema_propio() -> None:
+    cfg = news.build({"medios": ["Anthropic"]}, {"seccions": ["ia"]})
+    elegido = news.current_choices(cfg)
+    assert elegido["medios"] == ["Anthropic"] and elegido["temes"] == []
+    del cfg["medios_triats"]  # un config.json sin la lista guardada: se deduce de las fuentes
+    assert news.current_choices(cfg)["medios"] == ["Anthropic"]
+    assert news.current_choices(cfg)["temes"] == []
